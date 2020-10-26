@@ -1,4 +1,4 @@
-#include "lexical_analyzer.c"
+#include "lexical_analyzer.h"
 
 int Error(const char *msg){
 	fprintf(stderr,"%s\n",msg);
