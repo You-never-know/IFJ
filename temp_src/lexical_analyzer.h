@@ -13,6 +13,6 @@
  * Analyzes given file and returns first found lexical unit
  * or returns 'NULL' pointer if memory allocation failed
  */
-lex_unit_t* Analyze(FILE* file_descriptor);
+lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit);
 
 #endif // LEXICAL_ANALYZER_H
