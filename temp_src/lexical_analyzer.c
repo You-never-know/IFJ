@@ -172,8 +172,10 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 			case COMMENT_START:	if(c == '*') 		state = ML_COMMENT;
 								else if(c == '/')	state = L_COMMENT;
 								else if(c == '=' || c == '_' || c == '"' || c == '`' ||
-										isWhiteSpace(c) || isLetter(c) || isNumber(c))
-									 state = OPER_OUT;
+										isWhiteSpace(c) || isLetter(c) || isNumber(c)){
+									((char*)lexeme->data)[lexeme->data_size++] = '/';
+									state = OPER_OUT;
+								}
 								else state = OPER_ERROR;
 								break;
 
@@ -372,7 +374,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							return lexeme;
 							break;
 
-			case OPER_OUT:	if(lexeme->data_size == 0)
+			case OPER_OUT:	if(lexeme->data_size == 0 || ((char*)lexeme->data)[0] == '/')
 								((char*)lexeme->data)[lexeme->data_size++] = c;
 							((char*)lexeme->data)[lexeme->data_size] = '\0';
 							lexeme->unit_type = OPERATOR;
@@ -392,11 +394,14 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 									if(unit == NULL) LexUnitDelete(lexeme);
 									return NULL;
 								}
-								/// Save 'c' in data buffer
-								((char*)lexeme->data)[lexeme->data_size++] = c;
-								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
-								lexeme->unit_type = OPERATOR_ERR;
-							return lexeme;
+								if(isWhiteSpace(c) || isNumber(c) || isLetter(c) || c == EOF){
+									lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
+									((char*)lexeme->data)[lexeme->data_size] = '\0';
+									lexeme->unit_type = OPERATOR_ERR;
+									return lexeme;
+								}
+								else ((char*)lexeme->data)[lexeme->data_size++] = c;
+								break;
 
 			case ID_ERROR:	if(spaceRealloc(lexeme, allocated_size)){
 								if(unit == NULL) LexUnitDelete(lexeme);
@@ -415,54 +420,62 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								return NULL;
 							}
 
-							/// Save 'c' in data buffer
-							((char*)lexeme->data)[lexeme->data_size++] = c;
-							lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
-							lexeme->unit_type = INT_ERR;
-							return lexeme;
+							if(isWhiteSpace(c) || isOperator(c) || c == EOF){
+								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
+								((char*)lexeme->data)[lexeme->data_size] = '\0';
+								lexeme->unit_type = INT_ERR;
+								return lexeme;
+							}
+							else ((char*)lexeme->data)[lexeme->data_size++] = c;
 							break;
 							
 			case DEC_ERROR:	if(spaceRealloc(lexeme, allocated_size)){
 								if(unit == NULL) LexUnitDelete(lexeme);
 								return NULL;
 							}
-							
-							/// Save 'c' in data buffer
-							((char*)lexeme->data)[lexeme->data_size++] = c;
-							lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
-							lexeme->unit_type = DEC_ERR;
-							return lexeme;
+
+							if(isWhiteSpace(c) || isOperator(c) || c == EOF){
+								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
+								((char*)lexeme->data)[lexeme->data_size] = '\0';
+								lexeme->unit_type = DEC_ERR;
+								return lexeme;
+							}
+							else ((char*)lexeme->data)[lexeme->data_size++] = c;
 							break;
 							
 			case STR_ERROR:	if(spaceRealloc(lexeme, allocated_size)){
 								if(unit == NULL) LexUnitDelete(lexeme);
 								return NULL;
 							}
-							
-							/// Save 'c' in data buffer
-							((char*)lexeme->data)[lexeme->data_size++] = c;
-							lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
-							lexeme->unit_type = STR_ERR;
-							return lexeme;
+
+							if(isWhiteSpace(c) || isOperator(c) || c == EOF){
+								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
+								((char*)lexeme->data)[lexeme->data_size] = '\0';
+								lexeme->unit_type = STR_ERR;
+								return lexeme;
+							}
+							else ((char*)lexeme->data)[lexeme->data_size++] = c;
 							break;
 							
 			case INVALID:	if(spaceRealloc(lexeme, allocated_size)){
 								if(unit == NULL) LexUnitDelete(lexeme);
 								return NULL;
 							}
-							
-							/// Save 'c' in data buffer
-							((char*)lexeme->data)[lexeme->data_size++] = c;
-							lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
-							lexeme->unit_type = ERROR;
-							return lexeme;
+
+							if(isWhiteSpace(c) || isOperator(c) || c == EOF){
+								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
+								((char*)lexeme->data)[lexeme->data_size] = '\0';
+								lexeme->unit_type = ERROR;
+								return lexeme;
+							}
+							else ((char*)lexeme->data)[lexeme->data_size++] = c;
 							break;
 
 			default: if(state > INVALID) fprintf(stderr, "<Lexical Analyzer> Wrong state(state behaviour): %d\n", state);
 		}
 	}
 
-	/// This shouldn't ever happen
+	/// This shouldn't even happen
 	if(unit == NULL) LexUnitDelete(lexeme);
 	return NULL;
 }
