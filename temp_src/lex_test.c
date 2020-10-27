@@ -1,17 +1,35 @@
 #include "lexical_analyzer.h"
+#include <assert.h>
+#include <ctype.h>
+
+unsigned WORD_COUNT=0;
 
 void Error(const char *msg){
 	fprintf(stderr,"%s\n",msg);
 	exit(1); 
 }
+void Word_count(FILE* go_file){
+	if(go_file == NULL)Error("missing file");
+    WORD_COUNT = 0;
+    int chr; 	
+    do {
+    	while(isspace(chr = fgetc(go_file)) && chr != EOF)fprintf(stdout,"%c",chr);
+        if(chr == EOF)return;
+        WORD_COUNT++;               
+        while(!(isspace(chr = fgetc(go_file))) && chr != EOF)fprintf(stdout,"%c",chr);
+    }while(chr!=EOF);
+    return;
+}
 
-void Prints_lex(lex_unit_t* First){
+void Prints_lex(lex_unit_t* First,unsigned number_of_units){
 	if(First == NULL) return;
 	lex_unit_t* tmp = First;
+	unsigned counter=0;
 	fprintf(stdout,"~~~~~~~~\n");
 	fprintf(stdout,"Lexemes:\n");
 	fprintf(stdout,"-+-------------------\n");
 	while(tmp!=NULL){
+		counter++;
 		fprintf(stdout," | unit_type: ");
 		switch(tmp->unit_type){
 			case ERROR:			fprintf(stdout, "Error\n"); break;
@@ -39,27 +57,26 @@ void Prints_lex(lex_unit_t* First){
 		tmp=tmp->next;
 		fprintf(stdout," +-------------------\n");
 	}
+	assert(counter==number_of_units);
 }
 
 FILE* Creating_file(const char *filename,const char *text){
 
+	if(filename==NULL)Error("Could not open file");
+	if(text==NULL)Error("Could not open file");
 	//only accepts .go files
 	if(strcmp(strrchr(filename,'.'),".go")!=0)Error("Wrong file");
 	//trying to open file w+
 	FILE* go_file=fopen(filename,"w+");
 
+
 	if(go_file==NULL)Error("Could not open file"); 
 	if(fputs(text,go_file)<0)Error("Could not write to file"); 
 
     rewind(go_file);//to reset the pointer to the start of the file
-	
-	int chr = fgetc(go_file); 
-	 fprintf(stdout,"text in file:\n");
-    while (chr != EOF) //prints text in file
-    {  	
-        fprintf(stdout,"%c",chr); 
-        chr = fgetc(go_file); 
-    } 
+	 
+	fprintf(stdout,"text in file:\n");
+    Word_count(go_file);
     fprintf(stdout,"\n");
 
     rewind(go_file);
@@ -108,21 +125,36 @@ int main()
 	/* TEST01_ID  */
 	/* testing ID */	
 	//------------//
+
 	fprintf(stdout,"\n======TEST01_ID======\n");
 	FILE * go_file=Creating_file("test01.go","ahoj c88888c AUTO");
 	lex_unit_t* lex_first=Loading_lex_units(go_file);
-	Prints_lex(lex_first);
+	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
+
 
 	//------------//
 	/* TEST02_ID  */
 	/* testing ID */	
 	//------------//
+
 	fprintf(stdout,"\n======TEST02_ID======\n");
 	go_file=Creating_file("t.go","_id   ___420var\n ____ Return  return 420blazeitvar");
 	lex_first=Loading_lex_units(go_file);
-	Prints_lex(lex_first);
+	Prints_lex(lex_first,WORD_COUNT);
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//------------//
+	/* TEST03_ID  */
+	/* testing ID */	
+	//------------//
+
+	fprintf(stdout,"\n======TEST03_ID======\n");
+	go_file=Creating_file("t.go","GGG4646 VVV SSS AAA CCC VV888BB88 VVSSCC@@@@@@ ");
+	lex_first=Loading_lex_units(go_file);
+	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 		return 0;
