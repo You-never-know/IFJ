@@ -31,8 +31,8 @@ bool isOperator(const char c){
  * Checks if given char is an operator that can be part of multi-char operator
  */
 bool isMultiOperator(const char c){
-	const char operators[] = "+-*%=&|^<>!"; // '/' is missing intentionally
-	for(unsigned char i = 0; i < 11; i++){
+	const char operators[] = "+-*%=&|^<>!:"; // '/' is missing intentionally
+	for(unsigned char i = 0; i < 12; i++){
 		if(c == operators[i]) return true;
 	}
 	return false;
@@ -52,8 +52,8 @@ bool isOperValid(const lex_unit_t* lex, char c){
 		case 1: if(!isMultiOperator(c)) return true;
 				/// Check all operators that can't be doubled (++, &&, ||, ...)
 				if(	op_buff[0] == '*' || op_buff[0] == '%' ||
-					op_buff[0] == '^' || op_buff[0] == '!')
-											return (c == '=');
+					op_buff[0] == '^' || op_buff[0] == '!' ||
+					op_buff[0] == ':')		return (c == '=');
 				else if(op_buff[0] == '~')	return false;
 
 				/// Rest can be doubled
@@ -126,7 +126,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 	if(file_descriptor == NULL) return NULL;
 
 	/// Set up resources for state machine
-	enum states{START, OPER_OUT, ID_OUT, KW_OUT, INT_OUT, DEC_OUT, STR_OUT, 		// I/O states
+	enum states{START, OPER_OUT, ID_OUT, KW_OUT, INT_OUT, DEC_OUT, STR_OUT,			// I/O states
 				COMMENT_START, COMMENT_END, L_COMMENT, ML_COMMENT,					// Comment states (L = Line; ML = Multi Line)
 				WORD_LOAD, INT_LOAD, DEC_LOAD, EXP_DEC_LOAD, STR_LOAD, ML_STR_LOAD,	// Loading states
 				OPER_CHECK, ESCAPE_CHAR, EXP_DEC_LOAD_CHECK,						// Check states
@@ -199,27 +199,30 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								if(isKeyword(lexeme))	state = KW_OUT;
 								else					state = ID_OUT;
 							}
+							else if(!(isLetter(c) || isNumber(c) || c == '_'))
+														state = ID_ERROR;
 							break;
 
 			case INT_LOAD:	if(!isNumber(c)){
-								if(c == '.')		state = DEC_LOAD;
-								else if(c == 'e')	state = EXP_DEC_LOAD_CHECK;
+								if(c == '.')				state = DEC_LOAD;
+								else if((c|1<<5) == 'e')	state = EXP_DEC_LOAD_CHECK;
 								else if(isWhiteSpace(c) || isOperator(c) || c == EOF)
-													state = INT_OUT;
-								else				state = INT_ERROR;
+															state = INT_OUT;
+								else						state = INT_ERROR;
 							}
 							break;
 
 			case DEC_LOAD:	if(!isNumber(c)){
-								if(c == 'e')	state = EXP_DEC_LOAD_CHECK;
+								if((c|1<<5) == 'e')	state = EXP_DEC_LOAD_CHECK;
 								else if(isWhiteSpace(c) || isOperator(c) || c == EOF)
-												state = DEC_OUT;
-								else 			state = DEC_ERROR;
+													state = DEC_OUT;
+								else 				state = DEC_ERROR;
 							}
 							break;
 
-			case EXP_DEC_LOAD_CHECK:	if(c == '-' || isNumber(c)) state = EXP_DEC_LOAD;
-										else state = DEC_ERROR;
+			case EXP_DEC_LOAD_CHECK:	if(c == '-' || c == '+' || isNumber(c))
+												state = EXP_DEC_LOAD;
+										else	state = DEC_ERROR;
 										break;
 
 			case EXP_DEC_LOAD:	if(!isNumber(c)){
@@ -409,10 +412,13 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							}
 
 							/// Save 'c' in data buffer
-							((char*)lexeme->data)[lexeme->data_size++] = c;
-							lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
-							lexeme->unit_type = ID_ERR;
-							return lexeme;
+							if(isWhiteSpace(c) || isOperator(c) || c == EOF){
+								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
+								((char*)lexeme->data)[lexeme->data_size] = '\0';
+								lexeme->unit_type = ID_ERR;
+								return lexeme;
+							}
+							else ((char*)lexeme->data)[lexeme->data_size++] = c;
 							break;
 
 			case INT_ERROR:	if(spaceRealloc(lexeme, allocated_size)){
