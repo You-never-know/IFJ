@@ -189,13 +189,13 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								else if(c != '*')	state = ML_COMMENT;
 								break;
 
-			case OPER_CHECK:	if(	c == '_' || c == '"' || c == '`' ||
+			case OPER_CHECK:	if(	c == '_' || c == '"' || c == '`' || c == EOF ||
 									isWhiteSpace(c) || isLetter(c) || isNumber(c))
 									state = OPER_OUT;
 								else if(!isOperValid(lexeme, c)) state = OPER_ERROR;
 								break;
 
-			case WORD_LOAD:	if(isWhiteSpace(c) || isOperator(c)){
+			case WORD_LOAD:	if(isWhiteSpace(c) || isOperator(c) || c == EOF){
 								if(isKeyword(lexeme))	state = KW_OUT;
 								else					state = ID_OUT;
 							}
@@ -232,7 +232,8 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								}
 								break;
 
-			case ML_STR_LOAD:	if(c == '`') state = STR_OUT;
+			case ML_STR_LOAD:	if(c == '`')		state = STR_OUT;
+								else if(c == EOF)	state = STR_ERROR;
 								break;
 
 			case STR_LOAD:	if(c == '"')		state = STR_OUT;
@@ -274,32 +275,11 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 
 			default: if(state > INVALID) fprintf(stderr, "<Lexical Analyzer> Wrong state(state decision): %d\n", state);
 		}
-
+		
 		/// Handle EOF
-		if(c == EOF){
-			if(lexeme->data_size == 0){
-				if(unit == NULL) LexUnitDelete(lexeme);
-				return NULL;
-			}
-			switch(state){
-				case OPER_CHECK: 	state = OPER_OUT;
-									break;
-
-				case WORD_LOAD:	if(isKeyword(lexeme)) state = KW_OUT;
-								else	state = ID_OUT;
-								break;
-
-				case INT_LOAD:	state = INT_OUT;
-								break;
-
-				case DEC_LOAD: case EXP_DEC_LOAD_CHECK: case EXP_DEC_LOAD:
-								state = DEC_OUT;
-								break;
-
-				case STR_LOAD: case ML_STR_LOAD: case ESCAPE_CHAR:
-								state = STR_ERROR;
-								break;
-			}
+		if(c == EOF && lexeme->data_size == 0){
+			if(unit == NULL) LexUnitDelete(lexeme);
+			return NULL;
 		}
 
 		/// (State Machine) state behaviour
