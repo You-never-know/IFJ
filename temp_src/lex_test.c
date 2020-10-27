@@ -12,13 +12,13 @@ void Word_count(FILE* go_file){
 	if(go_file == NULL)Error("missing file");
     WORD_COUNT = 0;
     int chr; 	
-    do {
+    do{
     	fprintf(stdout,"%c",chr);
-    	while(isspace(chr = fgetc(go_file)) && chr != EOF)fprintf(stdout,"%c",chr);
+    	while(isspace(chr = fgetc(go_file)) && chr != EOF)fprintf(stdout,"%c",chr);//White space is not WORD
         if(chr == EOF)return;
         fprintf(stdout,"%c",chr);
         WORD_COUNT++;               
-        while(!(isspace(chr = fgetc(go_file))) && chr != EOF)fprintf(stdout,"%c",chr);
+        while(!(isspace(chr = fgetc(go_file))) && chr != EOF)fprintf(stdout,"%c",chr);//Reading WORD
     }while(chr!=EOF);
     return;
 }
@@ -142,7 +142,7 @@ int main()
 	//------------//
 
 	fprintf(stdout,"\n======TEST02_ID======\n");
-	go_file=Creating_file("t.go","_id   ___420var\n ____ Return  return 420blazeitvar");
+	go_file=Creating_file("t.go","_id   ___420var\n ____ int return 420blazeitvar");
 	lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
@@ -159,5 +159,6 @@ int main()
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
+
 		return 0;
 }
