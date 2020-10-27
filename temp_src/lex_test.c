@@ -13,8 +13,10 @@ void Word_count(FILE* go_file){
     WORD_COUNT = 0;
     int chr; 	
     do {
+    	fprintf(stdout,"%c",chr);
     	while(isspace(chr = fgetc(go_file)) && chr != EOF)fprintf(stdout,"%c",chr);
         if(chr == EOF)return;
+        fprintf(stdout,"%c",chr);
         WORD_COUNT++;               
         while(!(isspace(chr = fgetc(go_file))) && chr != EOF)fprintf(stdout,"%c",chr);
     }while(chr!=EOF);
