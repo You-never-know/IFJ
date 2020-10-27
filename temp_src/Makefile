@@ -12,6 +12,10 @@ lexical_analyzer.o: lexical_analyzer.c lexical_analyzer.h structs.h
 	$(COMPILATOR) -c lexical_analyzer.c
 structs.o: structs.c structs.h
 	$(COMPILATOR) -c structs.c
-
+clean_go:
+	rm -f *.go
+clean:
+	rm -f *.o
+	rm -f*.go
 run: all
 	valgrind ./lex_test
