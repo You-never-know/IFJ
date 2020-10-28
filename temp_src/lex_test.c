@@ -1,6 +1,8 @@
 #include "lexical_analyzer.h"
 #include <assert.h>
 #include <ctype.h>
+#include <unistd.h>
+
 
 unsigned WORD_COUNT=0;
 
@@ -10,18 +12,53 @@ void Error(const char *msg){
 }
 void Word_count(FILE* go_file){
 	if(go_file == NULL)Error("missing file");
-    WORD_COUNT = 0;
-    int chr; 	
-    do{
-    	fprintf(stdout,"%c",chr);
-    	while(isspace(chr = fgetc(go_file)) && chr != EOF)fprintf(stdout,"%c",chr);//White space is not WORD
-        if(chr == EOF)return;
-        fprintf(stdout,"%c",chr);
-        WORD_COUNT++;               
-        while(!(isspace(chr = fgetc(go_file))) && chr != EOF)fprintf(stdout,"%c",chr);//Reading WORD
-    }while(chr!=EOF);
-    return;
+	WORD_COUNT = 0;
+	int chr=0;
+	do{
+		do{
+			fprintf(stdout,"%c",chr); 
+			while(isspace(chr = fgetc(go_file)) && (chr != EOF && !(isOperator(chr))))fprintf(stdout,"%c",chr);//White space is not WORD
+			if(chr == EOF || isOperator(chr))break;//may indicate comment
+			fprintf(stdout,"%c",chr);
+			WORD_COUNT++;               
+			while(!(isspace(chr = fgetc(go_file))) && (chr != EOF && !(isOperator(chr))))fprintf(stdout,"%c",chr);//Reading WORD
+		}while(chr!=EOF && !(isOperator(chr)));
+
+		if(chr=='/'){
+			fprintf(stdout,"%c",chr);
+			chr=fgetc(go_file);
+			if(chr=='/')// checking for single line comment
+							do{
+								fprintf(stdout,"%c",chr);
+								chr = fgetc(go_file);
+							}while(chr != EOF && chr !='\n');
+
+			if(chr=='*')// checking for multi line comment
+							do{	
+								do{
+									fprintf(stdout,"%c",chr);
+									chr = fgetc(go_file);
+								}while(chr != EOF && chr !='*');
+									if(chr != EOF)fprintf(stdout,"%c",chr);
+									if(chr != EOF)chr = fgetc(go_file);
+							}while(chr!=EOF && chr!='/'); //checking for end of comment
+
+			if(chr!='*' && chr!='/')WORD_COUNT++;
+		}
+		if(chr!='/' && chr!=EOF){
+			 int twinkle_little_star;
+			 do{
+			 		 twinkle_little_star=chr;
+					 fprintf(stdout,"%c",chr);
+				 	 chr=fgetc(go_file);
+				}while(isOperator(chr)&&isOperator(twinkle_little_star));
+				WORD_COUNT++;
+				
+		}
+	}while(chr!=EOF);
+	return;
 }
+
 
 void Prints_lex(lex_unit_t* First,unsigned number_of_units){
 	if(First == NULL) return;
@@ -102,6 +139,7 @@ lex_unit_t* Loading_lex_units(FILE * go_file){
 		last_act = act;
 		act=act->next;
 	}
+	if(act == first && act->data_size == 0)first = NULL;
 	LexUnitDelete(act);
 	if(last_act != NULL) last_act->next = NULL;
 	return first;
@@ -122,14 +160,13 @@ void Free_Lex_Units(lex_unit_t* first){
 
 int main()
 {
-
 	//------------//
 	/* TEST01_ID  */
 	/* testing ID */	
 	//------------//
 
 	fprintf(stdout,"\n======TEST01_ID======\n");
-	FILE * go_file=Creating_file("test01.go","ahoj c88888c AUTO");
+	FILE * go_file=Creating_file("test01.go"," ++++ casdacac */ ahoj c88888c AUTO");
 	lex_unit_t* lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
