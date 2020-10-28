@@ -14,6 +14,7 @@ void Word_count(FILE* go_file){
 	if(go_file == NULL)Error("missing file");
 	WORD_COUNT = 0;
 	int chr=0;
+	int twinkle_little_star=0;
 	do{
 		do{
 			fprintf(stdout,"%c",chr); 
@@ -43,17 +44,15 @@ void Word_count(FILE* go_file){
 									if(chr != EOF)chr = fgetc(go_file);
 							}while(chr!=EOF && chr!='/'); //checking for end of comment
 
-			if(chr!='*' && chr!='/')WORD_COUNT++;
+						if(WORD_COUNT==0)WORD_COUNT++;
 		}
 		if(chr!='/' && chr!=EOF){
-			 int twinkle_little_star;
 			 do{
 			 		 twinkle_little_star=chr;
 					 fprintf(stdout,"%c",chr);
 				 	 chr=fgetc(go_file);
 				}while(isOperator(chr)&&isOperator(twinkle_little_star));
 				WORD_COUNT++;
-				
 		}
 	}while(chr!=EOF);
 	return;
@@ -166,7 +165,7 @@ int main()
 	//------------//
 
 	fprintf(stdout,"\n======TEST01_ID======\n");
-	FILE * go_file=Creating_file("test01.go"," ++++ casdacac */ ahoj c88888c AUTO");
+	FILE * go_file=Creating_file("test01.go"," ++++ *** //casdacac */ ahoj c88888c AUTO");
 	lex_unit_t* lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
