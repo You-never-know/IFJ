@@ -21,7 +21,7 @@ void Word_count(FILE* go_file){
 			fprintf(stdout,"%c",chr);
 			WORD_COUNT++;               
 			while(!(isspace(chr = fgetc(go_file))) && (chr != EOF && !(isOperator(chr))))fprintf(stdout,"%c",chr);//Reading WORD
-			if(chr != EOF && !(isOperator(chr)))fprintf(stdout,"%c",chr); 
+			if(chr != EOF && !(isOperator(chr)))fprintf(stdout,"%c",chr); //printing numbers and words
 		}while(chr!=EOF && !(isOperator(chr)));
 
 		if(chr=='/'){
@@ -33,7 +33,7 @@ void Word_count(FILE* go_file){
 								chr = fgetc(go_file);
 							}while(chr != EOF && chr !='\n');
 
-			if(chr=='*')// checking for multi line comment
+		if(chr=='*')// checking for multi line comment
 							do{	
 								do{
 									fprintf(stdout,"%c",chr);
@@ -46,12 +46,12 @@ void Word_count(FILE* go_file){
 						if(WORD_COUNT==0)WORD_COUNT++;//empty file
 		}
 		if(chr!='/' && chr!=EOF){
-			int twinkle_little_star=chr;
-			while(isOperator(chr)&&isOperator(twinkle_little_star)){
-			 		twinkle_little_star=chr;
+			int twinkle_little_star;
+				do{
+			 		 twinkle_little_star=chr;
 					 fprintf(stdout,"%c",chr);
 				 	 chr=fgetc(go_file);
-				}
+				}while(isOperator(chr)&&isOperator(twinkle_little_star));
 				WORD_COUNT++;
 				if(!isOperator(chr))ungetc(chr,go_file);
 		}
@@ -168,7 +168,9 @@ int main()
 	fprintf(stdout,"\n======TEST01_ID======\n");
 	FILE * go_file=Creating_file("test01.go","casa casca + 44 8454343 *** a=4*2");
 	lex_unit_t* lex_first=Loading_lex_units(go_file);
+	//printf("%d\n",WORD_COUNT );
 	Prints_lex(lex_first,WORD_COUNT);
+
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
