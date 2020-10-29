@@ -9,6 +9,12 @@
 
 #define CHUNK_SIZE 128 // Defines how much space is allocated when previous buffer overflows
 
+bool isWhiteSpace(const char c);
+bool isNumber(const char c);
+bool isLetter(const char c);
+bool isOperator(const char c);
+bool isMultiOperator(const char c);
+bool isKeyword(const char c);
 /*
  * Analyzes given file and returns first found lexical unit
  * or returns 'NULL' pointer if memory allocation failed
