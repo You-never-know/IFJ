@@ -14,7 +14,7 @@ bool isNumber(const char c);
 bool isLetter(const char c);
 bool isOperator(const char c);
 bool isMultiOperator(const char c);
-bool isKeyword(const char c);
+bool isKeyword(const lex_unit_t* lex);
 /*
  * Analyzes given file and returns first found lexical unit
  * or returns 'NULL' pointer if memory allocation failed
