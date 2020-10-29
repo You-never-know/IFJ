@@ -3,7 +3,6 @@
 #include <ctype.h>
 #include <unistd.h>
 
-
 unsigned WORD_COUNT=0;
 
 void Error(const char *msg){
@@ -59,7 +58,6 @@ void Word_count(FILE* go_file){
 	return;
 }
 
-
 void Prints_lex(lex_unit_t* First,unsigned number_of_units){
 	if(First == NULL) return;
 	lex_unit_t* tmp = First;
@@ -78,6 +76,7 @@ void Prints_lex(lex_unit_t* First,unsigned number_of_units){
 			case INTEGER:		fprintf(stdout, "Integer\n"); break;
 			case DECIMAL:		fprintf(stdout, "Decimal\n"); break;
 			case STRING:		fprintf(stdout, "String\n"); break;
+			case NEWLINE:		fprintf(stdout, "Newline\n"); break;
 			case OPERATOR_ERR:	fprintf(stdout, "Operator Error\n"); break;
 			case ID_ERR:		fprintf(stdout, "Identificator Error\n"); break;
 			case INT_ERR:		fprintf(stdout, "Integer Error\n"); break;
@@ -91,12 +90,15 @@ void Prints_lex(lex_unit_t* First,unsigned number_of_units){
 			case INTEGER:		fprintf(stdout, "%ld\n", *((size_t*)tmp->data)); break;
 			case DECIMAL:		fprintf(stdout, "%f\n", *((double*)tmp->data)); break;
 			case STRING:		fprintf(stdout, "\"%s\"\n", (char*)tmp->data); break;
+			case NEWLINE:		fprintf(stdout, "'\\n'\n"); break;
 			default:			fprintf(stdout, "%s\n", (char*)tmp->data); break;
 		}
 		tmp=tmp->next;
 		fprintf(stdout," +-------------------\n");
 	}
-	assert(counter==number_of_units);
+	//assert(counter==number_of_units);
+	if(counter != number_of_units)
+		fprintf(stderr, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n|Lexeme count doesn't match word count|\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" );
 }
 
 FILE* Creating_file(const char *filename,const char *text){
@@ -162,22 +164,21 @@ int main()
 {
 	//------------//
 	/* TEST01_ID  */
-	/* testing ID */	
+	/* testing ID */
 	//------------//
 
 	fprintf(stdout,"\n======TEST01_ID======\n");
-	FILE * go_file=Creating_file("test01.go","casa casca + 44 8454343 *** a=4*2");
+	FILE * go_file=Creating_file("test01.go","casa casca + 44 8454343 ***a=4*2");
 	lex_unit_t* lex_first=Loading_lex_units(go_file);
 	//printf("%d\n",WORD_COUNT );
 	Prints_lex(lex_first,WORD_COUNT);
-
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
 
 	//------------//
 	/* TEST02_ID  */
-	/* testing ID */	
+	/* testing ID */
 	//------------//
 
 	fprintf(stdout,"\n======TEST02_ID======\n");
@@ -187,17 +188,54 @@ int main()
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
-	//------------//
-	/* TEST03_ID  */
-	/* testing ID */	
-	//------------//
+	//------------------------//
+	/*       TEST03_NL        */
+	/* testing Newline lexeme */
+	//------------------------//
 
-	fprintf(stdout,"\n======TEST03_ID======\n");
-	go_file=Creating_file("t.go","GGG4646 VVV SSS AAA CCC VV888BB88 VVSSCC@@@@@@ ");
+	fprintf(stdout,"\n======TEST03_NL======\n");
+	go_file=Creating_file("t.go","\n\ncomment//comemnt\n>>=\n_I_have_MASSIVE\npackage\n42\n420.69\n\"A cat ate my homework, so I ate the cat :3\"\n::\nmeet@midnight_and_sacrifice\n80085_are_best\n276492E+A_SPORTS_ITS_IN_A_GAME\n\"When I ate the cat, its owner caught me and ate me >:(\t\n");
 	lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
-		return 0;
+	//------------------------//
+	/*       TEST04_NL        */
+	/* testing Newline lexeme */
+	//------------------------//
+
+	fprintf(stdout,"\n======TEST04_NL======\n");
+	go_file=Creating_file("t.go","= \n a \n if \n 8 \n 6.9 \n \"x\" \n :: \n 8d \n 4.2o \n \"\\k\" \n");
+	lex_first=Loading_lex_units(go_file);
+	Prints_lex(lex_first,WORD_COUNT);
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST05_HEX        */
+	/* testing Hexadecimal char */
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST05_HEX======\n");
+	go_file=Creating_file("t.go","\"I wonder what this is: \\x32\"\n\"And this?: \\x48\"\n\"And this should be an error: \\xNOPE :)\"");
+	lex_first=Loading_lex_units(go_file);
+	Prints_lex(lex_first,WORD_COUNT);
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST06_INT        */
+	/* testing Integer numbers  */
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST06_INT======\n");
+	go_file=Creating_file("t.go","10 0 01 0001 0x20 0xx20 0FA 0b10 0bb10 0b12 0o12 0o19");
+	lex_first=Loading_lex_units(go_file);
+	Prints_lex(lex_first,WORD_COUNT);
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+
+	return 0;
 }
