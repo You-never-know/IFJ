@@ -126,10 +126,10 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 	if(file_descriptor == NULL) return NULL;
 
 	/// Set up resources for state machine
-	enum states{START, OPER_OUT, ID_OUT, KW_OUT, INT_OUT, DEC_OUT, STR_OUT,			// I/O states
+	enum states{START, OPER_OUT, ID_OUT, KW_OUT, INT_OUT, DEC_OUT, STR_OUT, NL_OUT,	// I/O states
 				COMMENT_START, COMMENT_END, L_COMMENT, ML_COMMENT,					// Comment states (L = Line; ML = Multi Line)
 				WORD_LOAD, INT_LOAD, DEC_LOAD, EXP_DEC_LOAD, STR_LOAD, ML_STR_LOAD,	// Loading states
-				OPER_CHECK, ESCAPE_CHAR, EXP_DEC_LOAD_CHECK,						// Check states
+				OPER_CHECK, ESCAPE_CHAR, EXP_DEC_LOAD_CHECK, HEX_REP_CHECK,			// Check states
 				OPER_ERROR, ID_ERROR, INT_ERROR, DEC_ERROR, STR_ERROR, INVALID};	// Error states
 	unsigned char state = START;	// Current state
 	int c = 0; 						// Current character
@@ -155,7 +155,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 		switch(state){
 			case START:	if(!isWhiteSpace(c)){
 							if(isLetter(c) || c == '_')	state = WORD_LOAD;
-							else if(isNumber(c))	state = INT_LOAD; 
+							else if(isNumber(c))	state = INT_LOAD;
 							else if(c == '"')		state = STR_LOAD;
 							else if(c == '`')		state = ML_STR_LOAD;
 							else if(c == '/')		state = COMMENT_START;
@@ -167,6 +167,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							else if(isMultiOperator(c))	state = OPER_CHECK;
 							else					state = INVALID;
 						}
+						else if(c == '\n')			state = NL_OUT;
 						break;
 
 			case COMMENT_START:	if(c == '*') 		state = ML_COMMENT;
@@ -179,7 +180,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								else state = OPER_ERROR;
 								break;
 
-			case L_COMMENT:	if(c == '\n') state = START;
+			case L_COMMENT:	if(c == '\n') state = NL_OUT;
 							break;
 
 			case ML_COMMENT:	if(c == '*') state = COMMENT_END;
@@ -204,19 +205,25 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							break;
 
 			case INT_LOAD:	if(!isNumber(c)){
-								if(c == '.')				state = DEC_LOAD;
+								if(lexeme->data_size > 1 && (((char*)lexeme->data)[0] == '0' && isNumber(((char*)lexeme->data)[1])))
+															state = INT_ERROR;
+								else if(c == '.')			state = DEC_LOAD;
 								else if((c|1<<5) == 'e')	state = EXP_DEC_LOAD_CHECK;
 								else if(isWhiteSpace(c) || isOperator(c) || c == EOF)
 															state = INT_OUT;
+								else if(lexeme->data_size == 1 && ((c|1<<5) == 'b' || (c|1<<5) <= 'x' || (c|1<<5) <= 'o'))
+															break;
 								else						state = INT_ERROR;
 							}
 							break;
 
 			case DEC_LOAD:	if(!isNumber(c)){
-								if((c|1<<5) == 'e')	state = EXP_DEC_LOAD_CHECK;
+								if(lexeme->data_size > 1 && (((char*)lexeme->data)[0] == '0' && isNumber(((char*)lexeme->data)[1])))
+															state = DEC_ERROR;
+								else if((c|1<<5) == 'e')	state = EXP_DEC_LOAD_CHECK;
 								else if(isWhiteSpace(c) || isOperator(c) || c == EOF)
-													state = DEC_OUT;
-								else 				state = DEC_ERROR;
+															state = DEC_OUT;
+								else 						state = DEC_ERROR;
 							}
 							break;
 
@@ -269,8 +276,15 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 									c = '\v';
 									state = STR_LOAD;
 								}
+								else if(c == 'x'){
+									state = HEX_REP_CHECK;
+								}
 								else if(c == '\\' || c == '"') state = STR_LOAD;
-								else state = STR_ERROR;
+								else{
+									ungetc(c, file_descriptor);
+									c = '\\';
+									state = STR_ERROR;
+								}
 								break;
 
 			default: if(state > INVALID) fprintf(stderr, "<Lexical Analyzer> Wrong state(state decision): %d\n", state);
@@ -298,6 +312,28 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 				((char*)lexeme->data)[lexeme->data_size++] = c;
 				break;
 
+			case HEX_REP_CHECK:	; char hex_buff[3] = "\0\0\0"; // The ';' is there intentionally
+								hex_buff[0] = getc(file_descriptor);
+								hex_buff[1] = getc(file_descriptor);
+								if(	(isNumber(hex_buff[0]) || (isLetter(hex_buff[0]) && (hex_buff[0]|1<<5) <= 'f')) && 
+									(isNumber(hex_buff[1]) || (isLetter(hex_buff[1]) && (hex_buff[1]|1<<5) <= 'f')))
+								{
+									if(spaceRealloc(lexeme, allocated_size)){
+										if(unit == NULL) LexUnitDelete(lexeme);
+										return NULL;
+									}
+									((char*)lexeme->data)[lexeme->data_size++] = (char)strtol(hex_buff, NULL, 16);
+									state = STR_LOAD;
+								}
+								else{
+									ungetc(hex_buff[1], file_descriptor);
+									ungetc(hex_buff[0], file_descriptor);
+									ungetc('x', file_descriptor);
+									ungetc('\\', file_descriptor);
+									state = STR_ERROR;
+								}
+								break;
+
 			case ML_STR_LOAD:	if(c != '`'){
 									if(spaceRealloc(lexeme, allocated_size)){
 										if(unit == NULL) LexUnitDelete(lexeme);
@@ -319,7 +355,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								((char*)lexeme->data)[lexeme->data_size++] = c;
 							}
 							break;
-
+							
 			/// Outputs
 			case ID_OUT:	lexeme->unit_type = IDENTIFICATOR;
 							((char*)lexeme->data)[lexeme->data_size] = '\0';
@@ -338,6 +374,20 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 			case INT_OUT:	lexeme->unit_type = INTEGER;
 							((char*)lexeme->data)[lexeme->data_size] = '\0';
 							size_t tmp_int = atoi((char*)lexeme->data);
+							if(lexeme->data_size > 2){
+								if((((char*)lexeme->data)[1]|1<<5) == 'b'){
+									((char*)lexeme->data)[1] = '0';
+									tmp_int = strtol((char*)lexeme->data, NULL, 2);
+								}
+								else if((((char*)lexeme->data)[1]|1<<5) == 'o'){
+									((char*)lexeme->data)[1] = '0';
+									tmp_int = strtol((char*)lexeme->data, NULL, 8);
+								}
+								else if((((char*)lexeme->data)[1]|1<<5) == 'x'){
+									((char*)lexeme->data)[1] = '0';
+									tmp_int = strtol((char*)lexeme->data, NULL, 16);
+								}
+							}
 							lexeme->data_size = sizeof(size_t);
 							lexeme->data = realloc(lexeme->data, lexeme->data_size);
 							*((size_t*)lexeme->data) = tmp_int;
@@ -372,6 +422,14 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							return lexeme;
 							break;
 
+			case NL_OUT:	lexeme->unit_type = NEWLINE;
+							((char*)lexeme->data)[0] = '\n';
+							lexeme->data_size = 1;
+							lexeme->data = realloc(lexeme->data, 2);
+							((char*)lexeme->data)[lexeme->data_size] = '\0';
+							return lexeme;
+							break;
+
 			/// Errors
 			case OPER_ERROR:	if(spaceRealloc(lexeme, allocated_size)){
 									if(unit == NULL) LexUnitDelete(lexeme);
@@ -381,6 +439,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 									lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
 									((char*)lexeme->data)[lexeme->data_size] = '\0';
 									lexeme->unit_type = OPERATOR_ERR;
+									if(!isOperator(c)) ungetc(c, file_descriptor);
 									return lexeme;
 								}
 								else ((char*)lexeme->data)[lexeme->data_size++] = c;
@@ -396,6 +455,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
 								((char*)lexeme->data)[lexeme->data_size] = '\0';
 								lexeme->unit_type = ID_ERR;
+								if(isOperator(c) || c == '"' || c == '`') ungetc(c, file_descriptor);
 								return lexeme;
 							}
 							else ((char*)lexeme->data)[lexeme->data_size++] = c;
@@ -410,6 +470,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
 								((char*)lexeme->data)[lexeme->data_size] = '\0';
 								lexeme->unit_type = INT_ERR;
+								if(isOperator(c) || c == '\n') ungetc(c, file_descriptor);
 								return lexeme;
 							}
 							else ((char*)lexeme->data)[lexeme->data_size++] = c;
@@ -424,6 +485,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
 								((char*)lexeme->data)[lexeme->data_size] = '\0';
 								lexeme->unit_type = DEC_ERR;
+								if(isOperator(c) || c == '\n') ungetc(c, file_descriptor);
 								return lexeme;
 							}
 							else ((char*)lexeme->data)[lexeme->data_size++] = c;
@@ -434,10 +496,11 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								return NULL;
 							}
 
-							if(isWhiteSpace(c) || isOperator(c) || c == EOF){
+							if(c == '\n' || c == '"' || c == EOF){
 								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
 								((char*)lexeme->data)[lexeme->data_size] = '\0';
 								lexeme->unit_type = STR_ERR;
+								if(c == '\n') ungetc(c, file_descriptor);
 								return lexeme;
 							}
 							else ((char*)lexeme->data)[lexeme->data_size++] = c;
@@ -452,6 +515,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								lexeme->data = realloc(lexeme->data, lexeme->data_size+1); // 'data_size' should be always lower than allocated size
 								((char*)lexeme->data)[lexeme->data_size] = '\0';
 								lexeme->unit_type = ERROR;
+								if(c == '\n') ungetc(c, file_descriptor);
 								return lexeme;
 							}
 							else ((char*)lexeme->data)[lexeme->data_size++] = c;
