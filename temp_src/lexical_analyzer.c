@@ -133,6 +133,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 				OPER_ERROR, ID_ERROR, INT_ERROR, DEC_ERROR, STR_ERROR, INVALID};	// Error states
 	unsigned char state = START;	// Current state
 	int c = 0; 						// Current character
+	bool ml_comment_nl_flag = false;
 
 	/// Clear given lexical unit
 	LexUnitClear(unit);
@@ -184,10 +185,15 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							break;
 
 			case ML_COMMENT:	if(c == '*') state = COMMENT_END;
+								else if(c == '\n') ml_comment_nl_flag = true;
 								break;
 
-			case COMMENT_END:	if(c == '/')		state = START;
+			case COMMENT_END:	if(c == '/'){
+									if(ml_comment_nl_flag)	state = NL_OUT;
+									else					state = START;
+								}
 								else if(c != '*')	state = ML_COMMENT;
+								if(c == '\n')		ml_comment_nl_flag = true;
 								break;
 
 			case OPER_CHECK:	if(	c == '_' || c == '"' || c == '`' || c == EOF ||
@@ -355,7 +361,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								((char*)lexeme->data)[lexeme->data_size++] = c;
 							}
 							break;
-							
+
 			/// Outputs
 			case ID_OUT:	lexeme->unit_type = IDENTIFICATOR;
 							((char*)lexeme->data)[lexeme->data_size] = '\0';
