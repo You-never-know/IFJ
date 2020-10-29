@@ -7,8 +7,8 @@
 /*
  * Global constants to define lexical unit data types
  */
-enum lex_units {ERROR, OPERATOR, IDENTIFICATOR,
-				KEYWORD, INTEGER, DECIMAL, STRING,
+enum lex_units {ERROR, OPERATOR, IDENTIFICATOR, KEYWORD,
+				INTEGER, DECIMAL, STRING, NEWLINE,
 				OPERATOR_ERR, ID_ERR, INT_ERR, DEC_ERR, STR_ERR};
 /*
  * Structure to hold a single lexical unit
