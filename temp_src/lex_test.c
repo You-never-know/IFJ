@@ -10,6 +10,7 @@ void Error(const char *msg){
 	fprintf(stderr,"%s\n",msg);
 	exit(1); 
 }
+
 bool Reason_to_break(const int c){
 	if(c==EOF)return true;
 	if(c=='"')return true;
@@ -20,6 +21,7 @@ bool Reason_to_break(const int c){
 	}
 	return false;
 }
+
 void Operators(int chr,FILE*go_file){
 	int twinkle_little_star;//Operators
 	if(isOperator(chr)){
@@ -31,8 +33,8 @@ void Operators(int chr,FILE*go_file){
 		WORD_COUNT++;
 		if(!isOperator(chr))ungetc(chr,go_file);
 	}
-	
 }
+
 void String(int chr,FILE*go_file){
 	if(chr=='"'){// checking for string
 		do{
@@ -43,6 +45,7 @@ void String(int chr,FILE*go_file){
 		if(chr!=EOF)fprintf(stdout,"%c",chr);
 	}
 }
+
 void Comments(int chr,FILE*go_file){
 	fprintf(stdout,"%c",chr);
 	chr=fgetc(go_file);
@@ -54,7 +57,7 @@ void Comments(int chr,FILE*go_file){
 		if(chr=='\n')WORD_COUNT++;
 		if(chr=='\n')fprintf(stdout,"%c",chr);
 	} 
-else if(chr=='*'){// checking for multi line comment
+	else if(chr=='*'){// checking for multi line comment
 		do{	
 			do{
 				if(chr=='\n')WORD_COUNT++;
@@ -68,6 +71,7 @@ else if(chr=='*'){// checking for multi line comment
 	}
 	else WORD_COUNT++;
 }
+
 void Lex_count(FILE* go_file){
 	if(go_file == NULL)Error("missing file");
 	WORD_COUNT = 0;
@@ -102,7 +106,6 @@ void Lex_count(FILE* go_file){
 	}while(chr!=EOF);
 	return;
 }
-
 
 void Prints_lex(lex_unit_t* First,int number_of_units){
 	int counter=0;
@@ -298,18 +301,16 @@ int main()
 
 	//--------------------------//
 	/*        TEST08_RANDOM     */
-	/* testing random  	*/
+	/* testing random  			*/
 	//--------------------------//
 
 	fprintf(stdout,"\n======TEST08_RANDOM======\n");
-	lex_first=Loading_lex_units(go_file); 
 	go_file=Creating_file("t.go","INT S = CCC +asfasf acascasxxx xvbsefwdv qe q3r23r24twwrsd er 24r 24t wrg we 2e t2rgsdf 32 t24t 2ef e r2t 24t 2ef 2ed e qsf dge arng MNWFNWEKJfnAJLDBGJWBefj b2 24b fjlwebf andflk baojbt jowbefj DSJF BWEW 4asfafs  5155414",0);
+	lex_first=Loading_lex_units(go_file); 
 	Prints_lex(lex_first,-1); 
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
 
-
 	return 0;
-
 }
