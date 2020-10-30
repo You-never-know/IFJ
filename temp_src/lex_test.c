@@ -312,7 +312,7 @@ int main()
 	fclose(go_file);
 
 	fprintf(stdout,"\n======TEST09_RANDOM======\n");  
-	go_file=Creating_file(1,"t.go"," \"INT S = CCC + asfasf acascasxxx xvbsefwdv\" qe q3r23r24twwrsd er\"24r24t wrg we 2e t2rgsdf\"32 t24t 2ef e r2\"t 24t 2ef 2ed e q\"sf dge arng MNWFNWEKJfnA \"JLDBGJWBefj b2 24b fjlwebf an \" dflk ba \" ojbt jowbefj DSJF BWEW 4asfafs  5155414");
+	go_file=Creating_file(1,"t.go"," \" INT S = CCC + asfasf acascasxxx xvbsefwdv \\n \" qe q3r23r24twwrsd er \" 24r24t wrg we 2e t2rgsdf \"32 t24t 2ef e r2 \"t 24t 2ef 2ed e q \"sf dge arng MNWFNWEKJfnA\"JLDBGJWBefj b2 24b fjlwebf an \" dflk ba \" ojbt jowbefj DSJF BWEW 4asfafs  5155414");
 	lex_first=Loading_lex_units(go_file);
 	printf("%d\n",WORD_COUNT); 
 	Prints_lex(lex_first,WORD_COUNT); 
