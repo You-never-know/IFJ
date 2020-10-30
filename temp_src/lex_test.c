@@ -72,13 +72,15 @@ void Lex_count(FILE* go_file){
 	if(go_file == NULL)Error("missing file");
 	WORD_COUNT = 0;
 	int chr=0;
+	int tmp;
 	do{
 		do{
 			while(isspace(chr = fgetc(go_file)) && (!(Reason_to_break(chr))))fprintf(stdout,"%c",chr);//white space is not lex
 			if(chr == EOF || Reason_to_break(chr))break;
 			fprintf(stdout,"%c",chr);
+			tmp=chr;
 			WORD_COUNT++;               
-			while(!(isspace(chr = fgetc(go_file))) && (!(Reason_to_break(chr))))fprintf(stdout,"%c",chr);//printing numbers and words
+			while((!(isspace(chr = fgetc(go_file))) && (!(Reason_to_break(chr)))) || (!(isspace(tmp)) && chr=='"'))tmp=chr,fprintf(stdout,"%c",chr);//printing numbers and words
 			if(!(Reason_to_break(chr)))fprintf(stdout,"%c",chr); 
 		}while(!(Reason_to_break(chr)));
 
@@ -104,7 +106,7 @@ void Lex_count(FILE* go_file){
 }
 
 
-void Prints_lex(lex_unit_t* First,int number_of_units){
+void Prints_lex(lex_unit_t* First,int number_of_units){//-1 ignores assert 
 	int counter=0;
 	if(First == NULL){if(number_of_units!=-1)assert(counter==number_of_units);return;}
 	lex_unit_t* tmp = First;
@@ -303,6 +305,14 @@ int main()
 
 	fprintf(stdout,"\n======TEST08_RANDOM======\n");  
 	go_file=Creating_file(1,"t.go","INT S = CCC + asfasf acascasxxx xvbsefwdv qe q3r23r24twwrsd er 24r 24t wrg we 2e t2rgsdf 32 t24t 2ef e r2t 24t 2ef 2ed e qsf dge arng MNWFNWEKJfnAJLDBGJWBefj b2 24b fjlwebf andflk baojbt jowbefj DSJF BWEW 4asfafs  5155414");
+	lex_first=Loading_lex_units(go_file);
+	printf("%d\n",WORD_COUNT); 
+	Prints_lex(lex_first,WORD_COUNT); 
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	fprintf(stdout,"\n======TEST09_RANDOM======\n");  
+	go_file=Creating_file(1,"t.go"," \"INT S = CCC + asfasf acascasxxx xvbsefwdv\" qe q3r23r24twwrsd er\"24r24t wrg we 2e t2rgsdf\"32 t24t 2ef e r2\"t 24t 2ef 2ed e q\"sf dge arng MNWFNWEKJfnA \"JLDBGJWBefj b2 24b fjlwebf an \" dflk ba \" ojbt jowbefj DSJF BWEW 4asfafs  5155414");
 	lex_first=Loading_lex_units(go_file);
 	printf("%d\n",WORD_COUNT); 
 	Prints_lex(lex_first,WORD_COUNT); 
