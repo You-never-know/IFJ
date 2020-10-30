@@ -3,65 +3,111 @@
 #include <ctype.h>
 #include <unistd.h>
 
+
 unsigned WORD_COUNT=0;
 
 void Error(const char *msg){
 	fprintf(stderr,"%s\n",msg);
 	exit(1); 
 }
-void Word_count(FILE* go_file){
+bool Reason_to_break(const int c){
+	if(c==EOF)return true;
+	if(c=='"')return true;
+	if(isOperator(c)&&c!='.')return true;
+	const char special_c[] = "\n/";
+	for(unsigned char i = 0; i < 2; i++){
+		if(c == special_c[i]) return true;
+	}
+	return false;
+}
+void Operators(int chr,FILE*go_file){
+	int twinkle_little_star;//Operators
+	if(isOperator(chr)){
+		do{
+			twinkle_little_star=chr;
+			fprintf(stdout,"%c",chr);
+			chr=fgetc(go_file);
+		}while(isOperator(chr)&&isOperator(twinkle_little_star));
+		WORD_COUNT++;
+		if(!isOperator(chr))ungetc(chr,go_file);
+	}
+	
+}
+void String(int chr,FILE*go_file){
+	if(chr=='"'){// checking for string
+		do{
+			fprintf(stdout,"%c",chr);
+			chr = fgetc(go_file);
+		}while(chr != EOF && chr !='"');
+			WORD_COUNT++;
+		if(chr!=EOF)fprintf(stdout,"%c",chr);
+	}
+}
+void Comments(int chr,FILE*go_file){
+	fprintf(stdout,"%c",chr);
+	chr=fgetc(go_file);
+	if(chr=='/'){// checking for single line comment
+		do{
+			fprintf(stdout,"%c",chr);
+			chr = fgetc(go_file);
+		}while(chr != EOF && chr !='\n');
+		if(chr=='\n')WORD_COUNT++;
+		if(chr=='\n')fprintf(stdout,"%c",chr);
+	} 
+else if(chr=='*'){// checking for multi line comment
+		do{	
+			do{
+				if(chr=='\n')WORD_COUNT++;
+				fprintf(stdout,"%c",chr);
+				chr = fgetc(go_file);
+			}while(chr != EOF && chr !='*');
+			if(chr != EOF)fprintf(stdout,"%c",chr);
+			if(chr != EOF)chr = fgetc(go_file);
+		}while(chr!=EOF && chr!='/'); //checking for end of comment
+	if(chr!=EOF)ungetc(chr,go_file);
+	}
+	else WORD_COUNT++;
+}
+void Lex_count(FILE* go_file){
 	if(go_file == NULL)Error("missing file");
 	WORD_COUNT = 0;
 	int chr=0;
 	do{
 		do{
-			while(isspace(chr = fgetc(go_file)) && (chr != EOF && !(isOperator(chr))))fprintf(stdout,"%c",chr);//White space is not WORD
-			if(chr == EOF || isOperator(chr))break;//may indicate comment
+			while(isspace(chr = fgetc(go_file)) && (!(Reason_to_break(chr))))fprintf(stdout,"%c",chr);//white space is not lex
+			if(chr == EOF || Reason_to_break(chr))break;
 			fprintf(stdout,"%c",chr);
 			WORD_COUNT++;               
-			while(!(isspace(chr = fgetc(go_file))) && (chr != EOF && !(isOperator(chr))))fprintf(stdout,"%c",chr);//Reading WORD
-			if(chr != EOF && !(isOperator(chr)))fprintf(stdout,"%c",chr); //printing numbers and words
-		}while(chr!=EOF && !(isOperator(chr)));
+			while(!(isspace(chr = fgetc(go_file))) && (!(Reason_to_break(chr))))fprintf(stdout,"%c",chr);//printing numbers and words
+			if(!(Reason_to_break(chr)))fprintf(stdout,"%c",chr); 
+		}while(!(Reason_to_break(chr)));
 
-		if(chr=='/'){
-			fprintf(stdout,"%c",chr);
-			chr=fgetc(go_file);
-			if(chr=='/')// checking for single line comment
-							do{
-								fprintf(stdout,"%c",chr);
-								chr = fgetc(go_file);
-							}while(chr != EOF && chr !='\n');
+		switch(chr)
+		{
+			case '/': Comments(chr,go_file);
+				break;
 
-		if(chr=='*')// checking for multi line comment
-							do{	
-								do{
-									fprintf(stdout,"%c",chr);
-									chr = fgetc(go_file);
-								}while(chr != EOF && chr !='*');
-									if(chr != EOF)fprintf(stdout,"%c",chr);
-									if(chr != EOF)chr = fgetc(go_file);
-							}while(chr!=EOF && chr!='/'); //checking for end of comment
+			case EOF: 
+				break;
 
-						if(WORD_COUNT==0)WORD_COUNT++;//empty file
-		}
-		if(chr!='/' && chr!=EOF){
-			int twinkle_little_star;
-				do{
-			 		 twinkle_little_star=chr;
-					 fprintf(stdout,"%c",chr);
-				 	 chr=fgetc(go_file);
-				}while(isOperator(chr)&&isOperator(twinkle_little_star));
-				WORD_COUNT++;
-				if(!isOperator(chr))ungetc(chr,go_file);
-		}
+			case '\n': WORD_COUNT++,fprintf(stdout,"%c",chr);
+				break;
+
+			case '"': String(chr,go_file);
+				break;
+
+			default: Operators(chr,go_file);
+			break;
+		}	
 	}while(chr!=EOF);
 	return;
 }
 
+
 void Prints_lex(lex_unit_t* First,unsigned number_of_units){
-	if(First == NULL) return;
-	lex_unit_t* tmp = First;
 	unsigned counter=0;
+	if(First == NULL){assert(counter==number_of_units);return;}
+	lex_unit_t* tmp = First;
 	fprintf(stdout,"~~~~~~~~\n");
 	fprintf(stdout,"Lexemes:\n");
 	fprintf(stdout,"-+-------------------\n");
@@ -76,7 +122,6 @@ void Prints_lex(lex_unit_t* First,unsigned number_of_units){
 			case INTEGER:		fprintf(stdout, "Integer\n"); break;
 			case DECIMAL:		fprintf(stdout, "Decimal\n"); break;
 			case STRING:		fprintf(stdout, "String\n"); break;
-			case NEWLINE:		fprintf(stdout, "Newline\n"); break;
 			case OPERATOR_ERR:	fprintf(stdout, "Operator Error\n"); break;
 			case ID_ERR:		fprintf(stdout, "Identificator Error\n"); break;
 			case INT_ERR:		fprintf(stdout, "Integer Error\n"); break;
@@ -90,15 +135,12 @@ void Prints_lex(lex_unit_t* First,unsigned number_of_units){
 			case INTEGER:		fprintf(stdout, "%ld\n", *((size_t*)tmp->data)); break;
 			case DECIMAL:		fprintf(stdout, "%f\n", *((double*)tmp->data)); break;
 			case STRING:		fprintf(stdout, "\"%s\"\n", (char*)tmp->data); break;
-			case NEWLINE:		fprintf(stdout, "'\\n'\n"); break;
 			default:			fprintf(stdout, "%s\n", (char*)tmp->data); break;
 		}
 		tmp=tmp->next;
 		fprintf(stdout," +-------------------\n");
 	}
-	//assert(counter==number_of_units);
-	if(counter != number_of_units)
-		fprintf(stderr, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n|Lexeme count doesn't match word count|\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" );
+	assert(counter==number_of_units);
 }
 
 FILE* Creating_file(const char *filename,const char *text){
@@ -117,7 +159,7 @@ FILE* Creating_file(const char *filename,const char *text){
     rewind(go_file);//to reset the pointer to the start of the file
 	 
 	fprintf(stdout,"text in file:\n");
-    Word_count(go_file);
+    Lex_count(go_file);
     fprintf(stdout,"\n");
 
     rewind(go_file);
@@ -170,12 +212,12 @@ int main()
 	fprintf(stdout,"\n======TEST01_ID======\n");
 	FILE * go_file=Creating_file("test01.go","casa casca + 44 8454343 ***a=4*2");
 	lex_unit_t* lex_first=Loading_lex_units(go_file);
-	//printf("%d\n",WORD_COUNT );
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
-
+	
+  
 	//------------//
 	/* TEST02_ID  */
 	/* testing ID */
@@ -194,7 +236,7 @@ int main()
 	//------------------------//
 
 	fprintf(stdout,"\n======TEST03_NL======\n");
-	go_file=Creating_file("t.go","\n\ncomment//comemnt\n>>=\n_I_have_MASSIVE\npackage\n42\n420.69\n\"A cat ate my homework, so I ate the cat :3\"\n::\nmeet@midnight_and_sacrifice\n80085_are_best\n276492E+A_SPORTS_ITS_IN_A_GAME\n\"When I ate the cat, its owner caught me and ate me >:(\t\n");
+	go_file=Creating_file("t.go","\n\ncomment//comemnt\n>>=\n_I_have_MASSIVE\npackage\n42\n420.69\n\"A cat ate my homework, so I ate the cat :3\"\n::\nmeet@midnight_and_sacrifice\n80085_are_best\n276492E=EA_SPORTS_ITS_IN_A_GAME\n\"When I ate the cat, its owner caught me and ate me >:(\t\n");
 	lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
@@ -236,6 +278,19 @@ int main()
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
+	//--------------------------//
+	/*        TEST07_INT        */
+	/* testing exp numbers  	*/
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST06_INT======\n");
+	go_file=Creating_file("t.go","12e+4 1e-4 8E-E 18E+4sss");
+	lex_first=Loading_lex_units(go_file); 
+	Prints_lex(lex_first,4); //LEX COUNT DOSENT WORK HERE!!!!!!!!!!
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
 
 	return 0;
+
 }
