@@ -10,7 +10,6 @@ void Error(const char *msg){
 	fprintf(stderr,"%s\n",msg);
 	exit(1); 
 }
-
 bool Reason_to_break(const int c){
 	if(c==EOF)return true;
 	if(c=='"')return true;
@@ -21,7 +20,6 @@ bool Reason_to_break(const int c){
 	}
 	return false;
 }
-
 void Operators(int chr,FILE*go_file){
 	int twinkle_little_star;//Operators
 	if(isOperator(chr)){
@@ -33,8 +31,8 @@ void Operators(int chr,FILE*go_file){
 		WORD_COUNT++;
 		if(!isOperator(chr))ungetc(chr,go_file);
 	}
+	
 }
-
 void String(int chr,FILE*go_file){
 	if(chr=='"'){// checking for string
 		do{
@@ -45,7 +43,6 @@ void String(int chr,FILE*go_file){
 		if(chr!=EOF)fprintf(stdout,"%c",chr);
 	}
 }
-
 void Comments(int chr,FILE*go_file){
 	fprintf(stdout,"%c",chr);
 	chr=fgetc(go_file);
@@ -57,7 +54,7 @@ void Comments(int chr,FILE*go_file){
 		if(chr=='\n')WORD_COUNT++;
 		if(chr=='\n')fprintf(stdout,"%c",chr);
 	} 
-	else if(chr=='*'){// checking for multi line comment
+else if(chr=='*'){// checking for multi line comment
 		do{	
 			do{
 				if(chr=='\n')WORD_COUNT++;
@@ -71,7 +68,6 @@ void Comments(int chr,FILE*go_file){
 	}
 	else WORD_COUNT++;
 }
-
 void Lex_count(FILE* go_file){
 	if(go_file == NULL)Error("missing file");
 	WORD_COUNT = 0;
@@ -106,6 +102,7 @@ void Lex_count(FILE* go_file){
 	}while(chr!=EOF);
 	return;
 }
+
 
 void Prints_lex(lex_unit_t* First,int number_of_units){
 	int counter=0;
@@ -146,7 +143,7 @@ void Prints_lex(lex_unit_t* First,int number_of_units){
 	if(number_of_units!=-1)assert(counter==number_of_units);
 }
 
-FILE* Creating_file(const char *filename,const char *text,bool wanna_count){
+FILE* Creating_file(bool wanna_count,const char *filename,const char *text){
 
 	if(filename==NULL)Error("Could not open file");
 	if(text==NULL)Error("Could not open file");
@@ -219,7 +216,7 @@ int main()
 	//------------//
 
 	fprintf(stdout,"\n======TEST01_ID======\n");
-	FILE * go_file=Creating_file("test01.go","casa casca + 44 8454343 ***a=4*2",1);
+	FILE * go_file=Creating_file(1,"test01.go","casa casca + 44 8454343 ***a=4*2");
 	lex_unit_t* lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
@@ -233,7 +230,7 @@ int main()
 	//------------//
 
 	fprintf(stdout,"\n======TEST02_ID======\n");
-	go_file=Creating_file("t.go","_id   ___420var\n ____ int return 420blazeitvar",1);
+	go_file=Creating_file(1,"t.go","_id   ___420var\n ____ int return 420blazeitvar");
 	lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
@@ -245,7 +242,7 @@ int main()
 	//------------------------//
 
 	fprintf(stdout,"\n======TEST03_NL======\n");
-	go_file=Creating_file("t.go","\n\ncomment//comemnt\n>>=\n_I_have_MASSIVE\npackage\n42\n420.69\n\"A cat ate my homework, so I ate the cat :3\"\n::\nmeet@midnight_and_sacrifice\n80085_are_best\n276492E=EA_SPORTS_ITS_IN_A_GAME\n\"When I ate the cat, its owner caught me and ate me >:(\t\n",1);
+	go_file=Creating_file(1,"t.go","\n\ncomment//comemnt\n>>=\n_I_have_MASSIVE\npackage\n42\n420.69\n\"A cat ate my homework, so I ate the cat :3\"\n::\nmeet@midnight_and_sacrifice\n80085_are_best\n276492E=EA_SPORTS_ITS_IN_A_GAME\n\"When I ate the cat, its owner caught me and ate me >:(\t\n");
 	lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
@@ -257,7 +254,7 @@ int main()
 	//------------------------//
 
 	fprintf(stdout,"\n======TEST04_NL======\n");
-	go_file=Creating_file("t.go","= \n a \n if \n 8 \n 6.9 \n \"x\" \n :: \n 8d \n 4.2o \n \"\\k\" \n",1);
+	go_file=Creating_file(1,"t.go","= \n a \n if \n 8 \n 6.9 \n \"x\" \n :: \n 8d \n 4.2o \n \"\\k\" \n");
 	lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
@@ -269,7 +266,7 @@ int main()
 	//--------------------------//
 
 	fprintf(stdout,"\n======TEST05_HEX======\n");
-	go_file=Creating_file("t.go","\"I wonder what this is: \\x32\"\n\"And this?: \\x48\"\n\"And this should be an error: \\xNOPE :)\"",1);
+	go_file=Creating_file(1,"t.go","\"I wonder what this is: \\x32\"\n\"And this?: \\x48\"\n\"And this should be an error: \\xNOPE :)\"");
 	lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
@@ -281,7 +278,7 @@ int main()
 	//--------------------------//
 
 	fprintf(stdout,"\n======TEST06_INT======\n");
-	go_file=Creating_file("t.go","10 0 01 0001 0x20 0xx20 0FA 0b10 0bb10 0b12 0o12 0o19",1);
+	go_file=Creating_file(1,"t.go","10 0 01 0001 0x20 0xx20 0FA 0b10 0bb10 0b12 0o12 0o19");
 	lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
@@ -293,7 +290,7 @@ int main()
 	//--------------------------//
 
 	fprintf(stdout,"\n======TEST07_EXP======\n");
-	go_file=Creating_file("t.go","12e+4 1e-4 8E-E 18E+4sss",0);
+	go_file=Creating_file(1,"t.go","12e+4 1e-4 8E-E 18E+4sss");
 	lex_first=Loading_lex_units(go_file); 
 	Prints_lex(lex_first,-1); //LEX COUNT DOSENT WORK HERE!!!!!!!!!!
 	Free_Lex_Units(lex_first);
@@ -301,16 +298,19 @@ int main()
 
 	//--------------------------//
 	/*        TEST08_RANDOM     */
-	/* testing random  			*/
+	/* testing random  	*/
 	//--------------------------//
 
-	fprintf(stdout,"\n======TEST08_RANDOM======\n");
-	go_file=Creating_file("t.go","INT S = CCC +asfasf acascasxxx xvbsefwdv qe q3r23r24twwrsd er 24r 24t wrg we 2e t2rgsdf 32 t24t 2ef e r2t 24t 2ef 2ed e qsf dge arng MNWFNWEKJfnAJLDBGJWBefj b2 24b fjlwebf andflk baojbt jowbefj DSJF BWEW 4asfafs  5155414",0);
-	lex_first=Loading_lex_units(go_file); 
-	Prints_lex(lex_first,-1); 
+	fprintf(stdout,"\n======TEST08_RANDOM======\n");  
+	go_file=Creating_file(1,"t.go","INT S = CCC + asfasf acascasxxx xvbsefwdv qe q3r23r24twwrsd er 24r 24t wrg we 2e t2rgsdf 32 t24t 2ef e r2t 24t 2ef 2ed e qsf dge arng MNWFNWEKJfnAJLDBGJWBefj b2 24b fjlwebf andflk baojbt jowbefj DSJF BWEW 4asfafs  5155414");
+	lex_first=Loading_lex_units(go_file);
+	printf("%d\n",WORD_COUNT); 
+	Prints_lex(lex_first,WORD_COUNT); 
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
 
+
 	return 0;
+
 }
