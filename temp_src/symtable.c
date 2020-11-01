@@ -44,8 +44,9 @@ sym_tab *htab_init(size_t n) {
 
 }
 
-// find previous item
-// return item previous or NULL if no item on the index
+
+// help function for adding - find previous item
+// return last on the index or NULL if no item exists on the index
 ht_item *find_place(lex_unit_t *lex, sym_tab *st) {
 
 	if (st == NULL || lex == NULL) {
@@ -65,6 +66,7 @@ ht_item *find_place(lex_unit_t *lex, sym_tab *st) {
 	return found;
 }
 
+// help function for adding
 // adds already allocated item to the start index of table
 void add_item_to_the_start(sym_tab *st, lex_unit_t *lex, ht_item* new) {
 
@@ -114,6 +116,29 @@ ht_item *add_item(lex_unit_t *lex, sym_tab *st, bool is_function) {
 	return new;
 
 }
+
+// find item in the table
+// return item if found, NULL if not
+ht_item* find_item(lex_unit_t * lex, sym_tab *st) {
+
+	if (lex == NULL || st == NULL) {
+		fprintf(stderr, "find item error\n");
+		return NULL;
+	}
+
+	size_t idx = htab_hash_fun((const char*)lex->data) % st->arr_size;
+
+
+	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
+
+		if (tmp->data == lex) {
+			return tmp;
+		}
+
+	}
+
+	return NULL;
+} 
 
 
 
