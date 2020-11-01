@@ -48,6 +48,14 @@ size_t htab_hash_fun(const char* str); // hash function from 'http://www.cse.yor
 sym_tab *htab_init(size_t n); // mallocs memmory and initalizates it
 ht_item *add_item(lex_unit_t *lex, sym_tab *st, bool is_function); // add identificator to the htable
 ht_item *find_item(lex_unit_t * lex, sym_tab *st); // find lexem in the table NULL if it not there 
+bool add_data(ht_item *item, lex_unit_t * lex); // add data to indentificator
+Par* malloc_param(ht_item *item); // allocates and inicializes parameter
+bool add_param_data(Par* par, lex_unit_t *lex); // add data to the parameter
+bool add_param_type(Par* par, int type); // add type to the parameter
+Ret* malloc_ret_val(ht_item *item); // allocates and inicializes parameter
+bool add_ret_type(Ret* ret, int type); // add data to the parameter
 
+
+// add remove and clear functions
 
 #endif 
