@@ -45,7 +45,7 @@ typedef struct hash_table {
 //----------------------------------------------------------------------------
 size_t htab_hash_fun(const char* str); // hash function 
 sym_tab *htab_init(size_t n); // htable creator
-ht_item *add_id(lex_unit_t *lex, sym_tab *st, bool is_function); // add identificator to the htable
+ht_item *add_item(lex_unit_t *lex, sym_tab *st, bool is_function); // add identificator to the htable
 
 
 #endif 
