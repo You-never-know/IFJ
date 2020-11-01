@@ -13,6 +13,7 @@ void Error(const char *msg){
 bool Reason_to_break(const int c){
 	if(c==EOF)return true;
 	if(c=='"')return true;
+	//if(c==':')return true;
 	if(isOperator(c)&&c!='.')return true;
 	const char special_c[] = "\n/";
 	for(unsigned char i = 0; i < 2; i++){
@@ -66,7 +67,7 @@ else if(chr=='*'){// checking for multi line comment
 		}while(chr!=EOF && chr!='/'); //checking for end of comment
 	if(chr!=EOF)ungetc(chr,go_file);
 	}
-	else WORD_COUNT++;
+	else WORD_COUNT++,fprintf(stdout,"%c",chr);
 }
 void Lex_count(FILE* go_file){
 	if(go_file == NULL)Error("missing file");
@@ -80,7 +81,7 @@ void Lex_count(FILE* go_file){
 			fprintf(stdout,"%c",chr);
 			tmp=chr;
 			WORD_COUNT++;               
-			while((!(isspace(chr = fgetc(go_file))) && (!(Reason_to_break(chr)))) || (!(isspace(tmp)) && chr=='"'))tmp=chr,fprintf(stdout,"%c",chr);//printing numbers and words
+			while((!(isspace(chr = fgetc(go_file))) && (!(Reason_to_break(chr)))) || (!(isspace(tmp)) && chr=='"') || (tmp==':' && chr=='='))tmp=chr,fprintf(stdout,"%c",chr);//printing numbers and words
 			if(!(Reason_to_break(chr)))fprintf(stdout,"%c",chr); 
 		}while(!(Reason_to_break(chr)));
 
@@ -96,6 +97,12 @@ void Lex_count(FILE* go_file){
 				break;
 
 			case '"': String(chr,go_file);
+				break;
+
+			case '(': WORD_COUNT++,fprintf(stdout,"%c",chr);
+				break;
+
+			case ')': WORD_COUNT++,fprintf(stdout,"%c",chr);
 				break;
 
 			default: Operators(chr,go_file);
@@ -218,7 +225,7 @@ int main()
 	//------------//
 
 	fprintf(stdout,"\n======TEST01_ID======\n");
-	FILE * go_file=Creating_file(1,"test01.go","casa casca + 44 8454343 ***a=4*2");
+	FILE * go_file=Creating_file(1,"test01.go","casa casca + 44 8454343 ***a=4*2 ");
 	lex_unit_t* lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
@@ -300,19 +307,37 @@ int main()
 
 	//--------------------------//
 	/*        TEST08_RANDOM     */
-	/* testing random  	*/
+	/* testing random  			*/
 	//--------------------------//
 
 	fprintf(stdout,"\n======TEST08_RANDOM======\n");  
-	go_file=Creating_file(1,"t.go","INT S = CCC + asfasf acascasxxx xvbsefwdv qe q3r23r24twwrsd er 24r 24t wrg we 2e t2rgsdf 32 t24t 2ef e r2t 24t 2ef 2ed e qsf dge arng MNWFNWEKJfnAJLDBGJWBefj b2 24b fjlwebf andflk baojbt jowbefj DSJF BWEW 4asfafs  5155414");
+	go_file=Creating_file(1,"t.go","INT S = CCC + asfasf acascasxxx xvbsefwdv qe q3r23r24twwrsd er 24r 24t wrg we 2e t2rgsdf 32 t24t 2ef e r2t 24t 2ef 2ed e qsf dge arng MNWFNWEKJfnAJLDBGJWBefj b2 24b fjlwebf andflk baojbt jowbefj DSJF BWEW 4asfafs  5155414{ }");
 	lex_first=Loading_lex_units(go_file);
 	printf("%d\n",WORD_COUNT); 
 	Prints_lex(lex_first,WORD_COUNT); 
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
+	//--------------------------//
+	/*        TEST09_RANDOM     */
+	/* testing random  			*/
+	//--------------------------//
+
 	fprintf(stdout,"\n======TEST09_RANDOM======\n");  
 	go_file=Creating_file(1,"t.go"," \" INT S = CCC + asfasf acascasxxx xvbsefwdv \\n \" qe q3r23r24twwrsd er \" 24r24t wrg we 2e t2rgsdf \"32 t24t 2ef e r2 \"t 24t 2ef 2ed e q \"sf dge arng MNWFNWEKJfnA\"JLDBGJWBefj b2 24b fjlwebf an \" dflk ba \" ojbt jowbefj DSJF BWEW 4asfafs  5155414");
+	lex_first=Loading_lex_units(go_file);
+	printf("%d\n",WORD_COUNT); 
+	Prints_lex(lex_first,WORD_COUNT); 
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST10_GO_CODE    */
+	/* testing go_code  		*/
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST10_GO_CODE======\n");  
+	go_file=Creating_file(1,"t.go","package main \n import \"fmt\" \n func main()\n { \n rows := 9 \n space := rows / 2 \n num := 1 \n}");
 	lex_first=Loading_lex_units(go_file);
 	printf("%d\n",WORD_COUNT); 
 	Prints_lex(lex_first,WORD_COUNT); 
