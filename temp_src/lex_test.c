@@ -45,10 +45,13 @@ void Operators(int chr,FILE*go_file){
 }
 void String(int chr,FILE*go_file){
 	if(chr=='"'){// checking for string
+		int tmp;
 		do{
+			tmp=chr;
 			fprintf(stdout,"%c",chr);
 			if(chr=='\n')WORD_COUNT++;
 			chr = fgetc(go_file);
+			if(tmp=='\\'&&chr=='"')fprintf(stdout,"%c",chr),chr = fgetc(go_file);
 		}while(chr != EOF && chr !='"');
 			WORD_COUNT++;
 		if(chr!=EOF)fprintf(stdout,"%c",chr);
@@ -370,6 +373,79 @@ int main()
 	Prints_lex(lex_first,WORD_COUNT); 
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST13_GO_CODE3   */
+	/* testing go_code  		*/
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST13_GO_CODE======\n");  
+	go_file=Creating_file(1,1,"example1.go",NULL);// from file
+	lex_first=Loading_lex_units(go_file); 
+	Prints_lex(lex_first,WORD_COUNT); 
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST14_GO_CODE4   */
+	/* testing go_code  		*/
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST14_GO_CODE======\n");  
+	go_file=Creating_file(1,1,"example2.go",NULL);// from file
+	lex_first=Loading_lex_units(go_file); 
+	Prints_lex(lex_first,WORD_COUNT); 
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST15_GO_CODE5   */
+	/* testing go_code  		*/
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST15_GO_CODE======\n");  
+	go_file=Creating_file(1,1,"example3.go",NULL);// from file
+	lex_first=Loading_lex_units(go_file); 
+	Prints_lex(lex_first,WORD_COUNT); 
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST16_GO_CODE6   */
+	/* testing go_code  		*/
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST16_GO_CODE======\n");  
+	go_file=Creating_file(1,1,"example4.go",NULL);// from file
+	lex_first=Loading_lex_units(go_file); 
+	Prints_lex(lex_first,WORD_COUNT); 
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST17_GO_CODE7   */
+	/* testing go_code  		*/
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST17_GO_CODE======\n");  
+	go_file=Creating_file(1,1,"example5.go",NULL);// from file
+	lex_first=Loading_lex_units(go_file); 
+	Prints_lex(lex_first,WORD_COUNT); 
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST18_GO_CODE8   */
+	/* testing go_code  		*/
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST18_GO_CODE======\n");  
+	go_file=Creating_file(1,1,"example6.go",NULL);// from file
+	lex_first=Loading_lex_units(go_file); 
+	Prints_lex(lex_first,WORD_COUNT); 
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
 
 
 
