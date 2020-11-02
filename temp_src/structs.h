@@ -1,9 +1,19 @@
+
+/**
+* Project:
+* Implementace pøekladaèe imperativního jazyka IFJ20
+*
+* Author:
+* Fabo Matúš			xfabom01
+**/
+
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
 
 #include <stdio.h>
 #include <stdlib.h>
+
 /*
  * Global constants to define lexical unit data types
  */

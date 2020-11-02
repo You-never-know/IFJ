@@ -1,3 +1,12 @@
+
+/**
+* Project:
+* Implementace pøekladaèe imperativního jazyka IFJ20
+*
+* Author:
+* Fabo Matúš			xfabom01
+**/
+
 #ifndef LEXICAL_ANALYZER_H
 #define LEXICAL_ANALYZER_H
 

@@ -1,3 +1,11 @@
+/**
+* Project:
+* Implementace pøekladaèe imperativního jazyka IFJ20
+* 
+* Author:
+* Drengubiak Vladimír	xdreng01
+**/
+
 CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra
 COMPILATOR = gcc $(CFLAGS) -o $@
 

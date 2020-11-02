@@ -1,3 +1,13 @@
+
+/**
+* Project:
+* Implementace pøekladaèe imperativního jazyka IFJ20
+*
+* Authors:
+* Drengubiak Vladimír	xdreng01
+* Fabo Matúš			xfabom01
+**/
+
 #include "lexical_analyzer.h"
 
 bool isWhiteSpace(const char c){

@@ -1,8 +1,17 @@
+
+/**
+* Project:
+* Implementace pøekladaèe imperativního jazyka IFJ20
+*
+* Authors:
+* Drengubiak Vladimír	xdreng01
+* Fabo Matúš			xfabom01
+**/
+
 #include "lexical_analyzer.h"
 #include <assert.h>
 #include <ctype.h>
 #include <unistd.h>
-
 
 unsigned WORD_COUNT=0;
 
