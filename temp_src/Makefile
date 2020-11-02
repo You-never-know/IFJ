@@ -16,6 +16,5 @@ clean_go:
 	rm -f *.go
 clean:
 	rm -f *.o
-	rm -f *.go
 run: all
 	valgrind ./lex_test
