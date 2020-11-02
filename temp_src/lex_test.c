@@ -319,7 +319,6 @@ int main()
 	fprintf(stdout,"\n======TEST08_RANDOM======\n");  
 	go_file=Creating_file(1,0,"t.go","INT S = CCC + asfasf acascasxxx xvbsefwdv qe q3r23r24twwrsd er 24r 24t wrg we 2e t2rgsdf 32 t24t 2ef e r2t 24t 2ef 2ed e qsf dge arng MNWFNWEKJfnAJLDBGJWBefj b2 24b fjlwebf andflk baojbt jowbefj DSJF BWEW 4asfafs  5155414{ }");
 	lex_first=Loading_lex_units(go_file);
-	printf("%d\n",WORD_COUNT); 
 	Prints_lex(lex_first,WORD_COUNT); 
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
@@ -332,7 +331,6 @@ int main()
 	fprintf(stdout,"\n======TEST09_RANDOM======\n");  
 	go_file=Creating_file(1,0,"t.go"," \" INT S = CCC + asfasf acascasxxx xvbsefwdv \\n \" qe q3r23r24twwrsd er \" 24r24t wrg we 2e t2rgsdf \"32 t24t 2ef e r2 \"t 24t 2ef 2ed e q \"sf dge arng MNWFNWEKJfnA\"JLDBGJWBefj b2 24b fjlwebf an \" dflk ba \" ojbt jowbefj DSJF BWEW 4asfafs  5155414");
 	lex_first=Loading_lex_units(go_file);
-	printf("%d\n",WORD_COUNT); 
 	Prints_lex(lex_first,WORD_COUNT); 
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
@@ -344,21 +342,7 @@ int main()
 
 	fprintf(stdout,"\n======TEST10_GO_CODE======\n");  
 	go_file=Creating_file(1,0,"t.go","package main \n import \"fmt\" \n func main()\n { \n rows := 9 \n space := rows / 2 \n num := 1 \n}");
-	lex_first=Loading_lex_units(go_file);
-	printf("%d\n",WORD_COUNT); 
-	Prints_lex(lex_first,WORD_COUNT); 
-	Free_Lex_Units(lex_first);
-	fclose(go_file);
-
-	//--------------------------//
-	/*        TEST11_GO_CODE    */
-	/* testing go_code  		*/
-	//--------------------------//
-
-	fprintf(stdout,"\n======TEST11_GO_CODE======\n");  
-	go_file=Creating_file(1,1,"go_code0.go",NULL);// from file
-	lex_first=Loading_lex_units(go_file);
-	printf("%d\n",WORD_COUNT); 
+	lex_first=Loading_lex_units(go_file); 
 	Prints_lex(lex_first,WORD_COUNT); 
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
@@ -369,9 +353,20 @@ int main()
 	//--------------------------//
 
 	fprintf(stdout,"\n======TEST11_GO_CODE======\n");  
+	go_file=Creating_file(1,1,"go_code0.go",NULL);// from file
+	lex_first=Loading_lex_units(go_file); 
+	Prints_lex(lex_first,WORD_COUNT); 
+	Free_Lex_Units(lex_first);
+	fclose(go_file);
+
+	//--------------------------//
+	/*        TEST12_GO_CODE2   */
+	/* testing go_code  		*/
+	//--------------------------//
+
+	fprintf(stdout,"\n======TEST12_GO_CODE======\n");  
 	go_file=Creating_file(1,1,"go_code1.go",NULL);// from file
-	lex_first=Loading_lex_units(go_file);
-	printf("%d\n",WORD_COUNT); 
+	lex_first=Loading_lex_units(go_file); 
 	Prints_lex(lex_first,WORD_COUNT); 
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
