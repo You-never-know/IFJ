@@ -4,6 +4,7 @@
 * 
 * Author:
 * Drengubiak Vladimír	xdreng01
+* Daniel Marek          xmarek72
 **/
 
 CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra
@@ -34,5 +35,7 @@ clean_go:
 	rm -f *.go
 clean:
 	rm -f *.o
+	rm test_table
+	rm lex_test
 run: all
 	valgrind ./lex_test
