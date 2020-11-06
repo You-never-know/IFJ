@@ -15,6 +15,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "structs.h"
+#include "symtable.h"
 
 #define CHUNK_SIZE 128 // Defines how much space is allocated when previous buffer overflows
 

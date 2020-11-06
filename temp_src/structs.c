@@ -21,7 +21,7 @@ void LexUnitCtor(lex_unit_t* unit){
 	unit -> unit_type = ERROR;
 	unit -> data_size = 0;
 	unit -> data = NULL;
-	unit -> next = NULL;
+	unit -> table = NULL;
 }
 
 void LexUnitClear(lex_unit_t* unit){

@@ -8,6 +8,7 @@
 
 
 #include "symtable.h"
+#include "structs.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -91,10 +92,15 @@ void add_item_to_the_start(sym_tab *st, lex_unit_t *lex, ht_item* new) {
 
 // malloc space and add identificator to the htable
 // return pointer to the new unit or NULL if malloc failed or NULL given in parameters
-ht_item *add_item(lex_unit_t *lex, sym_tab *st, bool is_function) {
+ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 
 	if (st == NULL || lex == NULL) {
 		fprintf(stderr, "Add_id failed\n");
+		return NULL;
+	}
+
+	// we dont want to add the same item twice
+	if (find_item(st,lex) != NULL) {
 		return NULL;
 	}
 
@@ -127,9 +133,9 @@ ht_item *add_item(lex_unit_t *lex, sym_tab *st, bool is_function) {
 
 }
 
-// find item in the table
+// find item in the table, item with the same name
 // return item if found, NULL if not
-ht_item* find_item(lex_unit_t * lex, sym_tab *st) {
+ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 
 	if (lex == NULL || st == NULL) {
 		fprintf(stderr, "find item error\n");
@@ -141,7 +147,7 @@ ht_item* find_item(lex_unit_t * lex, sym_tab *st) {
 
 	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
 
-		if (tmp->data == lex) {
+		if (tmp->name == lex) {
 			return tmp;
 		}
 
@@ -161,7 +167,7 @@ bool add_data(ht_item *item, lex_unit_t * lex) {
 		return false;
 	}
 
-	if (item->is_function == true) {
+	if (item->is_function != true) {
 		item->data = lex;
 		return true;
 	}
@@ -213,7 +219,7 @@ Par* malloc_param(ht_item *item) {
 
 // add data to the parameter
 // return true if success, false if not
-bool add_param_data(Par* par, lex_unit_t *lex) {
+bool add_param_name(Par* par, lex_unit_t *lex) {
 
 	if (par == NULL || lex == NULL) {
 
@@ -296,6 +302,39 @@ bool add_ret_type(Ret* ret, int type) {
 	return true;
 }
 
+// free all the parameters
+void clean_params(ht_item* it) {
+
+
+	if (it == NULL) {
+		fprintf(stderr, "clean_params failed\n" );
+		return;
+	}
+
+	for (Par * tmp = it->parameters; tmp != NULL; ){
+		Par * to_be_deleted = tmp;
+		tmp = tmp->next;
+		free(to_be_deleted);
+	}
+
+}
+
+// free all the return values
+void clean_return_values(ht_item* it) {
+
+	if (it == NULL) {
+		fprintf(stderr, "clean_return_values failed\n" );
+		return;
+	}
+
+	for (Ret * tmp = it->return_val; tmp != NULL; ){
+		Ret * to_be_deleted = tmp;
+		tmp = tmp->next;
+		free(to_be_deleted);
+	}
+
+}
+
 
 // help function to clean one row
 // return true if success, false if not
@@ -310,6 +349,12 @@ bool clean_row(ht_item * first, sym_tab *st) {
 
 		ht_item * to_be_deleted = tmp;
 		tmp = tmp->next;
+
+		if (to_be_deleted->is_function){
+			clean_params(to_be_deleted);
+			clean_return_values(to_be_deleted);
+		}
+
 		free(to_be_deleted);
 		st->size = st->size -1;
 	}
@@ -339,7 +384,7 @@ int clean_table(sym_tab *st) {
 		}
 
 		if (clean_row(st->ptr[i], st) != true) {
-			fprintf(stderr, "clean_table failed\n" );
+			fprintf(stderr, "clean_table failed because of clean row\n" );
 			return -1;
 		}
 

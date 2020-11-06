@@ -10,13 +10,13 @@
 #define SYM_TABLE
 
 
-#include "structs.h"
+#include "structs.h"    // struct lex_unit
 #include <string.h>     // size_t
 #include <stdbool.h>    // bool
 
 // parameters of the function
 typedef struct param {
-	lex_unit_t * name; // name of the identificator
+	struct lex_unit * name; // name of the identificator
 	int type; // type of the parameter
 	
 	struct param * next; // pointer to the next parameter - linked list
@@ -32,8 +32,8 @@ typedef struct ret_val {
 // item in the # table == symtable
 typedef struct htable_item {
 
-	lex_unit_t * name; // name of the identificator
-	lex_unit_t * data; // value of the identificator, active only for id not for fun
+	struct lex_unit * name; // name of the identificator
+	struct lex_unit * data; // value of the identificator, active only for id not for fun
 	bool is_function; // sets functions and identificators aside
 	
 	// if it is function
@@ -54,11 +54,11 @@ typedef struct hash_table {
 //----------------------------------------------------------------------------
 size_t htab_hash_fun(const char* str); // hash function from 'http://www.cse.yorku.ca/~oz/hash.html'
 sym_tab *htab_create(size_t n); // mallocs memmory and initalizates it
-ht_item *add_item(lex_unit_t *lex, sym_tab *st, bool is_function); // add identificator to the htable
-ht_item *find_item(lex_unit_t * lex, sym_tab *st); // find lexem in the table NULL if it not there 
-bool add_data(ht_item *item, lex_unit_t * lex); // add data to indentificator
+ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function); // add identificator to the htable
+ht_item *find_item(sym_tab *st, struct lex_unit * lex); // find lexem in the table NULL if it not there 
+bool add_data(ht_item *item, struct lex_unit * lex); // add data to indentificator
 Par* malloc_param(ht_item *item); // allocates and inicializes parameter
-bool add_param_data(Par* par, lex_unit_t *lex); // add data to the parameter
+bool add_param_name(Par* par, struct lex_unit *lex); // add data to the parameter
 bool add_param_type(Par* par, int type); // add type to the parameter
 Ret* malloc_ret_val(ht_item *item); // allocates and inicializes parameter
 bool add_ret_type(Ret* ret, int type); // add data to the parameter
