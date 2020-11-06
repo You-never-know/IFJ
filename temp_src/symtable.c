@@ -26,7 +26,7 @@ size_t htab_hash_fun(const char* str) {
 
 // malloc space for new hash table and inicialize it 
 // return pointer to new symtable or NULL if allocation failed
-sym_tab *htab_init(size_t n) {
+sym_tab *htab_create(size_t n) {
 
 	if (n == 0) {
 		return NULL;

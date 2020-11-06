@@ -53,7 +53,7 @@ typedef struct hash_table {
 
 //----------------------------------------------------------------------------
 size_t htab_hash_fun(const char* str); // hash function from 'http://www.cse.yorku.ca/~oz/hash.html'
-sym_tab *htab_init(size_t n); // mallocs memmory and initalizates it
+sym_tab *htab_create(size_t n); // mallocs memmory and initalizates it
 ht_item *add_item(lex_unit_t *lex, sym_tab *st, bool is_function); // add identificator to the htable
 ht_item *find_item(lex_unit_t * lex, sym_tab *st); // find lexem in the table NULL if it not there 
 bool add_data(ht_item *item, lex_unit_t * lex); // add data to indentificator
