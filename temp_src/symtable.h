@@ -1,3 +1,11 @@
+/**
+* Project:
+* Implementace pøekladaèe imperativního jazyka IFJ20
+*
+* Authors:
+* Daniel Marek 			xmarek72
+**/
+
 #ifndef SYM_TABLE
 #define SYM_TABLE
 
@@ -54,8 +62,7 @@ bool add_param_data(Par* par, lex_unit_t *lex); // add data to the parameter
 bool add_param_type(Par* par, int type); // add type to the parameter
 Ret* malloc_ret_val(ht_item *item); // allocates and inicializes parameter
 bool add_ret_type(Ret* ret, int type); // add data to the parameter
-
-
-// add remove and clear functions
+int clean_table(sym_tab *st); // removes all items from the table
+void free_table(sym_tab *st); // free the given table from memory
 
 #endif 

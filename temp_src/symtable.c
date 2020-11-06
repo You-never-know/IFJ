@@ -1,3 +1,12 @@
+/**
+* Project:
+* Implementace pøekladaèe imperativního jazyka IFJ20
+*
+* Authors:
+* Daniel Marek 			xmarek72
+**/
+
+
 #include "symtable.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -57,8 +66,8 @@ ht_item *find_place(lex_unit_t *lex, sym_tab *st) {
 
 	size_t idx = htab_hash_fun((const char*)lex->data) % st->arr_size;
 
+	// find last item
 	ht_item * found = st->ptr[idx];
-	
 	for (ht_item *tmp = found; tmp != NULL; tmp = tmp->next) {
 		found = tmp;
 	} 
@@ -90,6 +99,12 @@ ht_item *add_item(lex_unit_t *lex, sym_tab *st, bool is_function) {
 	}
 
 	ht_item * new = malloc(sizeof(ht_item));
+	if (new == NULL) {
+		fprintf(stderr, "Symtable item malloc error\n");
+		return NULL;
+	}
+
+	st->size = st->size + 1;
 	new->name = lex;
 
 	new->is_function = is_function;
@@ -98,11 +113,6 @@ ht_item *add_item(lex_unit_t *lex, sym_tab *st, bool is_function) {
 	new->parameters = NULL;
 	new->return_val = NULL;
 	new->next = NULL;
-
-	if (new == NULL) {
-		fprintf(stderr, "Symtable item malloc error\n");
-		return NULL;
-	}
 
 	ht_item* place = find_place(lex, st);
 
@@ -287,5 +297,63 @@ bool add_ret_type(Ret* ret, int type) {
 }
 
 
+// help function to clean one row
+// return true if success, false if not
+bool clean_row(ht_item * first, sym_tab *st) {
 
- 
+	if (first == NULL || st == NULL) {
+		fprintf(stderr, "clean_row failed\n" );
+		return false;
+	}
+
+	for (ht_item * tmp = first; tmp != NULL; ){
+
+		ht_item * to_be_deleted = tmp;
+		tmp = tmp->next;
+		free(to_be_deleted);
+		st->size = st->size -1;
+	}
+
+	return true;
+}
+
+// remove all items from the table
+// return the number of items for control purpose, -1 if something failed
+int clean_table(sym_tab *st) {
+
+	if (st == NULL) {
+		fprintf(stderr, "clean_table failed\n" );
+		return -1;
+	}
+
+	for (size_t i = 0; i < st->arr_size; i++) {
+
+		// no more items left
+		if (st->size == 0) {
+			return 0;
+		}
+
+		// if no items
+		if (st->ptr[i] == NULL) {
+			continue;
+		}
+
+		if (clean_row(st->ptr[i], st) != true) {
+			fprintf(stderr, "clean_table failed\n" );
+			return -1;
+		}
+
+	}
+
+	return st->size;
+
+ }
+
+// free table from memory
+void free_table(sym_tab *st) {
+
+	if (st != NULL) {
+
+		free(st);
+	}
+}
