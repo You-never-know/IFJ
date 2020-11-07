@@ -27,7 +27,7 @@ sym_list* sl_init() {
 	sl->first = NULL;
 	sl->last = NULL;
 	sl->act = NULL;
-
+	
 	sl->length = 0;
 
 	return sl;
@@ -77,6 +77,7 @@ void sl_insert_first(sym_list* sl, sym_tab* st_data) {
 	tmp->st_data = st_data;
 	tmp->r = sl->first;
 	tmp->l = NULL;
+	tmp->accessible = true;
 
 	if (sl->first != NULL) { //item exists
 		sl->first->l = tmp; //point at new item to the left
@@ -105,6 +106,7 @@ void sl_insert_last(sym_list* sl, sym_tab* st_data) {
 	tmp->st_data = st_data;
 	tmp->r = NULL;
 	tmp->l = sl->last;
+	tmp->accessible = true;
 
 	if (sl->last != NULL) { //item exists
 		sl->last->r = tmp; //point at new item to the right
