@@ -141,6 +141,17 @@ void sl_set_next_act(sym_list* sl) {
 	}
 }
 
+void sl_set_prev_act(sym_list* sl) {
+
+	if (sl->act)
+	{
+		if (sl->act->l != NULL) {
+			sl->act = sl->act->l; //moves the active element to the left
+		}
+
+	}
+}
+
 void sl_set_act_naccesible(sym_list* sl) {
 
 	//set active item as non-accesible
@@ -162,7 +173,7 @@ bool sl_get_act_accesibility(sym_list* sl) {
 
 }
 
-void sl_return_act(sym_list* sl, sym_tab* st_data) {
+sym_tab* sl_return_act(sym_list* sl) {
 
 	//list is empty
 	if (!sl->act)
@@ -171,7 +182,7 @@ void sl_return_act(sym_list* sl, sym_tab* st_data) {
 		return;
 	}
 
-	st_data = sl->first->st_data; //copy data from the actual item to st_data
+	return sl->act->st_data; //return actual element
 
 }
 
