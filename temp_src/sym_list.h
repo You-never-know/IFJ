@@ -6,7 +6,7 @@
 * Kateøina Neprašová			xnepra01
 **/
 
-#include "symtable.c" 
+#include "symtable.h" 
 #include <stdio.h>
 #include <stdbool.h> 
 
