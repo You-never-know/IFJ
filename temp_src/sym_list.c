@@ -7,7 +7,8 @@
 **/
 
 #include "sym_list.h"
-
+#include "structs.h"
+#include "symtable.c"
 
 void sl_err() {
 
@@ -18,7 +19,7 @@ void sl_err() {
 sym_list* sl_init() {
 
 	//set all pointers to NULL
-	sym_list* sl= malloc(sizeof(sym_list));
+	sym_list* sl = malloc(sizeof(sym_list));
 	if (sl == NULL) {
 		sl_err();
 		return NULL;
@@ -27,7 +28,7 @@ sym_list* sl_init() {
 	sl->first = NULL;
 	sl->last = NULL;
 	sl->act = NULL;
-	
+
 	sl->length = 0;
 
 	return sl;
@@ -139,7 +140,7 @@ void sl_set_next_act(sym_list* sl) {
 		if (sl->act->r != NULL) {
 			sl->act = sl->act->r; //moves the active element to the right
 		}
-		
+
 	}
 }
 
@@ -181,7 +182,7 @@ sym_tab* sl_return_act(sym_list* sl) {
 	if (!sl->act)
 	{
 		sl_err();
-		return;
+		return NULL;
 	}
 
 	return sl->act->st_data; //return actual element
@@ -265,3 +266,25 @@ void sl_rewrite_act(sym_list* sl, sym_tab* st_data) {
 }
 
 
+ht_item* sl_search(sym_list* sl, struct lex_unit* lu) {
+
+	ht_item* tmp = NULL;
+
+	if (sl->first != NULL) { //list is not empty
+
+		sl_set_act_first(sl);
+
+		for (int i = 0; i < sl->length; i++) {
+
+			if (sl_get_act_accesibility(sl)) {
+
+				if (find_item(sl->act->st_data, lu) != NULL) {
+					tmp = find_item(sl->act->st_data, lu);
+				}
+
+			}
+		}
+	}
+
+	return tmp; //returns NULL if not found otherwise the last found item
+}

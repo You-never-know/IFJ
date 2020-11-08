@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdbool.h> 
 
-typedef struct sl_elem {     /* sym_list element */
+typedef struct sl_elem { /* sym_list element */
 	sym_tab* st_data;    /* table*/
 	struct sl_elem* l;   /* pointer to the previous element of the list */
 	struct sl_elem* r;   /* pointer to the next element of the list */
@@ -37,7 +37,7 @@ void sl_set_prev_act(sym_list*);
 void sl_set_act_naccesible(sym_list*);
 void sl_set_act_accesible(sym_list*);
 bool sl_get_act_accesibility(sym_list*);
-sym_tab* sl_return_act(sym_list*, sym_tab*);
+sym_tab* sl_return_act(sym_list*);
 void sl_del_first(sym_list*);
 void sl_del_last(sym_list*);
 int sl_get_length(sym_list*);
