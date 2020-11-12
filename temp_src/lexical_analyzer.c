@@ -93,7 +93,8 @@ bool isKeyword(const lex_unit_t* lex){
 		case 2:	return (memcmp(lex->data, "if", 2ul) == 0);
 				break;
 
-		case 3:	return ((memcmp(lex->data, "int", 3ul) == 0) || 
+		case 3:	return ((memcmp(lex->data, "int", 3ul) == 0) ||
+						(memcmp(lex->data, "var", 3ul) == 0) || 
 						(memcmp(lex->data, "for", 3ul) == 0));
 				break;
 
@@ -102,6 +103,7 @@ bool isKeyword(const lex_unit_t* lex){
 				break;
 
 		case 6:	return ((memcmp(lex->data, "string", 6ul) == 0) ||
+						(memcmp(lex->data, "import", 6ul) == 0) ||
 						(memcmp(lex->data, "return", 6ul) == 0));
 				break;
 
