@@ -14,7 +14,7 @@
 #include <stdbool.h> 
 
 typedef struct sl_elem { /* sym_list element */
-	struct hast_table* st_data;    /* table*/
+	sym_tab* st_data;    /* table*/
 	struct sl_elem* l;   /* pointer to the previous element of the list */
 	struct sl_elem* r;   /* pointer to the next element of the list */
 	bool accessible;     /* variable defining accessibility */
@@ -31,8 +31,8 @@ typedef struct {          /* sym_list */
 void sl_err();
 sym_list* sl_init();
 void sl_dissolve(sym_list*);
-void sl_insert_first(sym_list*, struct hast_table*);
-void sl_insert_last(sym_list*, struct hast_table*);
+void sl_insert_first(sym_list*, sym_tab*);
+void sl_insert_last(sym_list*, sym_tab*);
 void sl_set_act_first(sym_list*);
 void sl_set_act_last(sym_list*);
 void sl_set_next_act(sym_list*);
@@ -44,7 +44,7 @@ struct hash_table* sl_return_act(sym_list*);
 void sl_del_first(sym_list*);
 void sl_del_last(sym_list*);
 int sl_get_length(sym_list*);
-void sl_rewrite_act(sym_list*, struct hast_table*);
+void sl_rewrite_act(sym_list*, sym_tab*);
 struct htable_item* sl_search(sym_list* sl, struct lex_unit* lu);
 
 #endif
