@@ -1,12 +1,12 @@
-
 /**
 * Project:
-* Implementace pøekladaèe imperativního jazyka IFJ20
+* Implementace prekladace imperativniho jazyka IFJ20
 *
 * Authors:
-* Drengubiak Vladimír	xdreng01
-* Fabo Matúš			xfabom01
+* Fabo MatÃºÅ¡			xfabom01
+* Drengubiak VladimÃ­r	xdreng01
 **/
+
 
 #include "lexical_analyzer.h"
 
@@ -129,6 +129,28 @@ bool spaceRealloc(lex_unit_t* lex, size_t allocated_size){
 		else lex->data = tmp;
 	}
 	return false;
+}
+
+bool NumSystemCheck(const char* str, const size_t str_size, const char number_base){
+	/// Check function arguments
+	if(str == NULL || str_size == 0 || (number_base != 2 && number_base != 8 && number_base != 16))
+		return false;
+
+	/// Loop through each char & check if its right
+	for(size_t i = 0; i < str_size; i++){
+		switch(number_base){
+			case 2:	if(str[i] != '0' && str[i] != '1') return false;
+					break;
+
+			case 8:	if((str[i]-0x30) >= 8) return false;
+					break;
+
+			case 16:	if(!isLetter(str[i]) && (str[i]|1<<5) < 'a' && (str[i]|1<<5) > 'f')
+							return false;
+						break;
+		}
+	}
+	return true;
 }
 
 lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
@@ -391,17 +413,34 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							((char*)lexeme->data)[lexeme->data_size] = '\0';
 							size_t tmp_int = atoi((char*)lexeme->data);
 							if(lexeme->data_size > 2){
+								char num_type = ((char*)lexeme->data)[1];
+								bool err_flag = false;
 								if((((char*)lexeme->data)[1]|1<<5) == 'b'){
 									((char*)lexeme->data)[1] = '0';
 									tmp_int = strtol((char*)lexeme->data, NULL, 2);
+									if(!NumSystemCheck((char*)lexeme->data, lexeme->data_size, 2))
+										err_flag = true;
 								}
 								else if((((char*)lexeme->data)[1]|1<<5) == 'o'){
 									((char*)lexeme->data)[1] = '0';
 									tmp_int = strtol((char*)lexeme->data, NULL, 8);
+									if(!NumSystemCheck((char*)lexeme->data, lexeme->data_size, 8))
+										err_flag = true;
 								}
 								else if((((char*)lexeme->data)[1]|1<<5) == 'x'){
 									((char*)lexeme->data)[1] = '0';
 									tmp_int = strtol((char*)lexeme->data, NULL, 16);
+									if(!NumSystemCheck((char*)lexeme->data, lexeme->data_size, 16))
+										err_flag = true;
+								}
+
+								if(err_flag){
+									lexeme->unit_type = INT_ERR;
+									((char*)lexeme->data)[1] = num_type;
+									lexeme->data = realloc(lexeme->data, lexeme->data_size+1);
+									if(c != EOF) ungetc(c, file_descriptor);
+									return lexeme;
+									break;
 								}
 							}
 							lexeme->data_size = sizeof(size_t);
