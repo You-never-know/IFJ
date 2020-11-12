@@ -42,3 +42,4 @@ void sl_del_first(sym_list*);
 void sl_del_last(sym_list*);
 int sl_get_length(sym_list*);
 void sl_rewrite_act(sym_list*, sym_tab*);
+ht_item* sl_search(sym_list* sl, struct lex_unit* lu);
