@@ -1,5 +1,6 @@
 #include "symtable.h"
 #include "structs.h"
+#include "create_tables.h"
 #include <stdio.h>
 #include <assert.h>
 

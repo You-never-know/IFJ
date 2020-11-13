@@ -22,7 +22,7 @@ lexical_analyzer.o: lexical_analyzer.c lexical_analyzer.h structs.h
 structs.o: structs.c structs.h symtable.h
 	$(COMPILATOR) -c structs.c
 
-test_table: test_table.o symtable.o structs.o
+test_table: test_table.o symtable.o create_tables.o lexical_analyzer.o sym_list.o structs.o
 	$(COMPILATOR) $^
 
 symtable.o: symtable.c symtable.h structs.h
@@ -30,6 +30,13 @@ symtable.o: symtable.c symtable.h structs.h
 
 test_table.o: test_table.c symtable.h structs.h
 	$(COMPILATOR) -c $<
+
+sym_list.o: sym_list.c sym_list.h 
+	$(COMPILATOR) -c $<
+
+create_tables.o: create_tables.c create_tables.h 
+	$(COMPILATOR) -c $<
+
 
 clean_go:
 	rm -f *.go
