@@ -5,7 +5,7 @@
 # Author:
 # Drengubiak Vladimír	xdreng01
 # Daniel Marek          xmarek72
-
+# Kateøina Nepra¹ová	xnepra01
 
 CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra
 COMPILATOR = gcc $(CFLAGS) -o $@
@@ -33,6 +33,9 @@ test_table.o: test_table.c symtable.h structs.h
 
 sym_list.o: sym_list.c sym_list.h 
 	$(COMPILATOR) -c $<
+	
+lex_list.o: lex_list.c lex_list.h 
+	$(COMPILATOR) -c $<	
 
 create_tables.o: create_tables.c create_tables.h 
 	$(COMPILATOR) -c $<
