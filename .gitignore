@@ -34,6 +34,8 @@
 *.dylib
 
 # Executables
+test_table
+lex_test
 *.exe
 *.out
 *.app
