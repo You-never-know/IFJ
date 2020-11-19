@@ -1,4 +1,4 @@
-CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc -I../symtable/inc/ -I../structs/inc/ -I../sym_list/inc/ -I../lexical_analyzer/inc/
+CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc -I../symtable/inc/ -I../structs/inc/ -I../sym_list/inc/ -I../lexical_analyzer/inc/ -I../symtable/obj/
 COMPILATOR = gcc $(CFLAGS) -o $@
 
 #paths to each dirictories
@@ -12,6 +12,8 @@ OBJ = test_table.o \
 
 
 H =	create_tables.h 
+
+TARGET = test_table
 
 OBJ_FILES = $(patsubst %,$(OBJ_PATH)%,$(OBJ)) #all obj files
 HEADERS = $(patsubst %,$(INC_PATH)%,$(H)) #all headers
