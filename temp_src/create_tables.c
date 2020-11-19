@@ -88,11 +88,18 @@ void clean() {
  *  'function_table' table just for functions
  *  return sym_list or empty_list if some error occured in function (malloc failed / bad parameters ...)
  */ 
-sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
+sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 	// check parameter
 	if (file == NULL || ret == NULL || function_table == NULL) {
 		return NULL;
+	}
+
+	if ((*function_table)== NULL) {
+		*function_table = htab_create(MEDIUM_TABLE);
+		if ((*function_table) == NULL) {
+			return NULL;
+		}
 	}
 
 	// set default as fault, because we may not hit end properly
@@ -412,7 +419,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 
 			case END_OF_RETURN_TYPES:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "{", 1ul) == 0) {
-							copy_function_to_table(remember, function_table); // copy function to the function table
+							copy_function_to_table(remember, (*function_table)); // copy function to the function table
 							state = FUNC_NL;
 							break;
 						}
