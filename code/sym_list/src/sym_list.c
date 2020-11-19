@@ -7,8 +7,6 @@
 **/
 
 #include "sym_list.h"
-#include "structs.h"
-#include "symtable.h"
 
 void sl_err() {
 

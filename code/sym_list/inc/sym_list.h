@@ -8,7 +8,7 @@
 
 #ifndef SYM_LIST
 #define SYM_LIST
-
+#include "structs.h"
 #include "symtable.h" 
 #include <stdio.h>
 #include <stdbool.h> 
