@@ -60,7 +60,32 @@ void print_table(sym_tab * st) {
 }
 
 
-int main() {
+int main(int argc, char* argv[]) {
+
+	if (argc > 1) {
+		FILE* file = fopen(argv[1], "r"); // open file for reading 
+
+		int ret = 0;
+		sym_tab* function_table;
+		sym_list* sl = create_tables(file, &ret, &function_table);
+		printf("-----------------------------------------------\n");
+		printf("RET INT %d /n", ret);
+		printf("FUNCTION_TABlE PRINT\n");
+		print_table(function_table);
+		printf("-----------------------------------------------\n");
+		printf("SYM_LIST PRINT\n");
+
+		sl_elem_ptr tmp = sl->first;
+
+		while (tmp != NULL) {
+			print_table(tmp->st_data);
+			tmp = tmp->r;
+		}
+
+		printf("-----------------------------------------------\n");
+
+		fclose(file);  // close the file 
+	}
 
 	sym_tab * test1 = htab_create(11);
 
