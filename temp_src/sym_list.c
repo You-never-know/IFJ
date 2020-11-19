@@ -155,6 +155,16 @@ void sl_set_prev_act(sym_list* sl) {
 	}
 }
 
+void set_all_accessible(sym_list* sl) {
+
+	sl_elem_ptr tmp = sl->first;
+
+	while (tmp != NULL) {
+		tmp->accessible = true;
+		tmp = tmp->r;
+	}
+}
+
 void sl_set_act_naccesible(sym_list* sl) {
 
 	//set active item as non-accesible

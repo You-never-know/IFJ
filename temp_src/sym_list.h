@@ -37,6 +37,7 @@ void sl_set_act_first(sym_list*);
 void sl_set_act_last(sym_list*);
 void sl_set_next_act(sym_list*);
 void sl_set_prev_act(sym_list*);
+void set_all_accessible(sym_list*);
 void sl_set_act_naccesible(sym_list*);
 void sl_set_act_accesible(sym_list*);
 bool sl_get_act_accesibility(sym_list*);
