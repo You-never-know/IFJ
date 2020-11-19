@@ -19,17 +19,23 @@ HEADERS = $(patsubst %,$(INC_PATH)%,$(H)) #all headers
 
 all:$(OBJ_FILES) $(TARGET) ./../structs/obj/structs.o
 
-$(OBJ_PATH)lexical_analyzer.o: $(SRC_PATH)lexical_analyzer.c $(HEADERS) 
+$(OBJ_PATH)lexical_analyzer.o: $(SRC_PATH)lexical_analyzer.c $(HEADERS)
+	@echo [MESSAGE] CREATING LEXICAL_ANALYZER.O
+	@echo ----------------------------------------------------------------------------------
 	$(COMPILATOR) -c $<
-
-./../structs/obj/structs.o: ./../structs/src/structs.c ./../structs/inc/structs.h 
-	$(COMPILATOR) -c $<
+	@echo ----------------------------------------------------------------------------------
 
 $(OBJ_PATH)lex_test.o: ./tests/lex_test.c
+	@echo [MESSAGE] CREATING LEX_TEST.O
+	@echo ----------------------------------------------------------------------------------
 	$(COMPILATOR) -c $<
+	@echo ----------------------------------------------------------------------------------
 
 $(TARGET): $(OBJ_FILES) ./../structs/obj/structs.o
-	$(COMPILATOR) $^ 
+	@echo [MESSAGE] CREATING EXE LEX_TEST
+	@echo ----------------------------------------------------------------------------------
+	$(COMPILATOR) $^
+	@echo ----------------------------------------------------------------------------------
 
 clean:
 	rm -f $(OBJ_FILES)

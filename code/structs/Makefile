@@ -1,4 +1,4 @@
-CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc
+CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc -I../symtable/inc/
 COMPILATOR = gcc $(CFLAGS) -o $@
 
 #paths to each dirictories
@@ -16,8 +16,11 @@ HEADERS = $(patsubst %,$(INC_PATH)%,$(H)) #all headers
 
 all:$(OBJ_FILES) $(TARGET)
 
-$(OBJ_PATH)structs.o: $(SRC_PATH)structs.c $(INC_PATH)structs.h 
+$(OBJ_PATH)structs.o: $(SRC_PATH)structs.c $(INC_PATH)structs.h
+	@echo [MESSAGE] CREATING  STRUCT.O
+	@echo ----------------------------------------------------------------------------------
 	$(COMPILATOR) -c $<
+	@echo ----------------------------------------------------------------------------------
 
 clean:
 	rm -f $(OBJ_FILES)

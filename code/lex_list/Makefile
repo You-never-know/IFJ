@@ -17,7 +17,10 @@ HEADERS = $(patsubst %,$(INC_PATH)%,$(H)) #all headers
 all:$(OBJ_FILES) $(TARGET)
 
 $(OBJ_PATH)lex_list.o: $(SRC_PATH)lex_list.c $(HEADERS) ./../structs/inc/structs.h ./../symtable/inc/symtable.h
-	$(COMPILATOR) -c $<	
+	@echo [MESSAGE] CREATING  LEX_LIST.O
+	@echo ----------------------------------------------------------------------------------
+	$(COMPILATOR) -c $<
+	@echo ----------------------------------------------------------------------------------
 
 clean:
 	rm -f $(OBJ_FILES)

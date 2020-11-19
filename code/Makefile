@@ -1,10 +1,10 @@
 
 all:
-	cd ./lexical_analyzer/ && $(MAKE)
 	cd ./lex_list/ && $(MAKE)
 	cd ./structs/ && $(MAKE)
 	cd ./sym_list/ && $(MAKE)
 	cd ./symtable/ && $(MAKE)
+	cd ./lexical_analyzer/ && $(MAKE)
 	cd ./create_tables/ && $(MAKE)
 
 clean:

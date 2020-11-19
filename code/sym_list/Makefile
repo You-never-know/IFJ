@@ -17,7 +17,10 @@ HEADERS = $(patsubst %,$(INC_PATH)%,$(H)) #all headers
 all:$(OBJ_FILES) $(TARGET)
 
 $(OBJ_PATH)sym_list.o: $(SRC_PATH)sym_list.c $(HEADERS) ./../structs/inc/structs.h ./../symtable/inc/symtable.h
-	$(COMPILATOR) -c $<	
+	@echo [MESSAGE] CREATING SYM_LIST.O
+	@echo ----------------------------------------------------------------------------------
+	$(COMPILATOR) -c $<
+	@echo ----------------------------------------------------------------------------------
 
 clean:
 	rm -f $(OBJ_FILES)
