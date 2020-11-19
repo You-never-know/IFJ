@@ -13,28 +13,42 @@ void print_table(sym_tab * st) {
 		
 		for (ht_item *tmp = st->ptr[i]; tmp != NULL; tmp=tmp->next) {
 
-			printf("%p\n", (void *)tmp);
-			printf("%i\n", tmp->name->unit_type);
 			
-			if (! tmp->is_function) {
-				printf("ID\n");
-				printf("%i\n", tmp->data->unit_type);
+			fprintf(stdout, "%s: ", (char*)tmp->name->data);
+			
+			if (! (tmp -> is_function)) {
+				printf("ID: ");
 
+				switch (tmp->data->unit_type) {
+					case INTEGER: printf("%d || ", *(int *)(tmp->data->data)); break;
+					case DECIMAL: printf("%f || ", *(double *)(tmp->data->data)); break;
+					case STRING : printf("%s || ", (char *)tmp->data->data); break;
+				}
 			}
 
 			else {
-				printf("FUN\n");
-
-				printf("params\n");
+				printf("FUNCTION: ");
+				printf("Parameters: ");
 				
 				for (Par *tmp1 = tmp->parameters; tmp1 != NULL; tmp1=tmp1->next) {
-					printf("%i\n", tmp1->type);
+					printf("%s ", (char*)tmp1->name->data);
+					switch (tmp1->type) {
+						case INTEGER: printf("INT "); break;
+						case DECIMAL: printf("DECIMAL "); break;
+						case STRING : printf("STRING "); break;
+					}
+					printf("|| ");
 				}
 				
-				printf("return types\n");
+				printf("Return types: ");
 				
 				for (Ret *tmp2 = tmp->return_val; tmp2 != NULL; tmp2=tmp2->next) {
-					printf("%i\n", tmp2->type);
+					switch (tmp2->type) {
+						case INTEGER: printf("INT "); break;
+						case DECIMAL: printf("DECIMAL "); break;
+						case STRING : printf("STRING "); break;
+					}
+					printf("|| ");
 				}
 				printf("\n"); 
 			}
