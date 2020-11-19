@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 
 // hash function from http://www.cse.yorku.ca/~oz/hash.html
@@ -147,7 +148,7 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 
 	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
 
-		if (tmp->name == lex) {
+		if (strcmp(tmp->name->data, lex->data) == 0) {
 			return tmp;
 		}
 

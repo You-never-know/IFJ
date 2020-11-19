@@ -76,7 +76,6 @@ void clean() {
 
 		free_table(tmp->st_data);
 	}
-
 	sl_dissolve(result);
 
 	exit(99);
@@ -92,15 +91,15 @@ void clean() {
 sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 
 	// check parameter
-	if (file == NULL || ret) {
+	if (file == NULL || ret == NULL || function_table == NULL) {
 		return NULL;
 	}
 
 	// set default as fault, because we may not hit end properly
 	*ret = 2;
 	// automat states
-	enum states {START, START_OF_FUNCTION, FUNCTION_ID, START_OF_PARAMETERS, END_OF_PARAMETERS, PARAMETER_ID, PARAMETER_COMMA, PARAMETER_TYPE, START_OF_RETURN_TYPES, START_OF_SECTION,
-				 END_OF_RETURN_TYPES, RETURN_TYPE, RETURN_TYPE_COMMA, ID, IF, FOR, ELSE, IF_DECIDE, FUNC_NL, SECTION_NL, END_OF_SECTION, ADDED_TO_TABLE, ID_NL};
+	enum states {START, START_OF_FUNCTION, FUNCTION_ID, START_OF_PARAMETERS, END_OF_PARAMETERS, PARAMETER_ID, PARAMETER_COMMA, PARAMETER_TYPE, START_OF_RETURN_TYPES, START_OF_SECTION, FOR_ERROR,
+				 END_OF_RETURN_TYPES, RETURN_TYPE, RETURN_TYPE_COMMA, ID, IF, FOR, ELSE, FUNC_NL, SECTION_NL, END_OF_SECTION, ADDED_TO_TABLE, ID_NL, FOR_ID_TYPE, FIRST_SEMI, SECOND_SEMI, FOR_WAIT_SEMI};
 	// start from the START STATE
 	int state = START;
 
@@ -151,7 +150,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 		// if any lexical error happened
 		if (lex->unit_type >= 8) {
 			set_error(1, ret);
-			free(lex);
+			LexUnitDelete(lex);
 			continue;
 		}
 
@@ -446,6 +445,10 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 							state = IF;
 							break;
 						} 
+						else if (lex->unit_type == KEYWORD && memcmp(lex->data, "else", 4ul) == 0) {
+							state = IF;
+							break;
+						} 
 						else if (lex->unit_type == KEYWORD && memcmp(lex->data, "for", 3ul) == 0) {
 							state = FOR;
 							break;
@@ -474,6 +477,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 							while (sl_get_act_accesibility(result) != true) { // set active the first accesible previous one
 								if (result->act->l == NULL) { // it is the first table
 									state = START;
+									remember = NULL;
 									break;
 								}
 								sl_set_prev_act(result);
@@ -503,32 +507,25 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 
 
 			case ADDED_TO_TABLE:
-						if (lex->unit_type == KEYWORD) {
-							if (memcmp(lex->data, "int", 3ul) == 0) {
-								add_data(id_item, lex);
-								keep = true;
-								state = ID_NL;
-								break;
-							}
-							else if (memcmp(lex->data, "float64", 7ul) == 0) {
-								add_data(id_item, lex);
-								keep = true;
-								state = ID_NL;
-								break;
-							} 
-							else if (memcmp(lex->data, "string", 6ul) == 0) {
-								add_data(id_item, lex);
-								keep = true;
-								state = ID_NL;
-								break;
-							}
-							else {
-								set_error(4, ret);
-								state = ADDED_TO_TABLE;
-								break;
-							}
+						if (lex->unit_type == INTEGER) {
+							add_data(id_item, lex);
+							keep = true;
+							state = ID_NL;
+							break;
 						}
-						if (lex->unit_type == IDENTIFICATOR) {
+						else if (lex->unit_type == DECIMAL) {
+							add_data(id_item, lex);
+							keep = true;
+							state = ID_NL;
+							break;
+						} 
+						else if (lex->unit_type == STRING) {
+							add_data(id_item, lex);
+							keep = true;
+							state = ID_NL;
+							break;
+						}
+						else if (lex->unit_type == IDENTIFICATOR) {
 							ht_item * found = sl_search(result, lex);
 							if (found == NULL) { // not found
 								for (Par * tmp = remember->parameters; tmp != NULL; tmp = tmp->next) {
@@ -538,6 +535,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 											keep = true;
 											lex->unit_type = tmp->type; // set the type as the type of the parameter
 											add_data(id_item, lex);
+											state = ID_NL;
 											break;
 										} // end of if
 									} // end of if
@@ -545,18 +543,27 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 
 								if (keep == false ){
 									set_error(4, ret);
+									state = ADDED_TO_TABLE;
 								}
 								break;
 							} // end of if
 
-							else {
+							else { // else to the if (found == NULL)
 								if (found->data == NULL) {
 									set_error(4,ret);
+									state = ADDED_TO_TABLE;
 									break;
 								}
 								add_data(id_item, found->data);
+								state = ID_NL;
+								break;
 							} // end of else
-						} // end of if
+						} // end of else if
+						else {
+							set_error(4, ret);
+							state = ADDED_TO_TABLE;
+							break;
+						}
 
 						state = ADDED_TO_TABLE;
 						set_error(2, ret);
@@ -564,6 +571,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 
 			case ID_NL:
 						if (lex->unit_type == NEWLINE) {
+							
 							state = START_OF_SECTION;
 							break;
 						}
@@ -572,25 +580,173 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 
 
 			case IF:
-						// create new table
-						// check \n
+						if (lex->unit_type == OPERATOR && memcmp(lex->data, "{", 1ul) == 0) {
+							
+							// create new table
+							sym_tab * new = htab_create(MEDIUM_TABLE);
+							if (new == NULL) {
+								clean();
+							}
+
+							sl_insert_last(result, new);
+							sl_set_act_last(result);
+
+							state = FUNC_NL;
+							break;
+						}
+						if (lex->unit_type == NEWLINE) {
+							set_error(2, ret);
+						}
+						state = IF;
 						break;
-
-
-			case IF_DECIDE:
-						// decide if else or start of section
-						break;
-
-			case ELSE:
-						// create new table
-						// check \n
-						break;
-
 
 			case FOR:
 						// create new table
-						// check \n
+						keep = false;                         
+						sym_tab * new = htab_create(1); // one identificator
+						if (new == NULL) {
+							clean();
+						}
+
+						sl_insert_last(result, new);
+						sl_set_act_last(result);
+					
+						if (lex->unit_type == IDENTIFICATOR) {      
+
+							id_item = add_item(new, lex, false);
+							if (id_item == NULL) {
+								clean();
+							}
+							lex->table = id_item; // add pointer where the info for this 							
+							keep = true;
+							state = FOR_ID_TYPE; 
+							break;
+						}
+						else if (lex->unit_type == OPERATOR && memcmp(lex->data, ";", 1ul) == 0) {
+							state = FIRST_SEMI;
+							break;
+						}
+						set_error(2, ret);
+						state = FOR_ERROR; 
 						break;
+
+			case FOR_ERROR:
+						if (lex->unit_type == IDENTIFICATOR) {      
+
+							id_item = add_item(result->act->st_data, lex, false);
+							if (id_item == NULL) {
+								clean();
+							}
+							lex->table = id_item; // add pointer where the info for this 							
+							keep = true;
+							state = FOR_ID_TYPE; 
+							break;
+						}
+						else if (lex->unit_type == OPERATOR && memcmp(lex->data, ";", 1ul) == 0) {
+							state = FIRST_SEMI;
+							break;
+						}
+						set_error(2, ret);
+						state = FOR_ERROR; 
+						break;
+
+
+			case FOR_ID_TYPE:
+						if (lex->unit_type == INTEGER) {
+							add_data(id_item, lex);
+							keep = true;
+							state = FOR_WAIT_SEMI;
+							break;
+						}
+						else if (lex->unit_type == DECIMAL) {
+							add_data(id_item, lex);
+							keep = true;
+							state = FOR_WAIT_SEMI;
+							break;
+						} 
+						else if (lex->unit_type == STRING) {
+							add_data(id_item, lex);
+							keep = true;
+							state = FOR_WAIT_SEMI;
+							break;
+						}
+						else if (lex->unit_type == IDENTIFICATOR) {
+							ht_item * found = sl_search(result, lex);
+							if (found == NULL) { // not found
+								for (Par * tmp = remember->parameters; tmp != NULL; tmp = tmp->next) {
+									
+									if (sizeof(tmp->name->data) == sizeof(lex->data)) { // compare amount of memory
+										if (strcmp(tmp->name->data, lex->data) == 0) { // compare if the memory is same 
+											keep = true;
+											lex->unit_type = tmp->type; // set the type as the type of the parameter
+											add_data(id_item, lex);
+											state = FOR_WAIT_SEMI;
+											break;
+										} // end of if
+									} // end of if
+								} // end of for
+
+								if (keep == false ){
+									set_error(4, ret);
+									state = FOR_WAIT_SEMI;
+								}
+								break;
+							} // end of if
+
+							else { // else to the if (found == NULL) -> we found it
+								if (found->data == NULL) {
+									set_error(4,ret);
+									state = FOR_WAIT_SEMI;
+									break;
+								}
+								add_data(id_item, found->data);
+								state = FOR_WAIT_SEMI;
+								break;
+							} // end of else
+						} // end of else if
+						else {
+							set_error(4, ret);
+							state = FOR_ID_TYPE;
+							break;
+						}
+
+						set_error(2, ret);
+						state = FOR_ID_TYPE;
+						break;
+
+			case FOR_WAIT_SEMI:
+						if (lex->unit_type == OPERATOR && memcmp(lex->data, ";", 1ul) == 0) {
+							state = FIRST_SEMI;
+							break;
+						}
+
+						state = FOR_WAIT_SEMI;
+						break;
+
+			case FIRST_SEMI:
+						if (lex->unit_type == OPERATOR && memcmp(lex->data, ";", 1ul) == 0) {
+							state = SECOND_SEMI;
+							break;
+						}
+						state = FIRST_SEMI;
+						break;
+
+			case SECOND_SEMI:
+						if (lex->unit_type == OPERATOR && memcmp(lex->data, "{", 1ul) == 0) {
+								// create new table                         
+								sym_tab * new = htab_create(MEDIUM_TABLE); // medium table
+								if (new == NULL) {
+									clean();
+								}
+								sl_insert_last(result, new);
+								sl_set_act_last(result);
+								state = FUNC_NL;
+								break;
+						}
+
+						state = SECOND_SEMI;
+						break;
+
 			
 			default: 
 						fprintf(stderr, "Wrong state error\n");
@@ -601,7 +757,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab * function_table) {
 
 		// free the unit if not needed
 		if (keep == false) {
-			free(lex);
+			LexUnitDelete(lex);
 		}
 
 	} // end of while
