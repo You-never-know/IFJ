@@ -1,5 +1,6 @@
 // Program 3: Prace s retezci a vestavenymi funkcemi
 package main
+substr
 
 func main() {
   s1 := "Toto je nejaky text"
@@ -23,3 +24,4 @@ func main() {
   } else {
   }
 }
+substr

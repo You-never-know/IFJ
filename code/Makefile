@@ -18,3 +18,13 @@ clean:
 move:
 	cd ./create_tables/ && $(MAKE)	move
 	cd ./lexical_analyzer/ && $(MAKE)	move
+
+run_test:
+	@echo [MESSAGE] RUN LEX_TEST
+	@echo ----------------------------------------------------------------------------------
+	cd ./test_files/ && valgrind ./lex_test
+	@echo ----------------------------------------------------------------------------------
+	@echo [MESSAGE] RUN TEST_TABLE
+	@echo ----------------------------------------------------------------------------------
+	cd ./test_files/ && valgrind ./test_table
+	@echo ----------------------------------------------------------------------------------

@@ -242,6 +242,7 @@ int main()
 	/* testing ID */
 	//------------//
 
+
 	fprintf(stdout,"\n======TEST01_ID======\n");
 	FILE * go_file=Creating_file(1,0,"test01.go","casa casca + 44 8454343 ***a=4*2 ");
 	lex_unit_t* lex_first=Loading_lex_units(go_file);
@@ -274,7 +275,7 @@ int main()
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
-
+	
 	//------------------------//
 	/*       TEST04_NL        */
 	/* testing Newline lexeme */
