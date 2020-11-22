@@ -1,4 +1,4 @@
-﻿/**
+﻿﻿/**
 * Project:
 * Implementace pøekladaèe imperativního jazyka IFJ20
 *
@@ -14,48 +14,53 @@
 
 enum tokens merge_event(lex_unit_t* lex) {
 
+
 	switch (lex->unit_type) {
 
 	case OPERATOR:
 
-		if (lex->data_size = 1) {
+		if (lex->data_size == 1) {
 
-			if (strcmp(lex->data, "$") = 0)
+			if (strcmp(lex->data, "$") == 0)
 				return DOLLAR;
 
-			else if (strcmp(lex->data, "(") = 0)
+			else if (strcmp(lex->data, "(") == 0)
 				return L_BRACKET;
 
-			else if (strcmp(lex->data, ")") = 0)
+			else if (strcmp(lex->data, ")") == 0)
 				return R_BRACKET;
 
-			else if (strcmp(lex->data, "+") = 0) || (strcmp(lex->data, "-") = 0)
+			else if ((strcmp(lex->data, "+") == 0) || (strcmp(lex->data, "-") == 0))
 				return PLUS_MINUS;
 
-			else if (strcmp(lex->data, "*") = 0) || (strcmp(lex->data, "/") = 0)
+			else if ((strcmp(lex->data, "*") == 0) || (strcmp(lex->data, "/") == 0))
 				return MUL_DIV;
 
-			else if (strcmp(lex->data, "<") = 0) || (strcmp(lex->data, ">") = 0)
+			else if ((strcmp(lex->data, "<") == 0) || (strcmp(lex->data, ">") == 0))
 				return COMPARISON;
 
-			else if (strcmp(lex->data, ",") = 0)
+			else if (strcmp(lex->data, ",") == 0)
 				return COMMA;
 		}
-		else if (lex->data_size = 2) {
+		else if (lex->data_size == 2) {
 			return COMPARISON;
 		}
 
-	case IDENTIFICATOR: //fix later
+		//fix later
+	case IDENTIFICATOR:
 		return I;
 
-	case OPERATOR or INTEGER or DECIMAL or STRING:
+	case INTEGER: case DECIMAL: case STRING:
 		return I;
 
 	default:
-		return NULL;
+		return ERR;
 	}
+	return ERR;
 }
 
+//  < = >  ERR
+// -1 0 1  42
 int prec_event(int top, int input) {
 
 	switch (top) {
