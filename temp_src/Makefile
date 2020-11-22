@@ -37,9 +37,11 @@ sym_list.o: sym_list.c sym_list.h
 lex_list.o: lex_list.c lex_list.h 
 	$(COMPILATOR) -c $<	
 
-create_tables.o: create_tables.c create_tables.h 
+prec_table.o: prec_table.c prec_table.h 
 	$(COMPILATOR) -c $<
 
+create_tables.o: create_tables.c create_tables.h 
+	$(COMPILATOR) -c $<
 
 clean_go:
 	rm -f *.go
