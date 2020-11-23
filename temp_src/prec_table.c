@@ -46,6 +46,8 @@ enum tokens merge_event(lex_unit_t* lex) {
 			return COMPARISON;
 		}
 
+		break; 
+
 		//fix later
 	case IDENTIFICATOR:
 		return I;
