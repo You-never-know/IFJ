@@ -110,21 +110,42 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 		return NULL;
 	}
 
+	if(is_function){ // initialization of func 
+		new->func = malloc(sizeof(Func));
+		if(new->func == NULL){
+			fprintf(stderr, "Symtable item malloc error\n");
+			return NULL;
+		}
+		new->id = NULL;
+		new->id->id_name = lex;
+		new->id->data = NULL;
+	}
+	else{ 			// initialization of id 
+		new->id = malloc(sizeof(Id));
+		if(new->id == NULL){
+			fprintf(stderr, "Symtable item malloc error\n");
+			return NULL;
+		}
+		new->func = NULL;
+		new->func->func_name = lex;
+		new->func->parameters = NULL;
+		new->func->return_val = NULL;
+
+	}
+
 	st->size = st->size + 1;
-	new->name = lex;
-
-	new->is_function = is_function;
-	new->data = NULL;
-
-	new->parameters = NULL;
-	new->return_val = NULL;
 	new->next = NULL;
-
 	ht_item* place = find_place(lex, st);
 
 	if (place == NULL) {
-		add_item_to_the_start(st, lex, new);
-		return new;
+		if(new->id == NULL){
+			add_item_to_the_start(st, lex, new->func);
+			return new->func;
+		}
+		else{
+			add_item_to_the_start(st, lex, new->id);		
+			return new->id;
+		}
 	}
 
 	place->next = new;
@@ -167,8 +188,8 @@ bool add_data(ht_item *item, lex_unit_t * lex) {
 		return false;
 	}
 
-	if (item->is_function != true) {
-		item->data = lex;
+	if (item->func == NULL) {
+		item->id->data = lex;
 		return true;
 	}
 
@@ -184,6 +205,11 @@ Par* malloc_param(ht_item *item) {
 		return NULL;
 	}
 
+	if(item->func == NULL){
+		fprintf(stderr,"%s\n","item is not func\n");
+		return NULL;
+	}
+
 	Par * parameter = malloc(sizeof(Par));
 
 	if (parameter == NULL) {
@@ -195,10 +221,12 @@ Par* malloc_param(ht_item *item) {
 	parameter->name = NULL;
 	parameter->type = 0;
 
+
 	// first parameter
 	if (item->parameters == NULL) {
 		item->parameters = parameter;
 	}
+	
 
 	// there are already some
 	else {
@@ -211,6 +239,7 @@ Par* malloc_param(ht_item *item) {
 
 		found->next = parameter;
 	}
+
 
 	return parameter;
 
@@ -256,6 +285,11 @@ Ret* malloc_ret_val(ht_item *item) {
 		return NULL;
 	}
 
+	if(item->func == NULL){
+		fprintf(stderr,"%s\n","item is not func\n");
+		return NULL;
+	}
+
 	Ret * ret_val = malloc(sizeof(Ret));
 
 	if (ret_val == NULL) {
@@ -267,15 +301,15 @@ Ret* malloc_ret_val(ht_item *item) {
 	ret_val->type = 0;
 
 	// first return value
-	if (item->return_val == NULL) {
-		item->return_val = ret_val;
+	if (item->func->return_val == NULL) {
+		item->func->return_val = ret_val;
 	}
 
 	// there are already some
 	else {
 
 		// find last parameter, add it there
-		Ret * found = item->return_val;
+		Ret * found = item->func->return_val;
 		for (Ret * tmp = found; tmp != NULL; tmp = tmp->next) {
 			found = tmp;
 		}
@@ -311,7 +345,12 @@ void clean_params(ht_item* it) {
 		return;
 	}
 
-	for (Par * tmp = it->parameters; tmp != NULL; ){
+	if(item->func == NULL){
+		fprintf(stderr,"%s\n","item is not func\n");
+		return NULL;
+	}
+
+	for (Par * tmp = it->func->parameters; tmp != NULL; ){
 		Par * to_be_deleted = tmp;
 		tmp = tmp->next;
 		free(to_be_deleted);
@@ -327,7 +366,12 @@ void clean_return_values(ht_item* it) {
 		return;
 	}
 
-	for (Ret * tmp = it->return_val; tmp != NULL; ){
+	if(item->func == NULL){
+		fprintf(stderr,"%s\n","item is not func\n");
+		return NULL;
+	}
+
+	for (Ret * tmp = it->func->return_val; tmp != NULL; ){
 		Ret * to_be_deleted = tmp;
 		tmp = tmp->next;
 		free(to_be_deleted);
@@ -350,11 +394,12 @@ bool clean_row(ht_item * first, sym_tab *st) {
 		ht_item * to_be_deleted = tmp;
 		tmp = tmp->next;
 
-		if (to_be_deleted->is_function){
+		if (to_be_deleted->func != NULL){
 			clean_params(to_be_deleted);
 			clean_return_values(to_be_deleted);
 		}
 
+		free(to_be_deleted->func);
 		free(to_be_deleted);
 		st->size = st->size -1;
 	}

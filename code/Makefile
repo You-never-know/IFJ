@@ -6,7 +6,6 @@ all:
 	cd ./symtable/ && $(MAKE)
 	cd ./lexical_analyzer/ && $(MAKE)
 	cd ./create_tables/ && $(MAKE)
-	cd ./prec_table/ && $(MAKE)
 
 clean:
 	cd ./lexical_analyzer/ && $(MAKE)	clean
@@ -15,7 +14,6 @@ clean:
 	cd ./structs/ && $(MAKE)	clean
 	cd ./sym_list/ && $(MAKE)	clean
 	cd ./symtable/ && $(MAKE)	clean
-	cd ./prec_table/ && $(MAKE)	clean
 
 move:
 	cd ./create_tables/ && $(MAKE)	move
