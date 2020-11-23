@@ -23,6 +23,8 @@ enum tokens {
 	F,
 	COMMA,
 	ERR,
+	E,
+	HANDLE,
 };
 
 enum tokens merge_event(lex_unit_t*);
