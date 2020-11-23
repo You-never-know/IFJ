@@ -1,11 +1,11 @@
 
 /**
 * Project:
-* Implementace pøekladaèe imperativního jazyka IFJ20
+* Implementace pÃ¸ekladaÃ¨e imperativnÃ­ho jazyka IFJ20
 *
 * Authors:
-* Drengubiak Vladimír	xdreng01
-* Fabo Matúš			xfabom01
+* Drengubiak VladimÃ­r	xdreng01
+* Fabo MatÃºÅ¡			xfabom01
 **/
 
 #include "lexical_analyzer.h"
@@ -207,7 +207,6 @@ FILE* Creating_file(bool wanna_count,bool open_only,const char *filename,const c
 }
 
 lex_list* Loading_lex_units(FILE * go_file){
-
 	if(go_file==NULL)Error("file gone wild");
 	lex_list *act = malloc(sizeof(lex_list));
 	if(act==NULL)Error("list gone wild");
@@ -215,7 +214,6 @@ lex_list* Loading_lex_units(FILE * go_file){
 	if(act->unit==NULL)Error("Lexical unit allocation failed");
 	LexUnitCtor(act->unit);
 	lex_list *first=act; // first ptr of lex_units
-	/*
 	lex_list * last_act = NULL;
 	while(Analyze(go_file, act->unit) != NULL){ // loading units
 		act->next = malloc(sizeof(lex_list));
@@ -228,8 +226,10 @@ lex_list* Loading_lex_units(FILE * go_file){
 	}
 	if(act->unit == first->unit && act->unit->data_size == 0)first->unit = NULL;
 	LexUnitDelete(act->unit);
-	if(last_act != NULL) last_act->next= NULL;
-	*/
+	if(last_act != NULL){
+		free(last_act->next);
+		last_act->next = NULL;
+	}
 	return first;
 }
 
@@ -243,6 +243,7 @@ void Free_Lex_Units(lex_list* first){
 	for(tmp = first; tmp != NULL; tmp = tmp_next){
 		tmp_next = tmp->next;
 		LexUnitDelete(tmp->unit);
+		free(tmp);
 	}
 }
 
@@ -256,12 +257,10 @@ int main()
 	fprintf(stdout,"\n======TEST01_ID======\n");
 	FILE * go_file=Creating_file(1,0,"test01.go","casa casca + 44 8454343 ***a=4*2 ");
 	lex_list* lex_first=Loading_lex_units(go_file);
-	//Prints_lex(lex_first,WORD_COUNT);
-	//Free_Lex_Units(lex_first);
+	Prints_lex(lex_first,WORD_COUNT);
+	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
-	
-  return 1;
 	//------------//
 	/* TEST02_ID  */
 	/* testing ID */
