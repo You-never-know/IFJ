@@ -13,6 +13,12 @@
 #include <ctype.h>
 #include <unistd.h>
 
+typedef struct lex_u_list //linked list for test 
+{
+	lex_unit_t * unit;
+	struct lex_u_list *next;
+}lex_list;
+
 unsigned WORD_COUNT=0;
 
 void Error(const char *msg){
@@ -129,17 +135,17 @@ void Lex_count(FILE* go_file){
 }
 
 
-void Prints_lex(lex_unit_t* First,int number_of_units){//-1 ignores assert 
+void Prints_lex(lex_list* First,int number_of_units){//-1 ignores assert 
 	int counter=0;
 	if(First == NULL){if(number_of_units!=-1)assert(counter==number_of_units);return;}
-	lex_unit_t* tmp = First;
+	lex_list* tmp = First;
 	fprintf(stdout,"~~~~~~~~\n");
 	fprintf(stdout,"Lexemes:\n");
 	fprintf(stdout,"-+-------------------\n");
 	while(tmp!=NULL){
 		counter++;
 		fprintf(stdout," | unit_type: ");
-		switch(tmp->unit_type){
+		switch(tmp->unit->unit_type){
 			case ERROR:			fprintf(stdout, "Error\n"); break;
 			case OPERATOR:		fprintf(stdout, "Operator\n"); break;
 			case IDENTIFICATOR:	fprintf(stdout, "Identificator\n"); break;
@@ -152,15 +158,15 @@ void Prints_lex(lex_unit_t* First,int number_of_units){//-1 ignores assert
 			case INT_ERR:		fprintf(stdout, "Integer Error\n"); break;
 			case DEC_ERR:		fprintf(stdout, "Decimal Error\n"); break;
 			case STR_ERR:		fprintf(stdout, "String Error\n"); break;
-			default:			fprintf(stdout, "%d\n", tmp->unit_type); break;
+			default:			fprintf(stdout, "%d\n", tmp->unit->unit_type); break;
 		}
-		fprintf(stdout," | data_size: %ld\n",tmp->data_size);
+		fprintf(stdout," | data_size: %ld\n",tmp->unit->data_size);
 		fprintf(stdout," | data: ");
-		switch(tmp->unit_type){
-			case INTEGER:		fprintf(stdout, "%ld\n", *((size_t*)tmp->data)); break;
-			case DECIMAL:		fprintf(stdout, "%f\n", *((double*)tmp->data)); break;
-			case STRING:		fprintf(stdout, "\"%s\"\n", (char*)tmp->data); break;
-			default:			fprintf(stdout, "%s\n", (char*)tmp->data); break;
+		switch(tmp->unit->unit_type){
+			case INTEGER:		fprintf(stdout, "%ld\n", *((size_t*)tmp->unit->data)); break;
+			case DECIMAL:		fprintf(stdout, "%f\n", *((double*)tmp->unit->data)); break;
+			case STRING:		fprintf(stdout, "\"%s\"\n", (char*)tmp->unit->data); break;
+			default:			fprintf(stdout, "%s\n", (char*)tmp->unit->data); break;
 		}
 		tmp=tmp->next;
 		fprintf(stdout," +-------------------\n");
@@ -200,38 +206,43 @@ FILE* Creating_file(bool wanna_count,bool open_only,const char *filename,const c
 	return go_file;
 }
 
-lex_unit_t* Loading_lex_units(FILE * go_file){
+lex_list* Loading_lex_units(FILE * go_file){
 
 	if(go_file==NULL)Error("file gone wild");
-
-	lex_unit_t *act = malloc(sizeof(lex_unit_t));
-	if(act==NULL) Error("Lexical unit allocation failed");
-	LexUnitCtor(act);
-	lex_unit_t *first=act; // first ptr of lex_units
-	lex_unit_t* last_act = NULL;
-	while(Analyze(go_file, act) != NULL){ // loading units
-		act->next = malloc(sizeof(lex_unit_t));
-		if(act->next == NULL) Error("Lexical unit allocation failed");
-		LexUnitCtor(act->next);
+	lex_list *act = malloc(sizeof(lex_list));
+	if(act==NULL)Error("list gone wild");
+	act->unit = malloc(sizeof(lex_unit_t));
+	if(act->unit==NULL)Error("Lexical unit allocation failed");
+	LexUnitCtor(act->unit);
+	lex_list *first=act; // first ptr of lex_units
+	/*
+	lex_list * last_act = NULL;
+	while(Analyze(go_file, act->unit) != NULL){ // loading units
+		act->next = malloc(sizeof(lex_list));
+		if(act->next == NULL) Error("list gone wild");
+		act->next->unit =malloc(sizeof(lex_unit_t));
+		if(act->next->unit == NULL) Error("Lexical unit allocation failed");
+		LexUnitCtor(act->next->unit);
 		last_act = act;
 		act=act->next;
 	}
-	if(act == first && act->data_size == 0)first = NULL;
-	LexUnitDelete(act);
-	if(last_act != NULL) last_act->next = NULL;
+	if(act->unit == first->unit && act->unit->data_size == 0)first->unit = NULL;
+	LexUnitDelete(act->unit);
+	if(last_act != NULL) last_act->next= NULL;
+	*/
 	return first;
 }
 
-void Free_Lex_Units(lex_unit_t* first){
+void Free_Lex_Units(lex_list* first){
 	/// Check function argument
 	if(first == NULL) return;
 
 	/// Loop through & free each unit in 'lex_unit_t' linked list
-	lex_unit_t* tmp;
-	lex_unit_t* tmp_next;
+	lex_list* tmp;
+	lex_list* tmp_next;
 	for(tmp = first; tmp != NULL; tmp = tmp_next){
 		tmp_next = tmp->next;
-		LexUnitDelete(tmp);
+		LexUnitDelete(tmp->unit);
 	}
 }
 
@@ -242,16 +253,15 @@ int main()
 	/* testing ID */
 	//------------//
 
-
 	fprintf(stdout,"\n======TEST01_ID======\n");
 	FILE * go_file=Creating_file(1,0,"test01.go","casa casca + 44 8454343 ***a=4*2 ");
-	lex_unit_t* lex_first=Loading_lex_units(go_file);
-	Prints_lex(lex_first,WORD_COUNT);
-	Free_Lex_Units(lex_first);
+	lex_list* lex_first=Loading_lex_units(go_file);
+	//Prints_lex(lex_first,WORD_COUNT);
+	//Free_Lex_Units(lex_first);
 	fclose(go_file);
 
 	
-  
+  return 1;
 	//------------//
 	/* TEST02_ID  */
 	/* testing ID */
@@ -275,7 +285,7 @@ int main()
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
-	
+
 	//------------------------//
 	/*       TEST04_NL        */
 	/* testing Newline lexeme */
