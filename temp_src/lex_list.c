@@ -100,7 +100,7 @@ void ll_del_first(lex_list* ll) {
 
 ll_elem_ptr * ll_return_first(lex_list* ll) {
 
-	return ll->first;
+	return &ll->first;
 }
 
 d_node* ll_return_first_data(lex_list* ll) {
