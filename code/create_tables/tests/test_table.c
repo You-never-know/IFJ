@@ -14,26 +14,26 @@ void print_table(sym_tab * st) {
 		for (ht_item *tmp = st->ptr[i]; tmp != NULL; tmp=tmp->next) {
 
 			printf("%p\n", (void *)tmp);
-			printf("%i\n", tmp->name->unit_type);
-			
-			if (! tmp->is_function) {
+			if(tmp->func!=NULL)printf("%i\n", tmp->func->func_name->unit_type);
+			if(tmp->id!=NULL)printf("%i\n", tmp->id->id_name->unit_type);
+
+			if  (tmp->func==NULL) {
 				printf("ID\n");
-				printf("%i\n", tmp->data->unit_type);
-
+				printf("%i\n", tmp->id->type);
 			}
-
+			
 			else {
 				printf("FUN\n");
 
 				printf("params\n");
 				
-				for (Par *tmp1 = tmp->parameters; tmp1 != NULL; tmp1=tmp1->next) {
+				for (Par *tmp1 = tmp->func->parameters; tmp1 != NULL; tmp1=tmp1->next) {
 					printf("%i\n", tmp1->type);
 				}
 				
 				printf("return types\n");
 				
-				for (Ret *tmp2 = tmp->return_val; tmp2 != NULL; tmp2=tmp2->next) {
+				for (Ret *tmp2 = tmp->func->return_val; tmp2 != NULL; tmp2=tmp2->next) {
 					printf("%i\n", tmp2->type);
 				}
 				printf("\n"); 
@@ -57,7 +57,6 @@ int main() {
 	char * str1 = "tru";
 	char * str2 = "fal";
 	char * str3 = "tru";
-
 	int i = 54;
 	int j = 85.6;
 

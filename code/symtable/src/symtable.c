@@ -28,7 +28,7 @@ size_t htab_hash_fun(const char* str) {
 // malloc space for new hash table and inicialize it 
 // return pointer to new symtable or NULL if allocation failed
 sym_tab *htab_create(size_t n) {
-
+	
 	if (n == 0) {
 		return NULL;
 	}
@@ -39,17 +39,15 @@ sym_tab *htab_create(size_t n) {
 		fprintf(stderr, "Symtable malloc error\n");
 		return NULL;
 	}
-
+	
 
 	new->arr_size = n;
 	new->size = 0;
-
-	for (size_t i = 0; i<n; i++) { // initialize pointers
-
+	
+	for (size_t i = 0; i<n; i++) { // initialize pointersS
 		new->ptr[i] = NULL;
 
 	}
-
 	return new;
 
 }
@@ -98,7 +96,6 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 		fprintf(stderr, "Add_id failed\n");
 		return NULL;
 	}
-
 	// we dont want to add the same item twice
 	if (find_item(st,lex) != NULL) {
 		return NULL;
@@ -118,7 +115,7 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 		}
 		new->id = NULL;
 		new->id->id_name = lex;
-		new->id->data = NULL;
+		new->id->type = 0;
 	}
 	else{ 			// initialization of id 
 		new->id = malloc(sizeof(Id));
@@ -137,16 +134,9 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 	new->next = NULL;
 	ht_item* place = find_place(lex, st);
 
-	if (place == NULL) {
-		if(new->id == NULL){
-			add_item_to_the_start(st, lex, new->func);
-			return new->func;
-		}
-		else{
-			add_item_to_the_start(st, lex, new->id);		
-			return new->id;
-		}
-	}
+	if(place==NULL)
+	add_item_to_the_start(st, lex, new);		
+	
 
 	place->next = new;
 
@@ -161,19 +151,25 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 	if (lex == NULL || st == NULL) {
 		fprintf(stderr, "find item error\n");
 		return NULL;
-	}
+	};
 
 	size_t idx = htab_hash_fun((const char*)lex->data) % st->arr_size;
-
+	printf("SSCC\n");
+   if(st->ptr[idx]==NULL)fprintf(stderr, "find item error\n");
 
 	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
-
-		if (tmp->name == lex) {
-			return tmp;
+		if(tmp->func!=NULL) {
+			if (tmp->func->func_name == lex) {
+				return tmp;
+			}
 		}
-
+		else if(tmp->id!=NULL){
+			if (tmp->id->id_name == lex) {
+				return tmp;
+			}
+		}
 	}
-
+	fprintf(stderr, "wtf2\n");	
 	return NULL;
 } 
 
@@ -189,7 +185,7 @@ bool add_data(ht_item *item, lex_unit_t * lex) {
 	}
 
 	if (item->func == NULL) {
-		item->id->data = lex;
+		item->id->type = lex->unit_type;
 		return true;
 	}
 
@@ -223,8 +219,8 @@ Par* malloc_param(ht_item *item) {
 
 
 	// first parameter
-	if (item->parameters == NULL) {
-		item->parameters = parameter;
+	if (item->func->parameters == NULL) {
+		item->func->parameters = parameter;
 	}
 	
 
@@ -232,7 +228,7 @@ Par* malloc_param(ht_item *item) {
 	else {
 
 		// find last parameter, add it there
-		Par * found = item->parameters;
+		Par * found = item->func->parameters;
 		for (Par * tmp = found; tmp != NULL; tmp = tmp->next) {
 			found = tmp;
 		}
@@ -345,9 +341,9 @@ void clean_params(ht_item* it) {
 		return;
 	}
 
-	if(item->func == NULL){
+	if(it->func == NULL){
 		fprintf(stderr,"%s\n","item is not func\n");
-		return NULL;
+		return ;
 	}
 
 	for (Par * tmp = it->func->parameters; tmp != NULL; ){
@@ -366,9 +362,9 @@ void clean_return_values(ht_item* it) {
 		return;
 	}
 
-	if(item->func == NULL){
+	if(it->func == NULL){
 		fprintf(stderr,"%s\n","item is not func\n");
-		return NULL;
+		return;
 	}
 
 	for (Ret * tmp = it->func->return_val; tmp != NULL; ){

@@ -18,6 +18,7 @@
 typedef struct param {
 	struct lex_unit * name; // name of the identificator
 	int type; // type of the parameter
+	bool accesible; // can be accesible
 	
 	struct param * next; // pointer to the next parameter - linked list
 } Par;
@@ -39,7 +40,7 @@ typedef struct function {
 
 typedef struct identificator {
 	struct lex_unit * id_name; // name of the identificator
-	struct lex_unit * data; // value of the identificator, active only for id not for fun
+	int type; // value of the identificator, active only for id not for fun
 
 } Id;
 

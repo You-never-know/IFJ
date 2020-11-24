@@ -1,4 +1,4 @@
-CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc -I../symtable/inc/ -I../structs/inc/
+CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc -I/inc/ -I../structs/inc/ -I/src/
 COMPILATOR = gcc $(CFLAGS) -o $@
 
 #paths to each dirictories
@@ -17,7 +17,7 @@ HEADERS = $(patsubst %,$(INC_PATH)%,$(H)) #all headers
 
 all:$(OBJ_FILES) $(TARGET)
 
-$(OBJ_PATH)symtable.o: ./../symtable/src/symtable.c ./../symtable/inc/symtable.h ./../structs/inc/structs.h
+$(OBJ_PATH)symtable.o: ./src/symtable.c ./inc/symtable.h ./../structs/inc/structs.h
 	@echo [MESSAGE] CREATING SYMTABLE.O
 	@echo ----------------------------------------------------------------------------------
 	$(COMPILATOR) -c $<

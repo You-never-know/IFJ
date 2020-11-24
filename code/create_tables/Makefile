@@ -20,7 +20,7 @@ HEADERS = $(patsubst %,$(INC_PATH)%,$(H)) #all headers
 
 all:$(OBJ_FILES) $(TARGET)
 
-$(OBJ_PATH)test_table.o: ./tests/test_table.c ./../structs/inc/structs.h ./../symtable/inc/symtable.h ./../sym_list/inc/sym_list.h
+$(OBJ_PATH)test_table.o: ./tests/test_table.c ./../structs/inc/structs.h ./../symtable/inc/symtable.h ./../sym_list/inc/sym_list.h ./../symtable/src/symtable.c
 	@echo [MESSAGE] CREATING TEST_TABLE.O
 	@echo ----------------------------------------------------------------------------------
 	$(COMPILATOR) -c $<
