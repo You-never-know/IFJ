@@ -1,11 +1,11 @@
 
 /**
 * Project:
-* Implementace pøekladaèe imperativního jazyka IFJ20
+* Implementace pÃ¸ekladaÃ¨e imperativnÃ­ho jazyka IFJ20
 *
 * Authors:
-* Drengubiak Vladimír	xdreng01
-* Fabo Matúš			xfabom01
+* Drengubiak VladimÃ­r	xdreng01
+* Fabo MatÃºÅ¡			xfabom01
 **/
 
 #include "lexical_analyzer.h"
