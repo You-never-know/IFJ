@@ -85,6 +85,7 @@ void add_item_to_the_start(sym_tab *st, lex_unit_t *lex, ht_item* new) {
 	size_t idx = htab_hash_fun((const char*)lex->data) % st->arr_size;
 
 	st->ptr[idx] = new;
+	
 }
 
 
@@ -109,11 +110,6 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 	}
 
 	if(is_function){ // initialization of func
-		new=malloc(sizeof(ht_item));
-		if(new == NULL){
-			fprintf(stderr, "Symtable item malloc error\n");
-			return NULL;
-		}
 		new->func = malloc(sizeof(Func));
 		if(new->func == NULL){
 			fprintf(stderr, "Symtable item malloc error\n");
@@ -126,11 +122,6 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 		
 	}
 	else{ 			// initialization of id 
-		new=malloc(sizeof(ht_item));
-		if(new == NULL){
-			fprintf(stderr, "Symtable item malloc error\n");
-			return NULL;
-		}
 		new->id = malloc(sizeof(Id));
 		if(new->id == NULL){
 			fprintf(stderr, "Symtable item malloc error\n");
@@ -166,7 +157,7 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 	};
 
 	size_t idx = htab_hash_fun((const char*)lex->data) % st->arr_size;
-   if(st->ptr[idx]==NULL)fprintf(stderr, "find item error\n");
+  
 
 	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
 
@@ -195,7 +186,7 @@ bool add_data(ht_item *item, lex_unit_t * lex) {
 		return false;
 	}
 
-	if (item->func == NULL) {
+	if (item->id != NULL) {
 		item->id->type = lex->unit_type;
 		return true;
 	}
@@ -404,9 +395,13 @@ bool clean_row(ht_item * first, sym_tab *st) {
 		if (to_be_deleted->func != NULL){
 			clean_params(to_be_deleted);
 			clean_return_values(to_be_deleted);
+			free(to_be_deleted->func);
 		}
 
-		free(to_be_deleted->func);
+		if(to_be_deleted->id != NULL){
+			free(to_be_deleted->id);
+		}
+
 		free(to_be_deleted);
 		st->size = st->size -1;
 	}
