@@ -25,7 +25,6 @@ lex_list* ll_init() {
 	}
 
 	ll->first = NULL;
-	ll->last = NULL;
 	ll->length = 0;
 
 	return ll;
@@ -41,7 +40,6 @@ void ll_dissolve(lex_list* ll) {
 		ll->first = tmp->r;
 
 		//tmp contents set
-		tmp->l = NULL;
 		tmp->r = NULL;
 		tmp->ll_data = NULL;
 
@@ -52,13 +50,12 @@ void ll_dissolve(lex_list* ll) {
 
 	//set items to NULL
 	ll->first = NULL;
-	ll->last = NULL;
 	ll->length = 0;
 
 	free(ll);
 }
 
-void ll_insert_first(lex_list* ll, lex_unit_t* ll_data) {
+void ll_insert_first(lex_list* ll, d_node* ll_data) {
 
 	//new item allocation
 	ll_elem_ptr tmp = (ll_elem_ptr)malloc(sizeof(struct ll_elem));
@@ -72,16 +69,7 @@ void ll_insert_first(lex_list* ll, lex_unit_t* ll_data) {
 	//tmp contents set
 	tmp->ll_data = ll_data;
 	tmp->r = ll->first;
-	tmp->l = NULL;
-
-	if (ll->first != NULL) { //item exists
-		ll->first->l = tmp; //point at new item to the left
-
-	}
-	else { //insert to empty list
-		ll->last = tmp;
-	}
-	ll->first = tmp; //set new item tmpPtr as the first one
+	ll->first = tmp; //set new item tmp as the first one
 
 	(ll->length)++;
 }
@@ -95,17 +83,11 @@ void ll_del_first(lex_list* ll) {
 
 		tmp = ll->first;
 	
-		if (ll->first == ll->last) {//dissolve only item
-			ll->first = NULL;
-			ll->last = NULL;
-		}
-		else {
+		if (ll->first->r != NULL) {
 			ll->first = ll->first->r; //set the first item to the next one
-			ll->first->l = NULL; //pointer to the left set to NULL
 		}
 
 		//set pointers to NULL
-		tmp->l = NULL;
 		tmp->r = NULL;
 		tmp->ll_data = NULL;
 
@@ -116,6 +98,15 @@ void ll_del_first(lex_list* ll) {
 
 }
 
+ll_elem_ptr * ll_return_first(lex_list* ll) {
+
+	return ll->first;
+}
+
+d_node* ll_return_first_data(lex_list* ll) {
+
+	return ll->first->ll_data;
+}
 
 int ll_get_length(lex_list* ll) {
 
