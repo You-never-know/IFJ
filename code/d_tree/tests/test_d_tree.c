@@ -14,6 +14,7 @@ int main(){
  	printf("%d root \n",root->type);
  	printf("%d root left \n",root->left->type);
  	printf("%d root right \n",root->right->type);
+ 	delete_tree(root);
  	
 
 }

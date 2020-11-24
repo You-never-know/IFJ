@@ -63,3 +63,13 @@ d_node * d_node_insert_right(d_node * node,d_node * right_node){
 	}
 	return node;
 }
+
+void delete_tree(d_node * root){
+
+	if(root==NULL)return;
+	delete_tree(root->left);
+	delete_tree(root->right);
+	free(root);
+	root=NULL;
+	
+}
