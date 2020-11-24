@@ -1,4 +1,4 @@
-CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc -I../structs/inc/ -I../symtable/inc/
+CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc -I../structs/inc/ -I../symtable/inc/ -I../d_tree/inc/  
 COMPILATOR = gcc $(CFLAGS) -o $@
 
 #paths to each dirictories
@@ -16,7 +16,7 @@ HEADERS = $(patsubst %,$(INC_PATH)%,$(H)) #all headers
 
 all:$(OBJ_FILES) $(TARGET)
 
-$(OBJ_PATH)lex_list.o: $(SRC_PATH)lex_list.c $(HEADERS) ./../structs/inc/structs.h ./../symtable/inc/symtable.h
+$(OBJ_PATH)lex_list.o: $(SRC_PATH)lex_list.c $(HEADERS) ./../structs/inc/structs.h ./../symtable/inc/symtable.h ./../d_tree/inc/d_tree.h
 	@echo [MESSAGE] CREATING  LEX_LIST.O
 	@echo ----------------------------------------------------------------------------------
 	$(COMPILATOR) -c $<
