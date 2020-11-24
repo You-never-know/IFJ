@@ -75,8 +75,7 @@ int main() {
 	f.data = &i;
 
 	ht_item * t1 = add_item(test1, &a, false);
-	add_data(t1, &b);
-
+	add_data(t1, &b);	
 	ht_item * t2 = add_item(test1, &d, false);
 	add_data(t2, &c);
 

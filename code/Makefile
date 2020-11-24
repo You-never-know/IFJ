@@ -13,18 +13,17 @@ clean:
 	cd ./lex_list/ && $(MAKE)	clean
 	cd ./structs/ && $(MAKE)	clean
 	cd ./sym_list/ && $(MAKE)	clean
-	cd ./symtable/ && $(MAKE)	clean
+	cd ./symtable/ && $(MAKE)	clean	
 
-move:
-	cd ./create_tables/ && $(MAKE)	move
+run_table:
+	@echo [MESSAGE] RUN TEST_TABLE
+	@echo ----------------------------------------------------------------------------------
+	cd ./create_tables/ && valgrind ./test_table
+	@echo ----------------------------------------------------------------------------------
+
+run_lex:
 	cd ./lexical_analyzer/ && $(MAKE)	move
-
-run_test:
 	@echo [MESSAGE] RUN LEX_TEST
 	@echo ----------------------------------------------------------------------------------
 	cd ./test_files/ && valgrind ./lex_test
-	@echo ----------------------------------------------------------------------------------
-	@echo [MESSAGE] RUN TEST_TABLE
-	@echo ----------------------------------------------------------------------------------
-	cd ./test_files/ && valgrind ./test_table
 	@echo ----------------------------------------------------------------------------------

@@ -101,43 +101,55 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 		return NULL;
 	}
 
+
 	ht_item * new = malloc(sizeof(ht_item));
 	if (new == NULL) {
 		fprintf(stderr, "Symtable item malloc error\n");
 		return NULL;
 	}
 
-	if(is_function){ // initialization of func 
+	if(is_function){ // initialization of func
+		new=malloc(sizeof(ht_item));
+		if(new == NULL){
+			fprintf(stderr, "Symtable item malloc error\n");
+			return NULL;
+		}
 		new->func = malloc(sizeof(Func));
 		if(new->func == NULL){
 			fprintf(stderr, "Symtable item malloc error\n");
 			return NULL;
 		}
 		new->id = NULL;
-		new->id->id_name = lex;
-		new->id->type = 0;
+		new->func->func_name = lex;
+		new->func->parameters = NULL;
+		new->func->return_val = NULL;
+		
 	}
 	else{ 			// initialization of id 
+		new=malloc(sizeof(ht_item));
+		if(new == NULL){
+			fprintf(stderr, "Symtable item malloc error\n");
+			return NULL;
+		}
 		new->id = malloc(sizeof(Id));
 		if(new->id == NULL){
 			fprintf(stderr, "Symtable item malloc error\n");
 			return NULL;
 		}
 		new->func = NULL;
-		new->func->func_name = lex;
-		new->func->parameters = NULL;
-		new->func->return_val = NULL;
+		new->id->id_name = lex;
+		new->id->type = 0;
 
 	}
-
 	st->size = st->size + 1;
 	new->next = NULL;
+
 	ht_item* place = find_place(lex, st);
 
 	if(place==NULL)
 	add_item_to_the_start(st, lex, new);		
 	
-
+	if(place!=NULL)
 	place->next = new;
 
 	return new;
@@ -154,10 +166,10 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 	};
 
 	size_t idx = htab_hash_fun((const char*)lex->data) % st->arr_size;
-	printf("SSCC\n");
    if(st->ptr[idx]==NULL)fprintf(stderr, "find item error\n");
 
 	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
+
 		if(tmp->func!=NULL) {
 			if (tmp->func->func_name == lex) {
 				return tmp;
@@ -168,8 +180,7 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 				return tmp;
 			}
 		}
-	}
-	fprintf(stderr, "wtf2\n");	
+	}	
 	return NULL;
 } 
 

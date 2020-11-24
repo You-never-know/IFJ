@@ -18,7 +18,7 @@ TARGET = test_table
 OBJ_FILES = $(patsubst %,$(OBJ_PATH)%,$(OBJ)) #all obj files
 HEADERS = $(patsubst %,$(INC_PATH)%,$(H)) #all headers
 
-all:$(OBJ_FILES) $(TARGET)
+all: $(OBJ_PATH)test_table.o $(TARGET) 
 
 $(OBJ_PATH)test_table.o: ./tests/test_table.c ./../structs/inc/structs.h ./../symtable/inc/symtable.h ./../sym_list/inc/sym_list.h ./../symtable/src/symtable.c
 	@echo [MESSAGE] CREATING TEST_TABLE.O
@@ -26,16 +26,17 @@ $(OBJ_PATH)test_table.o: ./tests/test_table.c ./../structs/inc/structs.h ./../sy
 	$(COMPILATOR) -c $<
 	@echo ----------------------------------------------------------------------------------
 
-$(OBJ_PATH)create_tables.o: $(SRC_PATH)create_tables.c $(INC_PATH)create_tables.h
-	@echo [MESSAGE] CREATING CREATE_TABLES.O
-	@echo ----------------------------------------------------------------------------------
-	$(COMPILATOR) -c $<
-	@echo ----------------------------------------------------------------------------------
-$(TARGET): $(OBJ_FILES) ./../structs/obj/structs.o ./../symtable/obj/symtable.o ./../sym_list/obj/sym_list.o ./../lexical_analyzer/obj/lexical_analyzer.o 
+$(TARGET): $(OBJ_PATH)test_table.o ./../structs/obj/structs.o ./../symtable/obj/symtable.o ./../sym_list/obj/sym_list.o ./../lexical_analyzer/obj/lexical_analyzer.o 
 	@echo [MESSAGE] CREATING EXE TEST_TABLE
 	@echo ----------------------------------------------------------------------------------
 	$(COMPILATOR) $^
 	@echo ----------------------------------------------------------------------------------
+	
+#$(OBJ_PATH)create_tables.o: $(SRC_PATH)create_tables.c $(INC_PATH)create_tables.h
+#	@echo [MESSAGE] CREATING CREATE_TABLES.O
+#	@echo ----------------------------------------------------------------------------------
+#	$(COMPILATOR) -c $<
+#	@echo ----------------------------------------------------------------------------------
 
 
 clean:
