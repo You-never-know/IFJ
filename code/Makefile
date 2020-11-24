@@ -6,6 +6,7 @@ all:
 	cd ./symtable/ && $(MAKE)
 	cd ./lexical_analyzer/ && $(MAKE)
 	cd ./create_tables/ && $(MAKE)
+	cd ./d_tree/ && $(MAKE)
 
 clean:
 	cd ./lexical_analyzer/ && $(MAKE)	clean
@@ -13,7 +14,8 @@ clean:
 	cd ./lex_list/ && $(MAKE)	clean
 	cd ./structs/ && $(MAKE)	clean
 	cd ./sym_list/ && $(MAKE)	clean
-	cd ./symtable/ && $(MAKE)	clean	
+	cd ./symtable/ && $(MAKE)	clean
+	cd ./d_tree/ && $(MAKE) clean
 
 run_table:
 	@echo [MESSAGE] RUN TEST_TABLE
@@ -26,4 +28,10 @@ run_lex:
 	@echo [MESSAGE] RUN LEX_TEST
 	@echo ----------------------------------------------------------------------------------
 	cd ./test_files/ && valgrind ./lex_test
+	@echo ----------------------------------------------------------------------------------
+
+run_d_tree:
+	@echo [MESSAGE] RUN d TEST_D_TREE
+	@echo ----------------------------------------------------------------------------------
+	cd ./d_tree/ && valgrind ./test_d_tree
 	@echo ----------------------------------------------------------------------------------

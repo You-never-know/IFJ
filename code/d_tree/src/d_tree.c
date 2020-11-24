@@ -29,7 +29,7 @@ d_node * d_node_create(d_node * node,lex_unit_t * r_data,int r_type){
 	return node;
 
 }
-d_node * d_node_insert_left(d_node * node){
+d_node * d_node_insert_left(d_node * node,d_node * left_node){
 
 	if(node==NULL){
 	 	fprintf(stderr,"node is not allocated\n");
@@ -41,13 +41,13 @@ d_node * d_node_insert_left(d_node * node){
 		return node;
 	 }
 	 else{
-	 	node->left=node;
+	 	node->left=left_node;
 	}
 
 	return node;
 
 }
-d_node * d_node_insert_right(d_node * node){
+d_node * d_node_insert_right(d_node * node,d_node * right_node){
 
 	if(node==NULL){
 	 	fprintf(stderr,"node is not allocated\n");
@@ -59,7 +59,7 @@ d_node * d_node_insert_right(d_node * node){
 		return node;
 	 }
 	 else{
-	 	node->right=node;
+	 	node->right=right_node;
 	}
 	return node;
 }
