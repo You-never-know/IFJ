@@ -64,6 +64,14 @@ d_node * d_node_insert_right(d_node * node,d_node * right_node){
 	return node;
 }
 
+d_node* next_left(d_node* node){
+	if(node==NULL){
+		fprintf(stderr,"root is NULL\n");
+		return node;
+	}
+	return node->left;
+
+}
 void delete_tree(d_node * root){
 
 	if(root==NULL)return;

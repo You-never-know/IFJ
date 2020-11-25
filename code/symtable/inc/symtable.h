@@ -18,7 +18,6 @@
 typedef struct param {
 	struct lex_unit * name; // name of the identificator
 	int type; // type of the parameter
-	bool accesible; // can be accesible
 	
 	struct param * next; // pointer to the next parameter - linked list
 } Par;
@@ -41,7 +40,7 @@ typedef struct function {
 typedef struct identificator {
 	struct lex_unit * id_name; // name of the identificator
 	int type; // value of the identificator, active only for id not for fun
-
+	bool accesible; // can be accesible
 } Id;
 
 typedef struct htable_item {	
@@ -71,5 +70,6 @@ Ret* malloc_ret_val(ht_item *item); // allocates and inicializes parameter
 bool add_ret_type(Ret* ret, int type); // add data to the parameter
 int clean_table(sym_tab *st); // removes all items from the table
 void free_table(sym_tab *st); // free the given table from memory
+bool add_access(ht_item * item,bool access); //add access to ID by default is false
 
 #endif 

@@ -130,6 +130,7 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 		new->func = NULL;
 		new->id->id_name = lex;
 		new->id->type = 0;
+		new->id->accesible = 0;
 
 	}
 	st->size = st->size + 1;
@@ -192,6 +193,20 @@ bool add_data(ht_item *item, lex_unit_t * lex) {
 	}
 
 	return false;
+}
+
+bool add_access(ht_item * item,bool access){
+	
+	if(item==NULL){
+		fprintf(stderr, "add_access error\n");
+		return false;
+	}
+	if(item->id!=NULL){
+		item->id->accesible=access;
+		return true;
+	}
+	return false;
+
 }
 
 // allocates and inicializes parameter and adds it to the linked list
