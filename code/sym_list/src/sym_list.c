@@ -7,6 +7,8 @@
 **/
 
 #include "sym_list.h"
+#include "structs.h"
+#include "symtable.h"
 
 void sl_err() {
 
@@ -150,6 +152,16 @@ void sl_set_prev_act(sym_list* sl) {
 			sl->act = sl->act->l; //moves the active element to the left
 		}
 
+	}
+}
+
+void set_all_accessible(sym_list* sl) {
+
+	sl_elem_ptr tmp = sl->first;
+
+	while (tmp != NULL) {
+		tmp->accessible = true;
+		tmp = tmp->r;
 	}
 }
 
