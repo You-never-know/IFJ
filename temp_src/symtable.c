@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 
 
 // hash function from http://www.cse.yorku.ca/~oz/hash.html
@@ -29,7 +28,7 @@ size_t htab_hash_fun(const char* str) {
 // malloc space for new hash table and inicialize it 
 // return pointer to new symtable or NULL if allocation failed
 sym_tab *htab_create(size_t n) {
-
+	
 	if (n == 0) {
 		return NULL;
 	}
@@ -40,17 +39,15 @@ sym_tab *htab_create(size_t n) {
 		fprintf(stderr, "Symtable malloc error\n");
 		return NULL;
 	}
-
+	
 
 	new->arr_size = n;
 	new->size = 0;
-
-	for (size_t i = 0; i<n; i++) { // initialize pointers
-
+	
+	for (size_t i = 0; i<n; i++) { // initialize pointersS
 		new->ptr[i] = NULL;
 
 	}
-
 	return new;
 
 }
@@ -88,6 +85,7 @@ void add_item_to_the_start(sym_tab *st, lex_unit_t *lex, ht_item* new) {
 	size_t idx = htab_hash_fun((const char*)lex->data) % st->arr_size;
 
 	st->ptr[idx] = new;
+	
 }
 
 
@@ -99,11 +97,11 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 		fprintf(stderr, "Add_id failed\n");
 		return NULL;
 	}
-
 	// we dont want to add the same item twice
 	if (find_item(st,lex) != NULL) {
 		return NULL;
 	}
+
 
 	ht_item * new = malloc(sizeof(ht_item));
 	if (new == NULL) {
@@ -111,23 +109,39 @@ ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function) {
 		return NULL;
 	}
 
+	if(is_function){ // initialization of func
+		new->func = malloc(sizeof(Func));
+		if(new->func == NULL){
+			fprintf(stderr, "Symtable item malloc error\n");
+			return NULL;
+		}
+		new->id = NULL;
+		new->func->func_name = lex;
+		new->func->parameters = NULL;
+		new->func->return_val = NULL;
+		
+	}
+	else{ 			// initialization of id 
+		new->id = malloc(sizeof(Id));
+		if(new->id == NULL){
+			fprintf(stderr, "Symtable item malloc error\n");
+			return NULL;
+		}
+		new->func = NULL;
+		new->id->id_name = lex;
+		new->id->type = 0;
+		new->id->accesible = 0;
+
+	}
 	st->size = st->size + 1;
-	new->name = lex;
-
-	new->is_function = is_function;
-	new->data = NULL;
-
-	new->parameters = NULL;
-	new->return_val = NULL;
 	new->next = NULL;
 
 	ht_item* place = find_place(lex, st);
 
-	if (place == NULL) {
-		add_item_to_the_start(st, lex, new);
-		return new;
-	}
-
+	if(place==NULL)
+	add_item_to_the_start(st, lex, new);		
+	
+	if(place!=NULL)
 	place->next = new;
 
 	return new;
@@ -141,19 +155,24 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 	if (lex == NULL || st == NULL) {
 		fprintf(stderr, "find item error\n");
 		return NULL;
-	}
+	};
 
 	size_t idx = htab_hash_fun((const char*)lex->data) % st->arr_size;
-
+  
 
 	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
 
-		if (strcmp(tmp->name->data, lex->data) == 0) {
-			return tmp;
+		if(tmp->func!=NULL) {
+			if (tmp->func->func_name == lex) {
+				return tmp;
+			}
 		}
-
-	}
-
+		else if(tmp->id!=NULL){
+			if (tmp->id->id_name == lex) {
+				return tmp;
+			}
+		}
+	}	
 	return NULL;
 } 
 
@@ -168,12 +187,26 @@ bool add_data(ht_item *item, lex_unit_t * lex) {
 		return false;
 	}
 
-	if (item->is_function != true) {
-		item->data = lex;
+	if (item->id != NULL) {
+		item->id->type = lex->unit_type;
 		return true;
 	}
 
 	return false;
+}
+
+bool add_access(ht_item * item,bool access){
+	
+	if(item==NULL){
+		fprintf(stderr, "add_access error\n");
+		return false;
+	}
+	if(item->id!=NULL){
+		item->id->accesible=access;
+		return true;
+	}
+	return false;
+
 }
 
 // allocates and inicializes parameter and adds it to the linked list
@@ -182,6 +215,11 @@ Par* malloc_param(ht_item *item) {
 
 	if (item == NULL) {
 		fprintf(stderr, "malloc_param failed\n");
+		return NULL;
+	}
+
+	if(item->func == NULL){
+		fprintf(stderr,"%s\n","item is not func\n");
 		return NULL;
 	}
 
@@ -196,22 +234,25 @@ Par* malloc_param(ht_item *item) {
 	parameter->name = NULL;
 	parameter->type = 0;
 
+
 	// first parameter
-	if (item->parameters == NULL) {
-		item->parameters = parameter;
+	if (item->func->parameters == NULL) {
+		item->func->parameters = parameter;
 	}
+	
 
 	// there are already some
 	else {
 
 		// find last parameter, add it there
-		Par * found = item->parameters;
+		Par * found = item->func->parameters;
 		for (Par * tmp = found; tmp != NULL; tmp = tmp->next) {
 			found = tmp;
 		}
 
 		found->next = parameter;
 	}
+
 
 	return parameter;
 
@@ -257,6 +298,11 @@ Ret* malloc_ret_val(ht_item *item) {
 		return NULL;
 	}
 
+	if(item->func == NULL){
+		fprintf(stderr,"%s\n","item is not func\n");
+		return NULL;
+	}
+
 	Ret * ret_val = malloc(sizeof(Ret));
 
 	if (ret_val == NULL) {
@@ -268,15 +314,15 @@ Ret* malloc_ret_val(ht_item *item) {
 	ret_val->type = 0;
 
 	// first return value
-	if (item->return_val == NULL) {
-		item->return_val = ret_val;
+	if (item->func->return_val == NULL) {
+		item->func->return_val = ret_val;
 	}
 
 	// there are already some
 	else {
 
 		// find last parameter, add it there
-		Ret * found = item->return_val;
+		Ret * found = item->func->return_val;
 		for (Ret * tmp = found; tmp != NULL; tmp = tmp->next) {
 			found = tmp;
 		}
@@ -312,7 +358,12 @@ void clean_params(ht_item* it) {
 		return;
 	}
 
-	for (Par * tmp = it->parameters; tmp != NULL; ){
+	if(it->func == NULL){
+		fprintf(stderr,"%s\n","item is not func\n");
+		return ;
+	}
+
+	for (Par * tmp = it->func->parameters; tmp != NULL; ){
 		Par * to_be_deleted = tmp;
 		tmp = tmp->next;
 		free(to_be_deleted);
@@ -328,7 +379,12 @@ void clean_return_values(ht_item* it) {
 		return;
 	}
 
-	for (Ret * tmp = it->return_val; tmp != NULL; ){
+	if(it->func == NULL){
+		fprintf(stderr,"%s\n","item is not func\n");
+		return;
+	}
+
+	for (Ret * tmp = it->func->return_val; tmp != NULL; ){
 		Ret * to_be_deleted = tmp;
 		tmp = tmp->next;
 		free(to_be_deleted);
@@ -351,9 +407,14 @@ bool clean_row(ht_item * first, sym_tab *st) {
 		ht_item * to_be_deleted = tmp;
 		tmp = tmp->next;
 
-		if (to_be_deleted->is_function){
+		if (to_be_deleted->func != NULL){
 			clean_params(to_be_deleted);
 			clean_return_values(to_be_deleted);
+			free(to_be_deleted->func);
+		}
+
+		if(to_be_deleted->id != NULL){
+			free(to_be_deleted->id);
 		}
 
 		free(to_be_deleted);

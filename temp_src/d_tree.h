@@ -13,10 +13,11 @@ typedef struct d_tree
 
 //---------------------------------------------------------------------------- prototypes
 d_node * d_tree_init(d_node * root); // inits d_tree
-d_node * d_root_insert(d_node * root,lex_unit_t * r_data,int r_type); //inserts root
-d_node * d_node_insert_left(d_node * node,lex_unit_t * left_data,int left_type); //insert left son 
-d_node * d_node_insert_right(d_node * node,lex_unit_t * right_data,int right_type); //insert right son
-
+d_node * d_node_create(d_node * node,lex_unit_t * r_data,int r_type); //creates node
+d_node * d_node_insert_left(d_node * node,d_node * left_node); //insert left son 
+d_node * d_node_insert_right(d_node * node,d_node * right_node); //insert right son
+d_node * next_left(d_node* node); // gives you next left ptr
+void delete_tree(d_node * root); //deletes tree;
 
 
 #endif

@@ -13,10 +13,54 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-
+#include <unistd.h>
+#include <assert.h>
 
 int ERROR_SET = 0;
 sym_list * result = NULL;
+
+
+void Prints_lex(lex_unit_t* First,int number_of_units){//-1 ignores assert 
+	int counter=0;
+	if(First == NULL){if(number_of_units!=-1)assert(counter==number_of_units);return;}
+	lex_unit_t* tmp = First;
+	fprintf(stdout,"~~~~~~~~\n");
+	fprintf(stdout,"Lexemes:\n");
+	fprintf(stdout,"-+-------------------\n");
+	
+		counter++;
+		fprintf(stdout," | unit_type: ");
+		switch(tmp->unit_type){
+			case ERROR:			fprintf(stdout, "Error\n"); break;
+			case OPERATOR:		fprintf(stdout, "Operator\n"); break;
+			case IDENTIFICATOR:	fprintf(stdout, "Identificator\n"); break;
+			case KEYWORD:		fprintf(stdout, "Keyword\n"); break;
+			case INTEGER:		fprintf(stdout, "Integer\n"); break;
+			case DECIMAL:		fprintf(stdout, "Decimal\n"); break;
+			case STRING:		fprintf(stdout, "String\n"); break;
+			case OPERATOR_ERR:	fprintf(stdout, "Operator Error\n"); break;
+			case ID_ERR:		fprintf(stdout, "Identificator Error\n"); break;
+			case INT_ERR:		fprintf(stdout, "Integer Error\n"); break;
+			case DEC_ERR:		fprintf(stdout, "Decimal Error\n"); break;
+			case STR_ERR:		fprintf(stdout, "String Error\n"); break;
+			default:			fprintf(stdout, "%d\n", tmp->unit_type); break;
+		}
+		fprintf(stdout," | data_size: %ld\n",tmp->data_size);
+		fprintf(stdout," | data: ");
+		switch(tmp->unit_type){
+			case INTEGER:		fprintf(stdout, "%ld\n", *((size_t*)tmp->data)); break;
+			case DECIMAL:		fprintf(stdout, "%f\n", *((double*)tmp->data)); break;
+			case STRING:		fprintf(stdout, "\"%s\"\n", (char*)tmp->data); break;
+			default:			fprintf(stdout, "%s\n", (char*)tmp->data); break;
+		}
+		
+		fprintf(stdout," +-------------------\n");
+	
+	fprintf(stdout,"NUMBER OF REAL TOKENS      : %d \n",counter);
+	fprintf(stdout,"NUMBER OF LEX_COUNT TOKENS : %d \n",number_of_units);
+	if(number_of_units!=-1)assert(counter==number_of_units);
+
+}
 
 // copy one item from one table to the another
 void copy_function_to_table (ht_item * copy, sym_tab *  to) {
@@ -121,21 +165,33 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 	Par * par = NULL;
 	lex_unit_t * remember_id = NULL; // remember the id
 
+
 	while (cont) {
 	
 		// alloc space for lex unit
 		lex_unit_t * lex = malloc(sizeof(lex_unit_t));
 		if (lex == NULL) {
 
-			fprintf(stderr, "Create_table malloc error\n");
+			fprintf(stderr, "lex malloc error\n");
 			clean();
 		}
-
-		// get lexem
+		LexUnitCtor(lex);
+		
 		lex = Analyze(file, lex);
 
-		// Analyze failed or found EOF
+	
 		if (lex == NULL) {
+			clean();
+			printf("lex error\n");
+			free(remember_id);
+			free(par);
+			return result;
+		}
+		
+		Prints_lex(lex, -1);
+
+		// Analyze failed or found EOF
+		if (lex->unit_type == 0) {
 			// check if all tables were closed
 			if (result->first == NULL) {
 				return result;

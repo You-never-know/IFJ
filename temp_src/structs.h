@@ -32,7 +32,6 @@ struct lex_unit{
 	int unit_type;
 	void* data;
 	size_t data_size;
-	struct lex_unit * next;
 	struct htable_item* table;
 };
 typedef struct lex_unit lex_unit_t;

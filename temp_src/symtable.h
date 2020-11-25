@@ -30,16 +30,22 @@ typedef struct ret_val {
 } Ret;
 
 // item in the # table == symtable
-typedef struct htable_item {
-
-	struct lex_unit * name; // name of the identificator
-	struct lex_unit * data; // value of the identificator, active only for id not for fun
-	bool is_function; // sets functions and identificators aside
-	
-	// if it is function
-	 
+typedef struct function {
+	struct lex_unit * func_name; // name of the function
 	Par * parameters; // linked list of parameters with their types
 	Ret * return_val; // linked list of return values of the function
+
+} Func;
+
+typedef struct identificator {
+	struct lex_unit * id_name; // name of the identificator
+	int type; // value of the identificator, active only for id not for fun
+	bool accesible; // can be accesible
+} Id;
+
+typedef struct htable_item {	
+	Id * id; // struct of identificator
+	Func * func; // struct of function
 
 	struct htable_item * next; // pointer to the next item
 } ht_item;	
@@ -64,5 +70,6 @@ Ret* malloc_ret_val(ht_item *item); // allocates and inicializes parameter
 bool add_ret_type(Ret* ret, int type); // add data to the parameter
 int clean_table(sym_tab *st); // removes all items from the table
 void free_table(sym_tab *st); // free the given table from memory
+bool add_access(ht_item * item,bool access); //add access to ID by default is false
 
 #endif 
