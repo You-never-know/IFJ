@@ -163,12 +163,24 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
 
 		if(tmp->func!=NULL) {
-			if (tmp->func->func_name == lex) {
+			if (tmp->func->func_name == NULL) {
+				continue;
+			}
+			else if (tmp->func->func_name->data == NULL || lex->data == NULL) {
+				continue;
+			}
+			else if (strncmp((char *)tmp->func->func_name->data, (char *)lex->data, lex->data_size)) {
 				return tmp;
 			}
 		}
 		else if(tmp->id!=NULL){
-			if (tmp->id->id_name == lex) {
+			if (tmp->id->id_name == NULL) {
+				continue;
+			}
+			else if (tmp->id->id_name->data == NULL || lex->data == NULL) {
+				continue;
+			}
+			else if (strncmp((char *)tmp->id->id_name->data, (char *)lex->data, lex->data_size) == 0) {
 				return tmp;
 			}
 		}
