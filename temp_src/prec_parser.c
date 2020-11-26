@@ -97,9 +97,11 @@ bool match() {
 				d_node * E2 = ll_return_first_data(help);
 				ll_del_first(help);
 
-				if (E1->type == E && (OP->type == PLUS_MINUS || OP ->type == MUL_DIV || OP ->type == COMPARISON)) {
+				if (E2->type == E && (OP->type == PLUS_MINUS || OP ->type == MUL_DIV || OP ->type == COMPARISON)) {
 					d_node_insert_left(OP, E1);
 					d_node_insert_right(OP, E2);
+					OP->type = E;
+					ll_insert_first(stack, OP);
 					return true;
 				}
 
@@ -140,7 +142,7 @@ bool match() {
 			}
 
 		case F:
-			if (ll_get_length(help) == 4) { // E -> f(E) //////////////////////////////////////// TODO
+			if (ll_get_length(help) == 4) { // E -> f(E) 
 				d_node * fun = tmp; // f
 				ll_del_first(help);
 				d_node * LB = ll_return_first_data(help); // (
@@ -228,6 +230,7 @@ bool match() {
 
 				} // end of for 
 				if (correct == true) {
+					function->type = E;
 					ll_insert_first(stack, function);
 					return true;
 				}
@@ -318,7 +321,7 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 		}
 
 
-		if (!get_token) { // we create only new nodes
+		if (get_token) { // we create only new nodes
 			node = d_node_create(NULL, *token, type); // create node
 		}
 
@@ -374,9 +377,11 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 	// test if everything happend correctly
 	if (stack->length == 2 && help->length == 0) {
 			d_node * top = ll_return_first_data(stack);
+			ll_del_first(stack);
 
 			if (top == NULL) {
 				clean();
+				delete_tree(top);
 				root->right = NULL;
 				return false; 
 			}
