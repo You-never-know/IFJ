@@ -41,7 +41,7 @@ void ll_dissolve(lex_list* ll) {
 
 		//tmp contents set
 		tmp->r = NULL;
-		tmp->ll_data = NULL;
+		delete_tree(tmp->ll_data);
 
 		free(tmp);
 
