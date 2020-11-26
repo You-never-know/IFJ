@@ -11,9 +11,8 @@
 #include <stdio.h>
 #include <string.h>
 
-
-enum tokens merge_event(lex_unit_t* lex) {
-
+//group cases where the return value is the same
+enum tokens merge_event(lex_unit_t* lex, sym_tab* st) {
 
 	switch (lex->unit_type) {
 
@@ -48,9 +47,11 @@ enum tokens merge_event(lex_unit_t* lex) {
 
 		break; 
 
-		//fix later
 	case IDENTIFICATOR:
-		return I;
+		if(find_item(st, lex)==NULL)
+			return I;
+		else
+			return F;
 
 	case INTEGER: case DECIMAL: case STRING:
 		return I;
