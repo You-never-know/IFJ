@@ -27,7 +27,7 @@ enum tokens {
 	HANDLE
 };
 
-enum tokens merge_event(lex_unit_t*);
+enum tokens merge_event(lex_unit_t*, sym_tab*);
 int prec_event(int, int);
 //  < = >  ERR
 // -1 0 1  42
