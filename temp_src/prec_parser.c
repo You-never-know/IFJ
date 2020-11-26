@@ -20,18 +20,6 @@ lex_list * stack = NULL;
 lex_list * help = NULL;
 
 
-// clean the content of the stack
-void clean_stack(lex_list * list) {
-
-	if (list == NULL) {
-		return;
-	}
-
-	for (ll_elem_ptr tmp = list->first; tmp != NULL; tmp = tmp -> r) {
-		delete_tree(tmp -> ll_data);
-	}
-
-}
 
 // get the type of the most top operand
 int get_the_top_operand() {
@@ -79,8 +67,6 @@ bool test_end(int input) {
 
 
 void clean () {
-	clean_stack(help);
-	clean_stack(stack);
 	ll_dissolve(help);
 	ll_dissolve(stack);
 }
@@ -104,14 +90,11 @@ bool match() {
 
 		case E: // E -> E operator E
 			if (ll_get_length(help) == 3) {
-				d_node * E2; 
-				d_node * OP; 
-				d_node * E1;
-				E2 = tmp;
+				d_node * E1 = tmp;
 				ll_del_first(help);
-				OP = ll_return_first_data(help);
+				d_node * OP = ll_return_first_data(help);
 				ll_del_first(help);
-				E1 = ll_return_first_data(help);
+				d_node * E2 = ll_return_first_data(help);
 				ll_del_first(help);
 
 				if (E1->type == E && (OP->type == PLUS_MINUS || OP ->type == MUL_DIV || OP ->type == COMPARISON)) {
@@ -120,6 +103,9 @@ bool match() {
 					return true;
 				}
 
+				delete_tree(E1);
+				delete_tree(OP);
+				delete_tree(E2);
 				return false;
 			}
 			else {
@@ -130,14 +116,11 @@ bool match() {
 		case L_BRACKET:
 
 			if (ll_get_length(help) == 3) { // E -> (E)
-				d_node * RB;
-				d_node * E_m;
-				d_node * LB;
-				LB = tmp;
+				d_node * LB = tmp;
 				ll_del_first(help);
-				E_m = ll_return_first_data(help);
+				d_node * E_m = ll_return_first_data(help);
 				ll_del_first(help);
-				RB = ll_return_first_data(help);
+				d_node * RB = ll_return_first_data(help);
 				ll_del_first(help);
 
 				if (RB->type == R_BRACKET && E_m -> type == E) {
@@ -147,6 +130,9 @@ bool match() {
 					return true;
 				}
 
+				delete_tree(LB);
+				delete_tree(E_m);
+				delete_tree(RB);
 				return false;
 			}
 			else {
@@ -155,7 +141,27 @@ bool match() {
 
 		case F:
 			if (ll_get_length(help) == 4) { // E -> f(E) //////////////////////////////////////// TODO
+				d_node * fun = tmp; // f
+				d_node * LB = ll_return_first_data(help); // (
+				ll_del_first(help);
+				d_node * par = ll_return_first_data(help); // E
+				ll_del_first(help);
+				d_node * RB = ll_return_first_data(help); // )
+				ll_del_first(help);
 
+				if (LB->type == L_BRACKET && RB->type == R_BRACKET && par->type == E) {
+					delete_tree(LB);
+					delete_tree(RB);
+					d_node_insert_left(fun, par);
+					ll_insert_first(stack, fun);
+					return true;
+				}
+
+				delete_tree(fun);
+				delete_tree(LB);
+				delete_tree(RB);
+				delete_tree(par);
+				return false;
 			}
 			else { // E -> f(E,E, ... , E)
 
@@ -184,6 +190,7 @@ bool match_rule() {
 			return false;
 		}
 		else if (tmp->type == HANDLE) { // the help stack is ready
+			ll_del_first(stack); // remove the handle
 			if (match() == false) {
 				return false;
 			}
@@ -208,7 +215,7 @@ bool match_rule() {
  * 'f' file for the lexical analyser
  * return true if happend corectly, false if not 
  */
-bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f) {
+bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun_tab) {
 
 	// check parameters
 	if (token == NULL || root == NULL || f == NULL) {
@@ -230,7 +237,7 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f) {
 	// help vaiables
 	bool finished = false; // end the cycle analyse is complete
 	bool get_token = true; // get another token or not from the file
-	int type = merge_event(*token); // get the first type
+	int type = merge_event(*token, fun_tab); // get the first type
 
 	while (!finished) {
 
@@ -239,7 +246,7 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f) {
 			type = DOLLAR; // set it as the input 
 		}
 		else {
-			type = merge_event(*token);
+			type = merge_event(*token, fun_tab);
 		}
 
 
