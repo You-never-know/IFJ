@@ -163,12 +163,24 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
 
 		if(tmp->func!=NULL) {
-			if (tmp->func->func_name == lex) {
+			if (tmp->func->func_name == NULL) {
+				continue;
+			}
+			else if (tmp->func->func_name->data == NULL || lex->data == NULL) {
+				continue;
+			}
+			else if (strncmp((char *)tmp->func->func_name->data, (char *)lex->data, lex->data_size)) {
 				return tmp;
 			}
 		}
 		else if(tmp->id!=NULL){
-			if (tmp->id->id_name == lex) {
+			if (tmp->id->id_name == NULL) {
+				continue;
+			}
+			else if (tmp->id->id_name->data == NULL || lex->data == NULL) {
+				continue;
+			}
+			else if (strncmp((char *)tmp->id->id_name->data, (char *)lex->data, lex->data_size) == 0) {
 				return tmp;
 			}
 		}
@@ -208,6 +220,18 @@ bool add_access(ht_item * item,bool access){
 	return false;
 
 }
+
+// find if the item is a function
+// true if it is and false if not
+bool is_function(ht_item * item) {
+	if(item==NULL){
+		fprintf(stderr, "is function error\n");
+		return false;
+	}
+	
+	return item->func != NULL; // if func isn't NULL it is a function
+}
+
 
 // allocates and inicializes parameter and adds it to the linked list
 // return pointer to Par if success, NULL if not

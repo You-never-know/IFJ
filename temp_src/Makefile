@@ -11,7 +11,7 @@ CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra
 COMPILATOR = gcc $(CFLAGS) -o $@
 
 
-all: test_table lex_test
+all: prec_parser.o  lex_test #test_table 
 
 lex_test: lex_test.o lexical_analyzer.o structs.o 
 	$(COMPILATOR) $^
@@ -22,14 +22,17 @@ lexical_analyzer.o: lexical_analyzer.c lexical_analyzer.h structs.h
 structs.o: structs.c structs.h symtable.h
 	$(COMPILATOR) -c structs.c
 
-test_table: test_table.o symtable.o create_tables.o lexical_analyzer.o sym_list.o structs.o
-	$(COMPILATOR) $^
+#test_table: test_table.o symtable.o create_tables.o lexical_analyzer.o sym_list.o structs.o
+#	$(COMPILATOR) $^
 
 symtable.o: symtable.c symtable.h structs.h
 	$(COMPILATOR) -c $< 
 
-test_table.o: test_table.c symtable.h structs.h
-	$(COMPILATOR) -c $<
+prec_parser.o: prec_parser.c prec_parser.h 
+	$(COMPILATOR) -c $< 
+
+#test_table.o: test_table.c symtable.h structs.h
+#	$(COMPILATOR) -c $<
 
 sym_list.o: sym_list.c sym_list.h 
 	$(COMPILATOR) -c $<
