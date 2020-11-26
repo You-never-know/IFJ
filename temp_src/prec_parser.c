@@ -104,7 +104,9 @@ bool match() {
 
 		case E: // E -> E operator E
 			if (ll_get_length(help) == 3) {
-				d_node * E2, OP, E1;
+				d_node * E2; 
+				d_node * OP; 
+				d_node * E1;
 				E2 = tmp;
 				ll_del_first(help);
 				OP = ll_return_first_data(help);
@@ -113,7 +115,7 @@ bool match() {
 				ll_del_first(help);
 
 				if (E1->type == E && (OP->type == PLUS_MINUS || OP ->type == MUL_DIV || OP ->type == COMPARISON)) {
-					d_node_insert_left(OP, E1)
+					d_node_insert_left(OP, E1);
 					d_node_insert_right(OP, E2);
 					return true;
 				}
@@ -126,10 +128,11 @@ bool match() {
 
 
 		case L_BRACKET:
-			int length = ll_get_length(help);
 
-			if (length == 3) { // E -> (E)
-				d_node * RB, E_m, LB;
+			if (ll_get_length(help) == 3) { // E -> (E)
+				d_node * RB;
+				d_node * E_m;
+				d_node * LB;
 				LB = tmp;
 				ll_del_first(help);
 				E_m = ll_return_first_data(help);
@@ -137,9 +140,10 @@ bool match() {
 				RB = ll_return_first_data(help);
 				ll_del_first(help);
 
-				if (E1->type == E && (OP->type == PLUS_MINUS || OP ->type == MUL_DIV || OP ->type == COMPARISON)) {
-					d_node_insert_left(OP, E1)
-					d_node_insert_right(OP, E2);
+				if (RB->type == R_BRACKET && E_m -> type == E) {
+					delete_tree(LB);
+					delete_tree(RB);
+					ll_insert_first(stack,E_m);
 					return true;
 				}
 
@@ -150,8 +154,7 @@ bool match() {
 			}
 
 		case F:
-			int length = ll_get_length(help);
-			if (length == 4) { // E -> f(E) //////////////////////////////////////// TODO
+			if (ll_get_length(help) == 4) { // E -> f(E) //////////////////////////////////////// TODO
 
 			}
 			else { // E -> f(E,E, ... , E)
