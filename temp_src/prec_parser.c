@@ -103,111 +103,59 @@ bool match() {
 
 
 		case E: // E -> E operator E
-			ll_del_first(help); // delete first
-			d_node * E2 = tmp; // save the second operand
-
-			if (ll_get_length(help) != 0) {
-				tmp = ll_return_first_data(help);
+			if (ll_get_length(help) == 3) {
+				d_node * E2, OP, E1;
+				E2 = tmp;
 				ll_del_first(help);
-				d_node * OP = tmp;
-				
-				if (tmp ->type == PLUS_MINUS || tmp ->type == MUL_DIV || tmp ->type == COMPARISON) { // check the second
-					d_node_insert_left(OP, E2); // create the left node 
+				OP = ll_return_first_data(help);
+				ll_del_first(help);
+				E1 = ll_return_first_data(help);
+				ll_del_first(help);
 
-					if (ll_get_length(help) != 0) {
-						tmp = ll_return_first_data(help);
-						ll_del_first(help);
-						d_node_insert_right(OP, tmp); // we matched the rule and made a tree
-						OP->type = E; // set type to E
-						ll_insert_first(stack, OP);
-
-						// check if the help stack is empty
-						if (ll_get_length(help) != 0) {
-							return false;
-						}
-						return true;
-
-					}
-					else {
-						delete_tree(OP); // OP has the next one in his left son
-						return false;
-					}
-				} // end of Operand if
-				else {
-					delete_tree(E2);
-					delete_tree(OP);
-					return false;
+				if (E1->type == E && (OP->type == PLUS_MINUS || OP ->type == MUL_DIV || OP ->type == COMPARISON)) {
+					d_node_insert_left(OP, E1)
+					d_node_insert_right(OP, E2);
+					return true;
 				}
-			}
-			else {
-				delete_tree(E2);
+
 				return false;
 			}
-			break;
-
-		case R_BRACKET:
-			delete_tree(tmp); // we dont need )
-			ll_del_first(help); // free the help
-
-			if (ll_get_length(help) != 0) {
-				tmp = ll_return_first_data(help);
-				ll_del_first(help);
-				d_node * E_final = tmp;
-
-				if (tmp->type == E) {
-					
-					if (ll_get_length(help) != 0) {
-						tmp = ll_return_first_data(help);
-						ll_del_first(help);
-
-						if (tmp->type == L_BRACKET) { // rule may be matched
-							delete_tree(tmp); // we dont want a (
-
-							if (ll_get_length(help) == 0) { // it is the rule
-								ll_insert_first(stack, E_final);
-								return true;
-							}
-
-							tmp = ll_return_first_data(help);
-							ll_del_first(help);
-
-							if (tmp->type == F) { // the rule may be matched
-								tmp->type = E;
-								d_node_insert_left(tmp, E_final); // create the tree for the function
-
-								if (ll_get_length(help) == 0) {
-									return true;
-								}
-
-								delete_tree(tmp);
-								return false;
-							}
-
-						}
-
-						else if (tmp->type == COMMA) { // function with more of the parameters           ||||||||||||||||||||||||||||||||||||||||||||\\ have to finish while maybe
-							delete_tree(tmp); // we dont want ,
-						}
-						else {
-							delete_tree(tmp);
-							return false;
-						}
-
-					}
-					else {
-						delete_tree(E_final);
-						return false;
-					}
-					
-				}
-				else {
-					delete_tree(tmp);
-					return false;
-				}
-
-			} // end of E if
 			else {
 				return false;
+			}
+
+
+		case L_BRACKET:
+			int length = ll_get_length(help);
+
+			if (length == 3) { // E -> (E)
+				d_node * RB, E_m, LB;
+				LB = tmp;
+				ll_del_first(help);
+				E_m = ll_return_first_data(help);
+				ll_del_first(help);
+				RB = ll_return_first_data(help);
+				ll_del_first(help);
+
+				if (E1->type == E && (OP->type == PLUS_MINUS || OP ->type == MUL_DIV || OP ->type == COMPARISON)) {
+					d_node_insert_left(OP, E1)
+					d_node_insert_right(OP, E2);
+					return true;
+				}
+
+				return false;
+			}
+			else {
+				return false;
+			}
+
+		case F:
+			int length = ll_get_length(help);
+			if (length == 4) { // E -> f(E) //////////////////////////////////////// TODO
+
+			}
+			else { // E -> f(E,E, ... , E)
+
 			}
 			break;
 
