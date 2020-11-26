@@ -340,20 +340,19 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 				break;
 
 			case 1: // prec_table > try to match any rule
+				if (match_rule() == true) {
+					get_token = false;
+				}
+				else { // rule not found
+					clean();
+					root->right = NULL;
+					return false; 
+				}
+				
 				if (test_end(type)) { // test if we are finished 
 					finished = true;
 					get_token = false;
 					break;
-				}
-				else {
-					if (match_rule() == true) {
-						get_token = false;
-					}
-					else { // rule not found
-						clean();
-						root->right = NULL;
-						return false; 
-					}
 				}
 				break;
 
