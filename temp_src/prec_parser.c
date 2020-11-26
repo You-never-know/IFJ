@@ -142,6 +142,7 @@ bool match() {
 		case F:
 			if (ll_get_length(help) == 4) { // E -> f(E) //////////////////////////////////////// TODO
 				d_node * fun = tmp; // f
+				ll_del_first(help);
 				d_node * LB = ll_return_first_data(help); // (
 				ll_del_first(help);
 				d_node * par = ll_return_first_data(help); // E
@@ -165,6 +166,73 @@ bool match() {
 			}
 			else { // E -> f(E,E, ... , E)
 
+				int length = ll_get_length(help);
+
+				if (length < 6) { // the minumum is f(E,E) 
+					return false;
+				}
+
+				ll_del_first(help); // we already have f
+
+				d_node * function = tmp;
+				d_node * under_node = function;
+				d_node * node = ll_return_first_data(help);
+				ll_del_first(help);
+				
+				if (node->type != L_BRACKET) {
+					delete_tree(function);
+					delete_tree(node);
+					return false;
+				}
+				delete_tree(node); // we don't need a (
+
+				length = length-2; // -f -(
+				bool need_comma_bracket = false;
+				bool correct = false;
+				for (int i = 0; i<length; i++) {
+					
+					node = ll_return_first_data(help);
+					ll_del_first(help);
+
+					if (need_comma_bracket == false) { // check if E
+						if (node->type == E) {
+							d_node_insert_left(under_node, node); // add parameter to the left
+							under_node = node; // add another parameter to the next node
+							need_comma_bracket = true;
+							correct = false;
+							continue;
+						}
+						delete_tree(function);
+						delete_tree(node);
+						return false;
+					}
+					else { // check for ) or ,
+						if (node -> type == COMMA) {
+							delete_tree(node);
+							need_comma_bracket = false;
+							correct = false;
+							continue;
+						}
+						else if (node -> type == R_BRACKET) {
+							delete_tree(node);
+							need_comma_bracket = false;
+							correct = true;
+							continue;
+						}
+						else {
+							delete_tree(function);
+							delete_tree(node);
+							return false;
+						}
+					}
+
+				} // end of for 
+				if (correct == true) {
+					ll_insert_first(stack, function);
+					return true;
+				}
+				delete_tree(function);
+				return false;
 			}
 			break;
 
