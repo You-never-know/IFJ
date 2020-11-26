@@ -24,9 +24,11 @@ enum tokens {
 	COMMA,
 	ERR,
 	E,
-	HANDLE,
+	HANDLE
 };
 
 enum tokens merge_event(lex_unit_t*);
 int prec_event(int, int);
+//  < = >  ERR
+// -1 0 1  42
 #endif

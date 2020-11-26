@@ -221,6 +221,18 @@ bool add_access(ht_item * item,bool access){
 
 }
 
+// find if the item is a function
+// true if it is and false if not
+bool is_function(ht_item * item) {
+	if(item==NULL){
+		fprintf(stderr, "is function error\n");
+		return false;
+	}
+	
+	return item->func != NULL; // if func isn't NULL it is a function
+}
+
+
 // allocates and inicializes parameter and adds it to the linked list
 // return pointer to Par if success, NULL if not
 Par* malloc_param(ht_item *item) {
