@@ -11,7 +11,7 @@
 
 void ll_err() {
 
-	printf("ERROR: The program has performed an illegal operation.\n");
+	printf("lex_list ERR\n");
 	return;
 }
 
@@ -33,21 +33,19 @@ lex_list* ll_init() {
 void ll_dissolve(lex_list* ll) {
 
 	ll_elem_ptr tmp = ll->first;
-
 	//dissolute all items
 	while (tmp != NULL) {
 
 		ll->first = tmp->r;
+		if(tmp->r != NULL){
+			//tmp contents set
+			delete_tree(tmp->ll_data);
+			tmp->r = NULL;
 
-		//tmp contents set
-		tmp->r = NULL;
-		delete_tree(tmp->ll_data);
-
-		free(tmp);
-
+			free(tmp);
+		}
 		tmp = ll->first;
 	}
-
 	//set items to NULL
 	ll->first = NULL;
 	ll->length = 0;
@@ -82,7 +80,7 @@ void ll_del_first(lex_list* ll) {
 	if (ll->first != NULL) { //list is not empty
 
 		tmp = ll->first;
-	
+
 		if (ll->first->r != NULL) {
 			ll->first = ll->first->r; //set the first item to the next one
 		}
@@ -94,6 +92,10 @@ void ll_del_first(lex_list* ll) {
 		free(tmp); //release
 
 		(ll->length)--;
+
+		if(ll->length ==0){
+			ll->first=NULL;
+		}
 	}
 
 }

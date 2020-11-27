@@ -1,4 +1,4 @@
-﻿﻿/**
+﻿/**
 * Project:
 * Implementace pøekladaèe imperativního jazyka IFJ20
 *
@@ -8,55 +8,70 @@
 **/
 
 #include "prec_table.h"
+#include "symtable.h"
 #include <stdio.h>
 #include <string.h>
 
-//group cases where the return value is the same
-enum tokens merge_event(lex_unit_t* lex, sym_tab* st) {
+//DEBUG VERSION
 
+//Group cases where the return value is the same
+enum tokens merge_event(lex_unit_t* lex, sym_tab* st) {
+	//printf("MERGE =================================================\n");
 	switch (lex->unit_type) {
 
 	case OPERATOR:
-
+		//printf("OPERATOR:\n");
+		//printf("P_TOKEN SIZE %ld\n",lex->data_size );
 		if (lex->data_size == 1) {
 
-			if (strcmp(lex->data, "$") == 0)
-				return DOLLAR;
+			if (strcmp(lex->data, "$") == 0){
+				//printf("DOLLAR, %s\n", (char*)lex->data);
+				return DOLLAR;}
 
-			else if (strcmp(lex->data, "(") == 0)
-				return L_BRACKET;
+			else if (strcmp(lex->data, "(") == 0){
+				//printf("L_BRACKET, %s\n", (char*)lex->data);
+				return L_BRACKET;}
 
-			else if (strcmp(lex->data, ")") == 0)
-				return R_BRACKET;
+			else if (strcmp(lex->data, ")") == 0){
+				//printf("R_BRACKET, %s\n", (char*)lex->data);
+				return R_BRACKET;}
 
-			else if ((strcmp(lex->data, "+") == 0) || (strcmp(lex->data, "-") == 0))
-				return PLUS_MINUS;
+			else if ((strcmp(lex->data, "+") == 0) || (strcmp(lex->data, "-") == 0)){
+				//printf("PLUS_MINUS, %s\n", (char*)lex->data);
+				return PLUS_MINUS;}
 
-			else if ((strcmp(lex->data, "*") == 0) || (strcmp(lex->data, "/") == 0))
-				return MUL_DIV;
+			else if ((strcmp(lex->data, "*") == 0) || (strcmp(lex->data, "/") == 0)){
+				//printf("MUL_DIV, %s\n", (char*)lex->data);
+				return MUL_DIV;}
 
-			else if ((strcmp(lex->data, "<") == 0) || (strcmp(lex->data, ">") == 0))
-				return COMPARISON;
+			else if ((strcmp(lex->data, "<") == 0) || (strcmp(lex->data, ">") == 0)){
+				//printf("COMPARISON, %s\n", (char*)lex->data);
+				return COMPARISON;}
 
-			else if (strcmp(lex->data, ",") == 0)
-				return COMMA;
+			else if (strcmp(lex->data, ",") == 0){
+				//printf("COMMA, %s\n", (char*)lex->data);
+				return COMMA;}
 		}
 		else if (lex->data_size == 2) {
+			//printf("COMPARISON, %s\n", (char*)lex->data);
 			return COMPARISON;
 		}
 
-		break; 
+		break;
 
 	case IDENTIFICATOR:
+		//printf("IDENTIFICATOR\n");
 		if(find_item(st, lex)==NULL)
 			return I;
 		else
 			return F;
 
 	case INTEGER: case DECIMAL: case STRING:
+	//printf("INTEGER/DECIMAL/STRING\n");
 		return I;
 
 	default:
+	//printf("default\n");
 		return ERR;
 	}
 	return ERR;

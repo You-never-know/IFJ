@@ -70,7 +70,7 @@ bool isOperValid(const lex_unit_t* lex, char c){
 				else if(op_buff[0] == c)	return true;
 
 				/// Special cases
-				else if(c == '=')	return (op_buff[0] != '>' && op_buff[0] != '<');
+				else if(c == '=')	return (op_buff[0] == '>' || op_buff[0] == '<');
 				else if(c == '>')	return (op_buff[0] == '-');
 				else 				return false;
 				break;
@@ -212,7 +212,10 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 									((char*)lexeme->data)[lexeme->data_size++] = '/';
 									state = OPER_OUT;
 								}
-								else state = OPER_ERROR;
+								else{
+									((char*)lexeme->data)[lexeme->data_size++] = '/';
+									state = OPER_ERROR;
+								}
 								break;
 
 			case L_COMMENT:	if(c == '\n') state = NL_OUT;
@@ -464,7 +467,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							return lexeme;
 							break;
 
-			case OPER_OUT:	if(lexeme->data_size == 0 || ((char*)lexeme->data)[0] == '/')
+			case OPER_OUT:	if(lexeme->data_size == 0 || (((char*)lexeme->data)[0] == '/' && c == '='))
 								((char*)lexeme->data)[lexeme->data_size++] = c;
 							((char*)lexeme->data)[lexeme->data_size] = '\0';
 							lexeme->unit_type = OPERATOR;
