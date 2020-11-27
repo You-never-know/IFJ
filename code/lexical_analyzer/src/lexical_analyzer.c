@@ -70,7 +70,7 @@ bool isOperValid(const lex_unit_t* lex, char c){
 				else if(op_buff[0] == c)	return true;
 
 				/// Special cases
-				else if(c == '=')	return (op_buff[0] != '>' && op_buff[0] != '<');
+				else if(c == '=')	return (op_buff[0] == '>' || op_buff[0] == '<');
 				else if(c == '>')	return (op_buff[0] == '-');
 				else 				return false;
 				break;
