@@ -165,6 +165,25 @@ bool match() {
 				delete_tree(RB);
 				delete_tree(par);
 				return false;
+			}else if (ll_get_length(help) == 3) { // E -> f()
+				d_node* func = tmp; // f
+				ll_del_first(help);
+				d_node* LB = ll_return_first_data(help); // (
+				ll_del_first(help);
+				d_node* RB = ll_return_first_data(help); // )
+				ll_del_first(help);
+
+				if (LB->type == L_BRACKET && RB->type == R_BRACKET) {
+					delete_tree(LB);
+					delete_tree(RB);
+					ll_insert_first(stack, func);
+					return true;
+				}
+
+				delete_tree(func);
+				delete_tree(LB);
+				delete_tree(RB);
+				return false;
 			}
 			else { // E -> f(E,E, ... , E)
 
