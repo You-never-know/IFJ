@@ -13,8 +13,8 @@
 #include "structs.h"
 #include "sym_list.h"
 
-#define MEDIUM_TABLE 97 // https://planetmath.org/goodhashtableprimes 
-#define BIG_TABLE 193 // https://planetmath.org/goodhashtableprimes
+#define MEDIUM_TABLE 11 // https://planetmath.org/goodhashtableprimes 
+#define BIG_TABLE 23 // https://planetmath.org/goodhashtableprimes
 
 
 void set_error(int ERR_CODE, int *ret); // set RETURN_CODE as the first ERR_CODE

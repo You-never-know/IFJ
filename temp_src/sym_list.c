@@ -46,7 +46,8 @@ void sl_dissolve(sym_list* sl) {
 		//tmp contents set
 		tmp->l = NULL;
 		tmp->r = NULL;
-		tmp->st_data = NULL;
+		clean_table(tmp->st_data);
+		free_table(tmp->st_data);
 
 		free(tmp);
 
