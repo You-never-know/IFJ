@@ -212,7 +212,10 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 									((char*)lexeme->data)[lexeme->data_size++] = '/';
 									state = OPER_OUT;
 								}
-								else state = OPER_ERROR;
+								else{
+									((char*)lexeme->data)[lexeme->data_size++] = '/';
+									state = OPER_ERROR;
+								}
 								break;
 
 			case L_COMMENT:	if(c == '\n') state = NL_OUT;
@@ -464,7 +467,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							return lexeme;
 							break;
 
-			case OPER_OUT:	if(lexeme->data_size == 0 || ((char*)lexeme->data)[0] == '/')
+			case OPER_OUT:	if(lexeme->data_size == 0 || (((char*)lexeme->data)[0] == '/' && c == '='))
 								((char*)lexeme->data)[lexeme->data_size++] = c;
 							((char*)lexeme->data)[lexeme->data_size] = '\0';
 							lexeme->unit_type = OPERATOR;
