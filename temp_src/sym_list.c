@@ -281,6 +281,8 @@ ht_item* sl_search(sym_list* sl, struct lex_unit* lu) {
 
 	ht_item* tmp = NULL;
 
+	sl_elem_ptr now = sl->act;
+
 	if (sl->first != NULL) { //list is not empty
 
 		sl_set_act_first(sl);
@@ -294,7 +296,9 @@ ht_item* sl_search(sym_list* sl, struct lex_unit* lu) {
 				}
 
 			}
+			sl_set_next_act(sl);
 		}
+		sl->act = now;
 	}
 
 	return tmp; //returns NULL if not found otherwise the last found item
