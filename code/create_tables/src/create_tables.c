@@ -14,53 +14,24 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
-#include <assert.h>
 
 int ERROR_SET = 0;
 sym_list * result = NULL;
 
+// ct_clean all the alocated memory if something failed
+void ct_clean() {
 
-void Prints_lex(lex_unit_t* First,int number_of_units){//-1 ignores assert 
-	int counter=0;
-	if(First == NULL){if(number_of_units!=-1)assert(counter==number_of_units);return;}
-	lex_unit_t* tmp = First;
-	fprintf(stdout,"~~~~~~~~\n");
-	fprintf(stdout,"Lexemes:\n");
-	fprintf(stdout,"-+-------------------\n");
-	
-		counter++;
-		fprintf(stdout," | unit_type: ");
-		switch(tmp->unit_type){
-			case ERROR:			fprintf(stdout, "Error\n"); break;
-			case OPERATOR:		fprintf(stdout, "Operator\n"); break;
-			case IDENTIFICATOR:	fprintf(stdout, "Identificator\n"); break;
-			case KEYWORD:		fprintf(stdout, "Keyword\n"); break;
-			case INTEGER:		fprintf(stdout, "Integer\n"); break;
-			case DECIMAL:		fprintf(stdout, "Decimal\n"); break;
-			case STRING:		fprintf(stdout, "String\n"); break;
-			case OPERATOR_ERR:	fprintf(stdout, "Operator Error\n"); break;
-			case ID_ERR:		fprintf(stdout, "Identificator Error\n"); break;
-			case INT_ERR:		fprintf(stdout, "Integer Error\n"); break;
-			case DEC_ERR:		fprintf(stdout, "Decimal Error\n"); break;
-			case STR_ERR:		fprintf(stdout, "String Error\n"); break;
-			default:			fprintf(stdout, "%d\n", tmp->unit_type); break;
-		}
-		fprintf(stdout," | data_size: %ld\n",tmp->data_size);
-		fprintf(stdout," | data: ");
-		switch(tmp->unit_type){
-			case INTEGER:		fprintf(stdout, "%ld\n", *((size_t*)tmp->data)); break;
-			case DECIMAL:		fprintf(stdout, "%f\n", *((double*)tmp->data)); break;
-			case STRING:		fprintf(stdout, "\"%s\"\n", (char*)tmp->data); break;
-			default:			fprintf(stdout, "%s\n", (char*)tmp->data); break;
-		}
-		
-		fprintf(stdout," +-------------------\n");
-	
-	fprintf(stdout,"NUMBER OF REAL TOKENS      : %d \n",counter);
-	fprintf(stdout,"NUMBER OF LEX_COUNT TOKENS : %d \n",number_of_units);
-	if(number_of_units!=-1)assert(counter==number_of_units);
+	if (result == NULL) {
+		return;
+	}
 
+	fprintf(stderr, "Create_table error: ct_cleaning up\n" );
+
+	sl_dissolve(result);
+
+	exit(99);
 }
+
 
 // copy one item from one table to the another
 void copy_function_to_table (ht_item * copy, sym_tab *  to) {
@@ -68,19 +39,18 @@ void copy_function_to_table (ht_item * copy, sym_tab *  to) {
 	if (copy == NULL || to == NULL) {
 		return;
 	}
-
-	if (copy->is_function == false) {
+	if (copy->func == NULL) {
 		return;
 	}
 
-	ht_item *new = add_item(to, copy->name, true);
-	for (Par * first = copy->parameters; first != NULL; first = first->next) {
+	ht_item *new = add_item(to, copy->func->func_name, true);
+	for (Par * first = copy->func->parameters; first != NULL; first = first->next) {
 		Par * p = malloc_param(new);
 		add_param_name(p, first->name);
 		add_param_type(p, first->type);
 	}
 
-	for (Ret * first2 = copy->return_val; first2 != NULL; first2 = first2->next) {
+	for (Ret * first2 = copy->func->return_val; first2 != NULL; first2 = first2->next) {
 		Ret * r = malloc_ret_val(new);
 		add_ret_type(r, first2->type);
 	}
@@ -101,37 +71,13 @@ void set_error(int ERR_CODE, int *ret) {
 	}
 }
 
-// clean all the alocated memory if something failed
-void clean() {
-
-	if (result == NULL) {
-		return;
-	}
-
-	fprintf(stderr, "Create_table error: cleaning up\n" );
-
-	for (sl_elem_ptr tmp = result->first; tmp != NULL; tmp = tmp->r) {
-
-		int check = clean_table(tmp ->st_data);
-		if (check != 0) {
-			fprintf(stderr, "Error while freeing table\n");
-			exit(99);
-		}
-
-		free_table(tmp->st_data);
-	}
-	sl_dissolve(result);
-
-	exit(99);
-}
-
 
 /*  Create sym_tables for all the levels
  *  'file' file that is read
- *  'ret' the return value 
+ *  'ret' the return value
  *  'function_table' table just for functions
  *  return sym_list or empty_list if some error occured in function (malloc failed / bad parameters ...)
- */ 
+ */
 sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 	// check parameter
@@ -156,7 +102,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 	// while condition
 	bool cont = true;
-	result = sl_init(); // init result
+	result = sl_init(); // init result -> sym_list
 	bool keep = false;
 
 	// remember the item that is newly created
@@ -167,54 +113,61 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 
 	while (cont) {
-	
+
 		// alloc space for lex unit
-		lex_unit_t * lex = malloc(sizeof(lex_unit_t));
+		lex_unit_t * lex = LexUnitCreate();
+		lex_unit_t * to_be_freed = lex;
 		if (lex == NULL) {
-
-			fprintf(stderr, "lex malloc error\n");
-			clean();
-		}
-		LexUnitCtor(lex);
-		
-		lex = Analyze(file, lex);
-
-	
-		if (lex == NULL) {
-			clean();
-			printf("lex error\n");
 			free(remember_id);
 			free(par);
-			return result;
+			LexUnitClear(to_be_freed);
+			LexUnitDelete(to_be_freed);
+			fprintf(stderr, "lex malloc error\n");
+			ct_clean();
 		}
-		
-		Prints_lex(lex, -1);
+		LexUnitCtor(lex);
 
-		// Analyze failed or found EOF
-		if (lex->unit_type == 0) {
-			// check if all tables were closed
+		lex = Analyze(file, lex);
+
+		if (lex == NULL) { // found EOF
 			if (result->first == NULL) {
+				LexUnitClear(to_be_freed);
+				LexUnitDelete(to_be_freed);
 				return result;
 			}
 			for (sl_elem_ptr ptr = result -> first; ptr != NULL; ptr = ptr -> r) {
 				if ((ptr->accessible) == true) { // some table is still active
-					clean();
 					free(remember_id);
 					free(par);
-					return result;
+					LexUnitClear(to_be_freed);
+					LexUnitDelete(to_be_freed);
+					sl_dissolve(result);
+					return NULL;
 				}
 			}
-			*ret = 0; // all tables are closed
+
+			LexUnitClear(to_be_freed);
+			LexUnitDelete(to_be_freed);
+			if (ERROR_SET == 0) {
+				*ret = 0; // all tables are closed
+			}
+			/*else {
+				sl_dissolve(result);
+			} */  /////////////////////////////////////////////////////////////////////// DELETE
 			return result;
 		}
 
 		lex->table = NULL; // inicialize to NULL
 
 		// if any lexical error happened
-		if (lex->unit_type >= 8) {
+		if (lex->unit_type >= OPERATOR_ERR || lex->unit_type == ERROR) {
 			set_error(1, ret);
-			LexUnitDelete(lex);
-			continue;
+			sl_dissolve(result);
+			LexUnitClear(to_be_freed);
+			LexUnitDelete(to_be_freed);
+			free(remember_id);
+			free(par);
+			return NULL;
 		}
 
 		// set as default
@@ -223,8 +176,9 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 		switch (state) {
 
 			// need first function
-			case START: 
+			case START:
 						if (lex->unit_type == KEYWORD && memcmp(lex->data, "func", 4ul) == 0) {
+							fprintf(stderr, "START\n");
 							state = START_OF_FUNCTION;
 							break;
 						}
@@ -234,24 +188,29 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 			case START_OF_FUNCTION:
 						// if correct
 						if (lex->unit_type == IDENTIFICATOR) {
+							fprintf(stderr, "START_OF_FUNCTION\n");
 							state = FUNCTION_ID; // next state
 
 							// create new table
 							sym_tab * new = htab_create(BIG_TABLE);
 							if (new == NULL) {
-								clean();
+								free(remember_id);
+								free(par);
+								LexUnitClear(to_be_freed);
+								LexUnitDelete(to_be_freed);
+								ct_clean();
 							}
-
 							keep = true; // we want to keep this one
 							sl_insert_last(result, new);
 							sl_set_act_last(result);
+														sl_set_act_naccessible(result); //''''''''''''''''''''''''''''''''''''''''''''''' DELETE
 
 
 							remember = add_item(new, lex, true);
 							if (remember == NULL) {
-								clean();
+								ct_clean();
 							}
-							lex->table = remember; // add pointer where the info for this 
+							lex->table = remember; // add pointer where the info for this
 							break;
 						}
 
@@ -262,6 +221,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case FUNCTION_ID:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "(", 1ul) == 0) {
+							fprintf(stderr, "FUNCTION_ID\n");
 							state = START_OF_PARAMETERS;
 							break;
 						}
@@ -272,27 +232,37 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case START_OF_PARAMETERS:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, ")", 1ul) == 0) {
+							printf("START_OF_PARAMETERS -> END\n");
 							state = END_OF_PARAMETERS;
 							break;
 						}
 
 						if (lex->unit_type == IDENTIFICATOR) {
-							for (Par * tmp = remember->parameters; tmp != NULL; tmp = tmp->next) {
-								if (sizeof(tmp->name->data) == sizeof(lex->data)) {
+							printf("START_OF_PARAMETERS -> PARAMETER_ID\n");
+							for (Par * tmp = remember->func->parameters; tmp != NULL; tmp = tmp->next) {
+								if (tmp->name->data_size == lex->data_size) {
 									if (strcmp(tmp->name->data, lex->data) == 0) {
 										set_error(3, ret);
 									}
 								}
-							} 
+							}
 							par = malloc_param(remember);
 							if (par == NULL) {
-								clean();
+								free(remember_id);
+								free(par);
+								LexUnitClear(to_be_freed);
+								LexUnitDelete(to_be_freed);
+								ct_clean();
 							}
 
 							keep = true;
 							if (add_param_name(par, lex) == false) {
-								clean();
-							}	
+								free(remember_id);
+								free(par);
+								LexUnitClear(to_be_freed);
+								LexUnitDelete(to_be_freed);
+								ct_clean();
+							}
 							state = PARAMETER_ID;
 							break;
 						}
@@ -304,15 +274,16 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case PARAMETER_ID:
 						if (lex->unit_type == KEYWORD) {
-								int type = 0;
+							fprintf(stderr, "PARAMETER_ID\n" );
+							int type = 0;
 
-							if (memcmp(lex->data, "int", 3ul) == 0) {
+							if (lex->data_size == 3 && memcmp(lex->data, "int", 3ul) == 0) {
 								type = INTEGER;
 							}
-							else if ( memcmp(lex->data, "float64", 7ul) == 0) {
+							else if (lex->data_size == 7 && memcmp(lex->data, "float64", 7ul) == 0) {
 								type = DECIMAL;
-							} 
-							else if (memcmp(lex->data, "string", 6ul) == 0) {
+							}
+							else if (lex->data_size == 6 && memcmp(lex->data, "string", 6ul) == 0) {
 								type = STRING;
 							}
 							else {
@@ -321,9 +292,12 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 								break;
 							}
 
+							ht_item * help = add_item(result->act->st_data, par->name, false); // add it to the table
+							add_data(help, type); // add type to it
+
 							state = PARAMETER_TYPE;
 							if (add_param_type(par, type) == false) { // add parameter type to the parameter
-								clean();
+								ct_clean();
 							}
 
 							par = NULL; // set it to NULL, because we dont want to work with it anymore
@@ -331,18 +305,20 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							break;
 						}
 
-						set_error(2, ret);
+						set_error(4, ret);
 						state = PARAMETER_ID;
 						break;
 
 			case PARAMETER_TYPE:
 						// end of parameters
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, ")", 1ul) == 0) {
+							fprintf(stderr, "PARAMETER_TYPE -> END\n" );
 							state = END_OF_PARAMETERS;
 							break;
 						}
 
 						else if (lex->unit_type == OPERATOR && memcmp(lex->data, ",", 1ul) == 0) {
+							fprintf(stderr, "PARAMETER_TYPE -> COMMA\n" );
 							state = PARAMETER_COMMA;
 							break;
 						}
@@ -352,15 +328,31 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case PARAMETER_COMMA:
 						if (lex->unit_type == IDENTIFICATOR) {
+							fprintf(stderr, "COMMA\n" );
+							for (Par * tmp = remember->func->parameters; tmp != NULL; tmp = tmp->next) {
+								if (tmp->name->data_size == lex->data_size) {
+									if (strcmp(tmp->name->data, lex->data) == 0) {
+										set_error(3, ret);
+									}
+								}
+							}
 							par = malloc_param(remember);
 							if (par == NULL) {
-								clean();
+								free(remember_id);
+								free(par);
+								LexUnitClear(to_be_freed);
+								LexUnitDelete(to_be_freed);
+								ct_clean();
 							}
 
 							keep = true;
 							if (add_param_name(par, lex) == false) {
-								clean();
-							}	
+								free(remember_id);
+								free(par);
+								LexUnitClear(to_be_freed);
+								LexUnitDelete(to_be_freed);
+								ct_clean();
+							}
 							state = PARAMETER_ID;
 							break;
 						}
@@ -371,10 +363,12 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case END_OF_PARAMETERS:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "(", 1ul) == 0) {
+							fprintf(stderr, "END_OF_PARAMETERS -> START_OF_RETURN_TYPES\n" );
 							state = START_OF_RETURN_TYPES;
 							break;
 						}
 						else if (lex->unit_type == OPERATOR && memcmp(lex->data, "{", 1ul) == 0) {
+							fprintf(stderr, "END_OF_PARAMETERS -> FUNC_NL\n" );
 							state = FUNC_NL;
 							break;
 						}
@@ -385,19 +379,21 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case START_OF_RETURN_TYPES:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, ")", 1ul) == 0) {
+							fprintf(stderr, "START_OF_RETURN_TYPES ->END_OF_RETURN_TYPES\n" );
 							state = END_OF_RETURN_TYPES;
 							break;
 						}
 						if (lex->unit_type == KEYWORD) {
-								int type = 0;
+							fprintf(stderr, "START_OF_RETURN_TYPES ->RETURN_TYPE\n" );
+							int type = 0;
 
-							if (memcmp(lex->data, "int", 3ul) == 0) {
+							if (lex->data_size == 3 && memcmp(lex->data, "int", 3ul) == 0) {
 								type = INTEGER;
 							}
-							else if ( memcmp(lex->data, "float64", 7ul) == 0) {
+							else if (lex->data_size == 7 && memcmp(lex->data, "float64", 7ul) == 0) {
 								type = DECIMAL;
-							} 
-							else if (memcmp(lex->data, "string", 6ul) == 0) {
+							}
+							else if (lex->data_size == 6 && memcmp(lex->data, "string", 6ul) == 0) {
 								type = STRING;
 							}
 							else {
@@ -408,12 +404,20 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 							Ret * r = malloc_ret_val(remember);
 							if (r == NULL) {
-								clean();
+								free(remember_id);
+								free(par);
+								LexUnitClear(to_be_freed);
+								LexUnitDelete(to_be_freed);
+								ct_clean();
 							}
 
 							state = RETURN_TYPE;
 							if (add_ret_type(r, type) == false) { // add parameter type to the parameter
-								clean();
+								free(remember_id);
+								free(par);
+								LexUnitClear(to_be_freed);
+								LexUnitDelete(to_be_freed);
+								ct_clean();
 							}
 
 							break;
@@ -425,10 +429,12 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case RETURN_TYPE:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, ")", 1ul) == 0) {
+							fprintf(stderr, "RETURN_TYPE -> END_OF_RETURN_TYPES\n" );
 							state = END_OF_RETURN_TYPES;
 							break;
 						}
 						else if (lex->unit_type == OPERATOR && memcmp(lex->data, ",", 1ul) == 0) {
+							fprintf(stderr, "RETURN_TYPE -> RETURN_TYPE_COMMA\n" );
 							state = RETURN_TYPE_COMMA;
 							break;
 						}
@@ -439,15 +445,16 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case RETURN_TYPE_COMMA:
 						if (lex->unit_type == KEYWORD) {
+								fprintf(stderr, "RETURN_TYPE_COMMA -> RETURN_TYPE\n" );
 								int type = 0;
 
-								if (memcmp(lex->data, "int", 3ul) == 0) {
+								if (lex->data_size == 3 && memcmp(lex->data, "int", 3ul) == 0) {
 									type = INTEGER;
 								}
-								else if ( memcmp(lex->data, "float64", 7ul) == 0) {
+								else if (lex->data_size == 7 && memcmp(lex->data, "float64", 7ul) == 0) {
 									type = DECIMAL;
-								} 
-								else if (memcmp(lex->data, "string", 6ul) == 0) {
+								}
+								else if (lex->data_size == 6 && memcmp(lex->data, "string", 6ul) == 0) {
 									type = STRING;
 								}
 								else {
@@ -458,12 +465,20 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 								Ret * r = malloc_ret_val(remember);
 								if (r == NULL) {
-									clean();
+									free(remember_id);
+									free(par);
+									LexUnitClear(to_be_freed);
+									LexUnitDelete(to_be_freed);
+									ct_clean();
 								}
 
 								state = RETURN_TYPE;
 								if (add_ret_type(r, type) == false) { // add parameter type to the parameter
-									clean();
+									free(remember_id);
+									free(par);
+									LexUnitClear(to_be_freed);
+									LexUnitDelete(to_be_freed);
+									ct_clean();
 								}
 
 								break;
@@ -475,6 +490,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case END_OF_RETURN_TYPES:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "{", 1ul) == 0) {
+							fprintf(stderr, "END_OF_RETURN_TYPES \n" );
 							copy_function_to_table(remember, (*function_table)); // copy function to the function table
 							state = FUNC_NL;
 							break;
@@ -483,7 +499,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 						set_error(2, ret);
 						state = END_OF_RETURN_TYPES;
 						break;
-
+/*
 			case FUNC_NL:
 						if (lex->unit_type == NEWLINE) {
 							state = START_OF_SECTION;
@@ -507,15 +523,15 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 						else if (lex->unit_type == KEYWORD && memcmp(lex->data, "if", 2ul) == 0) {
 							state = IF;
 							break;
-						} 
+						}
 						else if (lex->unit_type == KEYWORD && memcmp(lex->data, "else", 4ul) == 0) {
 							state = IF;
 							break;
-						} 
+						}
 						else if (lex->unit_type == KEYWORD && memcmp(lex->data, "for", 3ul) == 0) {
 							state = FOR;
 							break;
-						} 
+						}
 						else if (lex->unit_type == NEWLINE) {
 							state = START_OF_SECTION;
 							break;
@@ -523,7 +539,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 						state = START_OF_SECTION;
 						break;
 
-			
+
 			case SECTION_NL:
 						if (lex->unit_type == NEWLINE) {
 							state = END_OF_SECTION;
@@ -535,9 +551,9 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case END_OF_SECTION:
 						if (result->act != NULL) {
-							sl_set_act_naccesible(result); // make the current table not accesible
+							sl_set_act_naccessible(result); // make the current table not accesible
 							sl_set_prev_act(result); // set the previous active
-							while (sl_get_act_accesibility(result) != true) { // set active the first accesible previous one
+							while (sl_get_act_accessibility(result) != true) { // set active the first accesible previous one
 								if (result->act->l == NULL) { // it is the first table
 									state = START;
 									remember = NULL;
@@ -562,10 +578,10 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 								break;
 							}
 							else {
-								set_error(3,ret);  
+								set_error(3,ret);
 							}
 						}
-						state = START_OF_SECTION;  
+						state = START_OF_SECTION;
 						break;
 
 
@@ -581,7 +597,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							keep = true;
 							state = ID_NL;
 							break;
-						} 
+						}
 						else if (lex->unit_type == STRING) {
 							add_data(id_item, lex);
 							keep = true;
@@ -592,9 +608,9 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							ht_item * found = sl_search(result, lex);
 							if (found == NULL) { // not found
 								for (Par * tmp = remember->parameters; tmp != NULL; tmp = tmp->next) {
-									
+
 									if (sizeof(tmp->name->data) == sizeof(lex->data)) { // compare amount of memory
-										if (strcmp(tmp->name->data, lex->data) == 0) { // compare if the memory is same 
+										if (strcmp(tmp->name->data, lex->data) == 0) { // compare if the memory is same
 											keep = true;
 											lex->unit_type = tmp->type; // set the type as the type of the parameter
 											add_data(id_item, lex);
@@ -634,7 +650,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case ID_NL:
 						if (lex->unit_type == NEWLINE) {
-							
+
 							state = START_OF_SECTION;
 							break;
 						}
@@ -644,11 +660,11 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case IF:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "{", 1ul) == 0) {
-							
+
 							// create new table
 							sym_tab * new = htab_create(MEDIUM_TABLE);
 							if (new == NULL) {
-								clean();
+								ct_clean();
 							}
 
 							sl_insert_last(result, new);
@@ -665,24 +681,24 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case FOR:
 						// create new table
-						keep = false;                         
+						keep = false;
 						sym_tab * new = htab_create(1); // one identificator
 						if (new == NULL) {
-							clean();
+							ct_clean();
 						}
 
 						sl_insert_last(result, new);
 						sl_set_act_last(result);
-					
-						if (lex->unit_type == IDENTIFICATOR) {      
+
+						if (lex->unit_type == IDENTIFICATOR) {
 
 							id_item = add_item(new, lex, false);
 							if (id_item == NULL) {
-								clean();
+								ct_clean();
 							}
-							lex->table = id_item; // add pointer where the info for this 							
+							lex->table = id_item; // add pointer where the info for this
 							keep = true;
-							state = FOR_ID_TYPE; 
+							state = FOR_ID_TYPE;
 							break;
 						}
 						else if (lex->unit_type == OPERATOR && memcmp(lex->data, ";", 1ul) == 0) {
@@ -690,19 +706,19 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							break;
 						}
 						set_error(2, ret);
-						state = FOR_ERROR; 
+						state = FOR_ERROR;
 						break;
 
 			case FOR_ERROR:
-						if (lex->unit_type == IDENTIFICATOR) {      
+						if (lex->unit_type == IDENTIFICATOR) {
 
 							id_item = add_item(result->act->st_data, lex, false);
 							if (id_item == NULL) {
-								clean();
+								ct_clean();
 							}
-							lex->table = id_item; // add pointer where the info for this 							
+							lex->table = id_item; // add pointer where the info for this
 							keep = true;
-							state = FOR_ID_TYPE; 
+							state = FOR_ID_TYPE;
 							break;
 						}
 						else if (lex->unit_type == OPERATOR && memcmp(lex->data, ";", 1ul) == 0) {
@@ -710,7 +726,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							break;
 						}
 						set_error(2, ret);
-						state = FOR_ERROR; 
+						state = FOR_ERROR;
 						break;
 
 
@@ -726,7 +742,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							keep = true;
 							state = FOR_WAIT_SEMI;
 							break;
-						} 
+						}
 						else if (lex->unit_type == STRING) {
 							add_data(id_item, lex);
 							keep = true;
@@ -737,9 +753,9 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							ht_item * found = sl_search(result, lex);
 							if (found == NULL) { // not found
 								for (Par * tmp = remember->parameters; tmp != NULL; tmp = tmp->next) {
-									
+
 									if (sizeof(tmp->name->data) == sizeof(lex->data)) { // compare amount of memory
-										if (strcmp(tmp->name->data, lex->data) == 0) { // compare if the memory is same 
+										if (strcmp(tmp->name->data, lex->data) == 0) { // compare if the memory is same
 											keep = true;
 											lex->unit_type = tmp->type; // set the type as the type of the parameter
 											add_data(id_item, lex);
@@ -796,10 +812,10 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case SECOND_SEMI:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "{", 1ul) == 0) {
-								// create new table                         
+								// create new table
 								sym_tab * new = htab_create(MEDIUM_TABLE); // medium table
 								if (new == NULL) {
-									clean();
+									ct_clean();
 								}
 								sl_insert_last(result, new);
 								sl_set_act_last(result);
@@ -810,8 +826,8 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 						state = SECOND_SEMI;
 						break;
 
-			
-			default: 
+			*/
+			default:
 						fprintf(stderr, "Wrong state error\n");
 					 	break;
 
@@ -820,10 +836,12 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 		// free the unit if not needed
 		if (keep == false) {
+			LexUnitClear(lex);
 			LexUnitDelete(lex);
 		}
 
 	} // end of while
+
 
 	return result;
 }
