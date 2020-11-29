@@ -32,7 +32,7 @@ structs.o: structs.c structs.h symtable.h
 test_table: test_table.o symtable.o create_tables.o lexical_analyzer.o sym_list.o structs.o
 	$(COMPILATOR) $^
 
-prec_test: prec_test.o d_tree.o prec_parser.o prec_table.o lex_list.o sym_list.o symtable.o lexical_analyzser.o structs.o
+prec_test: prec_test.o d_tree.o prec_parser.o prec_table.o lex_list.o sym_list.o symtable.o lexical_analyzer.o structs.o create_tables.o
 	$(COMPILATOR) $^ 
 
 symtable.o: symtable.c symtable.h structs.h
@@ -70,4 +70,4 @@ clean:
 	rm lex_test
 
 run: all
-	./translate
+	valgrind ./lex_test

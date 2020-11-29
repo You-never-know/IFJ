@@ -150,6 +150,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 					return NULL;
 				}
 			}
+
 			LexUnitClear(to_be_freed);
 			LexUnitDelete(to_be_freed);
 			if (ERROR_SET == 0) {
@@ -217,6 +218,8 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							keep = true; // we want to keep this one
 							sl_insert_last(result, new);
 							sl_set_act_last(result);
+														sl_set_act_naccesible(result); //''''''''''''''''''''''''''''''''''''''''''''''' DELETE
+
 
 							remember = add_item(new, lex, true);
 							if (remember == NULL) {

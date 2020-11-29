@@ -11,6 +11,7 @@
 #define PREC_TABLE
 
 #include "structs.h"
+#include "symtable.h"
 
 enum tokens {
 	DOLLAR,

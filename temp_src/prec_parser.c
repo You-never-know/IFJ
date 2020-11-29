@@ -16,7 +16,7 @@
 #include "prec_table.h"
 
 // stacks needed for this program
-lex_list * stack = NULL; 
+lex_list * stack = NULL;
 lex_list * help = NULL;
 
 
@@ -25,8 +25,8 @@ lex_list * help = NULL;
 int get_the_top_operand() {
 
 	for (ll_elem_ptr tmp = stack->first; tmp != NULL; tmp = tmp->r) {
-		if (tmp->ll_data->type != HANDLE || tmp->ll_data->type != E) {
-			return tmp->ll_data->type; 
+		if (tmp->ll_data->type != HANDLE && tmp->ll_data->type != E) {
+			return tmp->ll_data->type;
 		}
 	}
 
@@ -42,7 +42,7 @@ void add_handle() {
 	while (1) {
 
 		tmp = ll_return_first_data(stack);
-		if (tmp->type == E) { 
+		if (tmp->type == E) {
 			ll_insert_first(help, tmp); // add it to the help stack
 			ll_del_first(stack); // delete it from the stack
 		}
@@ -55,6 +55,7 @@ void add_handle() {
 				ll_insert_first(stack, node); // add it to the stack
 				ll_del_first(help); // delete it from the help stack
 			}
+			return;
 		}
 	}
 }
@@ -76,7 +77,6 @@ bool match() {
 
 	d_node * tmp = ll_return_first_data(help);
 
-	
 	switch (tmp->type) {
 	 	case  I: // E -> i
 			ll_del_first(help);
@@ -142,7 +142,7 @@ bool match() {
 			}
 
 		case F:
-			if (ll_get_length(help) == 4) { // E -> f(E) 
+			if (ll_get_length(help) == 4) { // E -> f(E)
 				d_node * fun = tmp; // f
 				ll_del_first(help);
 				d_node * LB = ll_return_first_data(help); // (
@@ -165,12 +165,31 @@ bool match() {
 				delete_tree(RB);
 				delete_tree(par);
 				return false;
+			}else if (ll_get_length(help) == 3) { // E -> f()
+				d_node* func = tmp; // f
+				ll_del_first(help);
+				d_node* LB = ll_return_first_data(help); // (
+				ll_del_first(help);
+				d_node* RB = ll_return_first_data(help); // )
+				ll_del_first(help);
+
+				if (LB->type == L_BRACKET && RB->type == R_BRACKET) {
+					delete_tree(LB);
+					delete_tree(RB);
+					ll_insert_first(stack, func);
+					return true;
+				}
+
+				delete_tree(func);
+				delete_tree(LB);
+				delete_tree(RB);
+				return false;
 			}
 			else { // E -> f(E,E, ... , E)
 
 				int length = ll_get_length(help);
 
-				if (length < 6) { // the minumum is f(E,E) 
+				if (length < 6) { // the minumum is f(E,E)
 					return false;
 				}
 
@@ -180,7 +199,7 @@ bool match() {
 				d_node * under_node = function;
 				d_node * node = ll_return_first_data(help);
 				ll_del_first(help);
-				
+
 				if (node->type != L_BRACKET) {
 					delete_tree(function);
 					delete_tree(node);
@@ -192,7 +211,7 @@ bool match() {
 				bool need_comma_bracket = false;
 				bool correct = false;
 				for (int i = 0; i<length; i++) {
-					
+
 					node = ll_return_first_data(help);
 					ll_del_first(help);
 
@@ -228,7 +247,7 @@ bool match() {
 						}
 					}
 
-				} // end of for 
+				} // end of for
 				if (correct == true) {
 					function->type = E;
 					ll_insert_first(stack, function);
@@ -242,7 +261,7 @@ bool match() {
 		default:
 			return false;
 	}
-	
+
 	return false;
 }
 
@@ -279,12 +298,12 @@ bool match_rule() {
 }
 
 
-/* Make the precedence syntactic analysis 
+/* Make the precedence syntactic analysis
  * 'token' the current token in the file
  * 'token' in -> the current | out -> the current after the expresion
  * 'root' the node where the tree structure comes
  * 'f' file for the lexical analyser
- * return true if happend corectly, false if not 
+ * return true if happend corectly, false if not
  */
 bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun_tab) {
 
@@ -298,7 +317,7 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 	}
 
 	// init stack
-	stack = ll_init(); 
+	stack = ll_init();
 	help = ll_init();
 
 	// put $ to the stack
@@ -311,15 +330,14 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 	int type = merge_event(*token, fun_tab); // get the first type
 
 	while (!finished) {
-
-		if (type == ERR) {
-			get_token = false; // dont read anything from the input
-			type = DOLLAR; // set it as the input 
-		}
-		else {
+		if (type != ERR) {
 			type = merge_event(*token, fun_tab);
 		}
-
+		if (type == ERR) {
+			get_token = false; // dont read anything from the input
+			type = DOLLAR; // set it as the input
+		}
+printf("TOKEN SIZE %ld\n",(*token)->data_size );
 
 		if (get_token) { // we create only new nodes
 			node = d_node_create(NULL, *token, type); // create node
@@ -327,32 +345,35 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 
 		int next_move = 42;
 		next_move = prec_event(get_the_top_operand(), type);
-		
+		printf("GTO: %d\n",	get_the_top_operand());
+		printf("NEXT MOVE: %d\n",	next_move );
 
 		switch (next_move) {
 
-			case 0: // prec_table = add token to the stack
+			case 0: 
+				ll_insert_first(stack, node);
+				get_token = true;
+			
+				break;
+
+			case -1:
+				add_handle(); 
 				ll_insert_first(stack, node);
 				get_token = true;
 				break;
 
-			case -1: // prec_table < add hande plus add the token to the stack
-				add_handle(); // add hande after the last operand
-				ll_insert_first(stack, node); // add the current node to the top of the stack
-				get_token = true;
-				break;
-
 			case 1: // prec_table > try to match any rule
+		
 				if (match_rule() == true) {
 					get_token = false;
 				}
 				else { // rule not found
 					clean();
 					root->right = NULL;
-					return false; 
+					return false;
 				}
-				
-				if (test_end(type)) { // test if we are finished 
+
+				if (test_end(type)) { // test if we are finished
 					finished = true;
 					get_token = false;
 					break;
@@ -360,9 +381,11 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 				break;
 
 			default:
+		
 				clean();
+	
 				root->right = NULL;
-				return false; 
+				return false;
 
 		}
 
@@ -371,6 +394,11 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 			*token = LexUnitCreate();
 			LexUnitCtor(*token);
 			*token = Analyze(f, *token);
+			if((*token)==NULL){
+				type=ERR;
+			}
+			printf("TOKEN PRINT %s; (%d) %d\n", (char*)(*token)->data,*((int*)(*token)->data), (*token)->unit_type);
+
 		}
 	}
 
@@ -381,19 +409,18 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 
 			if (top == NULL) {
 				clean();
-				delete_tree(top);
 				root->right = NULL;
-				return false; 
+				return false;
 			}
 			else if (top->type == E) {
 				root->right = top;
 				clean();
 				return true;
 			}
-		} 
-	
+		}
+
 		clean();
 		root->right = NULL;
-		return false; 
+		return false;
 
 }
