@@ -9,27 +9,38 @@
 #include "lex_list.h"
 #include "structs.h"
 
+/*
+* Prints err
+*/
 void ll_err() {
 
 	printf("lex_list ERR\n");
 	return;
 }
 
+/*
+* lex_list initialization
+*/
 lex_list* ll_init() {
 
-	//set all pointers to NULL
-	lex_list* ll = malloc(sizeof(lex_list));
-	if (ll == NULL) {
+	
+	lex_list* ll = malloc(sizeof(lex_list)); //memory allocation
+	if (ll == NULL) { //malloc check
 		ll_err();
 		return NULL;
 	}
 
+	//set to NULL
 	ll->first = NULL;
 	ll->length = 0;
 
 	return ll;
 }
 
+
+/*
+* lex_list dissolution
+*/
 void ll_dissolve(lex_list* ll) {
 
 	ll_elem_ptr tmp = ll->first;
@@ -46,13 +57,16 @@ void ll_dissolve(lex_list* ll) {
 		}
 		tmp = ll->first;
 	}
-	//set items to NULL
+	//set to NULL
 	ll->first = NULL;
 	ll->length = 0;
 
 	free(ll);
 }
 
+/*
+* Inserts the d_node* ll_data as first element of lex_list* ll
+*/
 void ll_insert_first(lex_list* ll, d_node* ll_data) {
 
 	//new item allocation
@@ -72,7 +86,9 @@ void ll_insert_first(lex_list* ll, d_node* ll_data) {
 	(ll->length)++;
 }
 
-
+/*
+* Deletes the first element of lex_list* ll
+*/
 void ll_del_first(lex_list* ll) {
 
 	ll_elem_ptr tmp;
@@ -100,18 +116,26 @@ void ll_del_first(lex_list* ll) {
 
 }
 
+/*
+* Returns the first element
+*/
 ll_elem_ptr * ll_return_first(lex_list* ll) {
 
 	return &ll->first;
 }
 
+/*
+* Returns the data of the first element
+*/
 d_node* ll_return_first_data(lex_list* ll) {
 
 	return ll->first->ll_data;
 }
 
+/*
+* Returns length of sym_list
+*/
 int ll_get_length(lex_list* ll) {
 
-	//return length of sym_list
 	return ll->length;
 }

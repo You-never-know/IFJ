@@ -14,7 +14,12 @@
 
 //DEBUG VERSION
 
-//Group cases where the return value is the same
+/*
+* Function groups cases where the return value is the same
+* Returns enum case according to input
+* Param lex_unit_t* lex: 
+* Param sym_tab* st: Table in which we search for function identificator
+*/
 enum tokens merge_event(lex_unit_t* lex, sym_tab* st) {
 	//printf("MERGE =================================================\n");
 	switch (lex->unit_type) {
@@ -77,8 +82,12 @@ enum tokens merge_event(lex_unit_t* lex, sym_tab* st) {
 	return ERR;
 }
 
-//  < = >  ERR
-// -1 0 1  42
+/*
+* Returns control based on precedent table
+* Explanations:
+*  < = >  ERR
+* -1 0 1  42
+*/
 int prec_event(int top, int input) {
 
 	switch (top) {

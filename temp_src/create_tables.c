@@ -203,7 +203,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							keep = true; // we want to keep this one
 							sl_insert_last(result, new);
 							sl_set_act_last(result);
-														sl_set_act_naccesible(result); //''''''''''''''''''''''''''''''''''''''''''''''' DELETE
+														sl_set_act_naccessible(result); //''''''''''''''''''''''''''''''''''''''''''''''' DELETE
 
 
 							remember = add_item(new, lex, true);
@@ -551,9 +551,9 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case END_OF_SECTION:
 						if (result->act != NULL) {
-							sl_set_act_naccesible(result); // make the current table not accesible
+							sl_set_act_naccessible(result); // make the current table not accesible
 							sl_set_prev_act(result); // set the previous active
-							while (sl_get_act_accesibility(result) != true) { // set active the first accesible previous one
+							while (sl_get_act_accessibility(result) != true) { // set active the first accesible previous one
 								if (result->act->l == NULL) { // it is the first table
 									state = START;
 									remember = NULL;
