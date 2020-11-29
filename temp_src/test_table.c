@@ -72,7 +72,10 @@ int main(int argc, char* argv[]) {
 		printf("-----------------------------------------------\n");
 		printf("RET INT %d /n", ret);
 		printf("FUNCTION_TABlE PRINT\n");
-		print_table(function_table);
+		
+		if (function_table != NULL) {
+			print_table(function_table);
+		}
 		printf("-----------------------------------------------\n");
 		printf("SYM_LIST PRINT\n");
 
@@ -83,6 +86,7 @@ int main(int argc, char* argv[]) {
 
 			while (tmp != NULL) {
 				print_table(tmp->st_data);
+				printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 				tmp = tmp->r;
 			}
 		}
@@ -91,8 +95,10 @@ int main(int argc, char* argv[]) {
 		}
 		printf("-----------------------------------------------\n");
 
-		clean_function_table(function_table);
-		free_table(function_table);
+		if (function_table != NULL) {
+			clean_function_table(function_table);
+			free_table(function_table);
+		}
 		fclose(file);  // close the file
 		if (sl != NULL) {
 			sl_dissolve(sl);
