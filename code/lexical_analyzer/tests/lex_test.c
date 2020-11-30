@@ -13,12 +13,6 @@
 #include <ctype.h>
 #include <unistd.h>
 
-typedef struct lex_u_list //linked list for test 
-{
-	lex_unit_t * unit;
-	struct lex_u_list *next;
-}lex_list;
-
 unsigned WORD_COUNT=0;
 
 void Error(const char *msg){
@@ -466,6 +460,7 @@ int main()
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
+	printf("%ld\n",sizeof(lex_unit_t));
 
 
 
