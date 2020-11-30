@@ -198,7 +198,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 									c == '{' || c == '}' || 
 									c == '[' || c == ']' || 
 									c == '.' || c == ',' ||
-									c == '~')		state = OPER_OUT;
+									c == '~' || c == ';' )		state = OPER_OUT;
 							else if(isMultiOperator(c))	state = OPER_CHECK;
 							else					state = INVALID;
 						}
