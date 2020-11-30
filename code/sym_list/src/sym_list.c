@@ -7,13 +7,21 @@
 **/
 
 #include "sym_list.h"
+#include "structs.h"
+#include "symtable.h"
 
+/*
+* Prints err
+*/
 void sl_err() {
 
-	printf("ERROR: The program has performed an illegal operation.\n");
+	printf("sym_list ERR\n");
 	return;
 }
 
+/*
+* sym_list initialization
+*/
 sym_list* sl_init() {
 
 	//set all pointers to NULL
@@ -32,6 +40,9 @@ sym_list* sl_init() {
 	return sl;
 }
 
+/*
+* sym_list dissolution
+*/
 void sl_dissolve(sym_list* sl) {
 
 	sl_elem_ptr tmp = sl->first;
@@ -44,7 +55,8 @@ void sl_dissolve(sym_list* sl) {
 		//tmp contents set
 		tmp->l = NULL;
 		tmp->r = NULL;
-		tmp->st_data = NULL;
+		clean_table(tmp->st_data);
+		free_table(tmp->st_data);
 
 		free(tmp);
 
@@ -61,6 +73,9 @@ void sl_dissolve(sym_list* sl) {
 	free(sl);
 }
 
+/*
+* Inserts the sym_tab* st_data as the first element of sym_list* sl
+*/
 void sl_insert_first(sym_list* sl, sym_tab* st_data) {
 
 	//new item allocation
@@ -90,6 +105,9 @@ void sl_insert_first(sym_list* sl, sym_tab* st_data) {
 	(sl->length)++;
 }
 
+/*
+* Inserts the sym_tab* st_data as the last element of sym_list* sl
+*/
 void sl_insert_last(sym_list* sl, sym_tab* st_data) {
 
 	//new item allocation
@@ -118,62 +136,96 @@ void sl_insert_last(sym_list* sl, sym_tab* st_data) {
 	(sl->length)++;
 }
 
+
+/*
+* Set the first item as active
+*/
 void sl_set_act_first(sym_list* sl) {
 
 	sl->act = sl->first;
 
 }
 
+/*
+* Set the last item as active
+*/
 void sl_set_act_last(sym_list* sl) {
 
-	//set last item as active
 	sl->act = sl->last;
 
 }
 
+/*
+* Moves the active element to the right
+*/
 void sl_set_next_act(sym_list* sl) {
 
 	if (sl->act)
 	{
 		if (sl->act->r != NULL) {
-			sl->act = sl->act->r; //moves the active element to the right
+			sl->act = sl->act->r;
 		}
 
 	}
 }
 
+/*
+* Moves the active element to the left
+*/
 void sl_set_prev_act(sym_list* sl) {
 
 	if (sl->act)
 	{
 		if (sl->act->l != NULL) {
-			sl->act = sl->act->l; //moves the active element to the left
+			sl->act = sl->act->l; 
 		}
 
 	}
 }
 
-void sl_set_act_naccesible(sym_list* sl) {
+/*
+* Sets all sym_list* sl items as accessible
+*/
+void set_all_accessible(sym_list* sl) {
 
-	//set active item as non-accesible
+	sl_elem_ptr tmp = sl->first;
+
+	while (tmp != NULL) {
+		tmp->accessible = true;
+		tmp = tmp->r;
+	}
+}
+
+/*
+* Sets active item as non-accessible
+*/
+void sl_set_act_naccessible(sym_list* sl) {
+
 	sl->act->accessible = false;
 
 }
 
-void sl_set_act_accesible(sym_list* sl) {
+/*
+* Sets active item as accessible
+*/
+void sl_set_act_accessible(sym_list* sl) {
 
-	//set active item as accesible
 	sl->act->accessible = true;
 
 }
 
-bool sl_get_act_accesibility(sym_list* sl) {
+/*
+* Returns accessibility of the actual item of sym_list* sl
+*/
+bool sl_get_act_accessibility(sym_list* sl) {
 
-	//return item accesibility
 	return sl->act->accessible;
 
 }
 
+/*
+* Returns data of the actual item of sym_list* sl
+*/
 sym_tab* sl_return_act(sym_list* sl) {
 
 	//list is empty
@@ -187,7 +239,9 @@ sym_tab* sl_return_act(sym_list* sl) {
 
 }
 
-
+/*
+* Deletes the first element of sym_list* ll
+*/
 void sl_del_first(sym_list* sl) {
 
 	sl_elem_ptr tmp;
@@ -219,6 +273,9 @@ void sl_del_first(sym_list* sl) {
 
 }
 
+/*
+* Deletes the last element of sym_list* ll
+*/
 void sl_del_last(sym_list* sl) {
 
 	sl_elem_ptr tmp;
@@ -248,25 +305,34 @@ void sl_del_last(sym_list* sl) {
 
 }
 
-
+/*
+* Returns length of sym_list* sl
+*/
 int sl_get_length(sym_list* sl) {
 
-	//return length of sym_list
 	return sl->length;
 }
 
+/*
+* Overwrites the contents of the active element of sym_list* sl with sym_tab* st_data
+*/
 void sl_rewrite_act(sym_list* sl, sym_tab* st_data) {
 
 	if (sl->act)
 	{
-		sl->act->st_data = st_data; //overwrites the contents of the active element
+		sl->act->st_data = st_data; 
 	}
 }
 
-
+/*
+* Searches for lex_unit* lu in sym_list* sl
+* Returns NULL if not found otherwise the last found ht_item*
+*/
 ht_item* sl_search(sym_list* sl, struct lex_unit* lu) {
 
 	ht_item* tmp = NULL;
+
+	sl_elem_ptr now = sl->act;
 
 	if (sl->first != NULL) { //list is not empty
 
@@ -274,15 +340,17 @@ ht_item* sl_search(sym_list* sl, struct lex_unit* lu) {
 
 		for (int i = 0; i < sl->length; i++) {
 
-			if (sl_get_act_accesibility(sl)) {
+			if (sl_get_act_accessibility(sl)) {
 
 				if (find_item(sl->act->st_data, lu) != NULL) {
 					tmp = find_item(sl->act->st_data, lu);
 				}
 
 			}
+			sl_set_next_act(sl);
 		}
+		sl->act = now;
 	}
 
-	return tmp; //returns NULL if not found otherwise the last found item
+	return tmp;
 }

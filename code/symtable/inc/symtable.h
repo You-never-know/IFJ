@@ -39,8 +39,8 @@ typedef struct function {
 
 typedef struct identificator {
 	struct lex_unit * id_name; // name of the identificator
-	int type; // value of the identificator, active only for id not for fun
-	bool accesible; // can be accesible
+	int type; // type of the identificator
+	bool accesible; // was declared already
 } Id;
 
 typedef struct htable_item {	
@@ -62,14 +62,16 @@ size_t htab_hash_fun(const char* str); // hash function from 'http://www.cse.yor
 sym_tab *htab_create(size_t n); // mallocs memmory and initalizates it
 ht_item *add_item(sym_tab *st, struct lex_unit *lex, bool is_function); // add identificator to the htable
 ht_item *find_item(sym_tab *st, struct lex_unit * lex); // find lexem in the table NULL if it not there 
-bool add_data(ht_item *item, struct lex_unit * lex); // add data to indentificator
+bool add_data(ht_item *item, int type); // add data to indentificator
 Par* malloc_param(ht_item *item); // allocates and inicializes parameter
 bool add_param_name(Par* par, struct lex_unit *lex); // add data to the parameter
 bool add_param_type(Par* par, int type); // add type to the parameter
 Ret* malloc_ret_val(ht_item *item); // allocates and inicializes parameter
 bool add_ret_type(Ret* ret, int type); // add data to the parameter
 int clean_table(sym_tab *st); // removes all items from the table
+int clean_function_table(sym_tab *st); // removes all items from the table
 void free_table(sym_tab *st); // free the given table from memory
 bool add_access(ht_item * item,bool access); //add access to ID by default is false
+bool is_function(ht_item * item); // find if the item is a function
 
 #endif 

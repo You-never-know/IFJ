@@ -1,3 +1,11 @@
+/**
+* Project:
+* Implementace pøekladaèe imperativního jazyka IFJ20
+*
+* Author:
+* Drengubiak Vladimír	xdreng01
+**/
+
 #include "structs.h" 
 #ifndef D_TREE
 #define D_TREE

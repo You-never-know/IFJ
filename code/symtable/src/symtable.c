@@ -163,12 +163,24 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 	for (ht_item *tmp = st->ptr[idx]; tmp!= NULL; tmp = tmp->next) {
 
 		if(tmp->func!=NULL) {
-			if (tmp->func->func_name == lex) {
+			if (tmp->func->func_name == NULL) {
+				continue;
+			}
+			else if (tmp->func->func_name->data == NULL || lex->data == NULL) {
+				continue;
+			}
+			else if (strncmp((char *)tmp->func->func_name->data, (char *)lex->data, lex->data_size)) {
 				return tmp;
 			}
 		}
 		else if(tmp->id!=NULL){
-			if (tmp->id->id_name == lex) {
+			if (tmp->id->id_name == NULL) {
+				continue;
+			}
+			else if (tmp->id->id_name->data == NULL || lex->data == NULL) {
+				continue;
+			}
+			else if (strncmp((char *)tmp->id->id_name->data, (char *)lex->data, lex->data_size) == 0) {
 				return tmp;
 			}
 		}
@@ -180,15 +192,15 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 // add data to the given identificator
 // if it is a function or it doesn't exit return false
 // else return true
-bool add_data(ht_item *item, lex_unit_t * lex) {
+bool add_data(ht_item *item, int type) {
 
-	if (item == NULL || lex == NULL) {
+	if (item == NULL) {
 		fprintf(stderr, "add_data error\n");
 		return false;
 	}
 
 	if (item->id != NULL) {
-		item->id->type = lex->unit_type;
+		item->id->type = type;
 		return true;
 	}
 
@@ -208,6 +220,18 @@ bool add_access(ht_item * item,bool access){
 	return false;
 
 }
+
+// find if the item is a function
+// true if it is and false if not
+bool is_function(ht_item * item) {
+	if(item==NULL){
+		fprintf(stderr, "is function error\n");
+		return false;
+	}
+	
+	return item->func != NULL; // if func isn't NULL it is a function
+}
+
 
 // allocates and inicializes parameter and adds it to the linked list
 // return pointer to Par if success, NULL if not
@@ -410,11 +434,49 @@ bool clean_row(ht_item * first, sym_tab *st) {
 		if (to_be_deleted->func != NULL){
 			clean_params(to_be_deleted);
 			clean_return_values(to_be_deleted);
+			if (to_be_deleted->func->func_name != NULL) {
+				LexUnitDelete(to_be_deleted->func->func_name);
+			}
 			free(to_be_deleted->func);
 		}
 
 		if(to_be_deleted->id != NULL){
+			if (to_be_deleted->id->id_name != NULL) {
+				LexUnitDelete(to_be_deleted->id->id_name);
+			}
 			free(to_be_deleted->id);
+		}
+
+		free(to_be_deleted);
+		st->size = st->size -1;
+	}
+
+	return true;
+}
+
+
+// help function to clean one row
+// return true if success, false if not
+bool clean_row2(ht_item * first, sym_tab *st) {
+
+	if (first == NULL || st == NULL) {
+		fprintf(stderr, "clean_row failed\n" );
+		return false;
+	}
+
+	for (ht_item * tmp = first; tmp != NULL; ){
+
+		ht_item * to_be_deleted = tmp;
+		tmp = tmp->next;
+
+		if (to_be_deleted->func != NULL){
+			clean_params(to_be_deleted);
+			clean_return_values(to_be_deleted);
+			free(to_be_deleted->func);
+		}
+		else {
+			fprintf(stderr, "clean_row2 failed\n");
+			return false;
 		}
 
 		free(to_be_deleted);
@@ -446,6 +508,36 @@ int clean_table(sym_tab *st) {
 		}
 
 		if (clean_row(st->ptr[i], st) != true) {
+			fprintf(stderr, "clean_table failed because of clean row\n" );
+			return -1;
+		}
+
+	}
+
+	return st->size;
+
+ }
+
+// removes all items from the table
+int clean_function_table(sym_tab *st) {
+	if (st == NULL) {
+		fprintf(stderr, "clean_table failed\n" );
+		return -1;
+	}
+
+	for (size_t i = 0; i < st->arr_size; i++) {
+
+		// no more items left
+		if (st->size == 0) {
+			return 0;
+		}
+
+		// if no items
+		if (st->ptr[i] == NULL) {
+			continue;
+		}
+
+		if (clean_row2(st->ptr[i], st) != true) {
 			fprintf(stderr, "clean_table failed because of clean row\n" );
 			return -1;
 		}

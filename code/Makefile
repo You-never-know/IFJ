@@ -7,6 +7,8 @@ all:
 	cd ./lexical_analyzer/ && $(MAKE)
 	cd ./create_tables/ && $(MAKE)
 	cd ./d_tree/ && $(MAKE)
+	cd ./prec_parser/ && $(MAKE)
+	cd ./prec_table/ && $(MAKE)
 
 clean:
 	cd ./lexical_analyzer/ && $(MAKE)	clean
@@ -16,6 +18,8 @@ clean:
 	cd ./sym_list/ && $(MAKE)	clean
 	cd ./symtable/ && $(MAKE)	clean
 	cd ./d_tree/ && $(MAKE) clean
+	cd ./prec_parser/ && $(MAKE) clean
+	cd ./prec_table/ && $(MAKE) clean
 
 run_table:
 	@echo [MESSAGE] RUN TEST_TABLE
