@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <unistd.h>
 
 int ERROR_SET = 0;
 sym_list * result = NULL;
