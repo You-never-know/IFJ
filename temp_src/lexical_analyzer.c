@@ -198,7 +198,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 									c == '{' || c == '}' || 
 									c == '[' || c == ']' || 
 									c == '.' || c == ',' ||
-									c == '~' )	state = OPER_OUT;
+									c == '~' || c == ';')	state = OPER_OUT;
 							else if(isMultiOperator(c))	state = OPER_CHECK;
 							else					state = INVALID;
 						}
@@ -234,7 +234,8 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								if(c == '\n')		ml_comment_nl_flag = true;
 								break;
 
-			case OPER_CHECK:	if(!isMultiOperator(c))				state = OPER_OUT;
+			case OPER_CHECK:	if (c == '(') ungetc(c, file_descriptor);
+						if(!isMultiOperator(c))				state = OPER_OUT;
 								else if(!isOperValid(lexeme, c))	state = OPER_ERROR;
 								break;
 
