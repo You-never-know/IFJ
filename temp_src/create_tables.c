@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 
 int ERROR_SET = 0;
 sym_list * result = NULL;
@@ -217,7 +218,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							keep = true; // we want to keep this one
 							sl_insert_last(result, new);
 							sl_set_act_last(result);
-														sl_set_act_naccesible(result); //''''''''''''''''''''''''''''''''''''''''''''''' DELETE
+														sl_set_act_naccessible(result); //''''''''''''''''''''''''''''''''''''''''''''''' DELETE
 
 
 							remember = add_item(new, lex, true);
@@ -534,10 +535,10 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 			case START_OF_SECTION:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "}", 1ul) == 0) {
 							if (result->act != NULL) {
-								sl_set_act_naccesible(result); // make the current table not accesible
+								sl_set_act_naccessible(result); // make the current table not accessible
 								sl_set_prev_act(result); // set the previous active
 								state = START_OF_SECTION;
-								while (sl_get_act_accesibility(result) != true) { // set active the first accesible previous one
+								while (sl_get_act_accessibility(result) != true) { // set active the first accessible previous one
 									if (result->act->l == NULL) { // it is the first table
 										state = START;
 										remember = NULL;
@@ -825,7 +826,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case FIRST_SEMI:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, ";", 1ul) == 0) {
-							sl_set_act_naccesible(result);
+							sl_set_act_naccessible(result);
 							sl_set_prev_act(result);
 							state = SECOND_SEMI;
 							break;

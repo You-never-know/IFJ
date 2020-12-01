@@ -24,7 +24,6 @@ enum tokens {
 	F,
 	COMMA,
 	ERR,
-	ASSIGNMENT,
 	E,
 	HANDLE
 };
