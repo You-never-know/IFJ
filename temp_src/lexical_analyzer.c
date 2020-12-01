@@ -210,6 +210,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								else if(c == '=' || c == '_' || c == '"' || c == '`' ||
 										c == '(' || c == ')' ||
 										isWhiteSpace(c) || isLetter(c) || isNumber(c)){
+									if (c == '(') ungetc(c, file_descriptor);
 									((char*)lexeme->data)[lexeme->data_size++] = '/';
 									state = OPER_OUT;
 								}
