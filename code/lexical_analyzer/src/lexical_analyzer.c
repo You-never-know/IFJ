@@ -160,17 +160,17 @@ bool NumSystemCheck(const char* str, const size_t str_size, const char number_ba
 	return true;
 }
 
-lex_list* Loading_lex_units(FILE * go_file){
+token_list* Loading_lex_units(FILE * go_file){
 	if(go_file==NULL)Error("file gone wild");
-	lex_list *act = malloc(sizeof(lex_list));
+	token_list *act = malloc(sizeof(token_list));
 	if(act==NULL)Error("list gone wild");
 	act->unit = malloc(sizeof(lex_unit_t));
 	if(act->unit==NULL)Error("Lexical unit allocation failed");
 	LexUnitCtor(act->unit);
-	lex_list *first=act; // first ptr of lex_units
-	lex_list * last_act = NULL;
+	token_list *first=act; // first ptr of lex_units
+	token_list * last_act = NULL;
 	while(Analyze(go_file, act->unit) != NULL){ // loading units
-		act->next = malloc(sizeof(lex_list));
+		act->next = malloc(sizeof(token_list));
 		if(act->next == NULL) Error("list gone wild");
 		act->next->unit =malloc(sizeof(lex_unit_t));
 		if(act->next->unit == NULL) Error("Lexical unit allocation failed");
