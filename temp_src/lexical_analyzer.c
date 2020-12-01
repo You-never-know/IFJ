@@ -59,7 +59,7 @@ bool isOperValid(const lex_unit_t* lex, char c){
 		case 0: return isMultiOperator(c);
 				break;
 
-		case 1: if(!isMultiOperator(c)) return true;
+		case 1: if(!isMultiOperator(c)) return false;
 				/// Check all operators that can't be doubled (++, &&, ||, ...)
 				if(	op_buff[0] == '*' || op_buff[0] == '%' ||
 					op_buff[0] == '^' || op_buff[0] == '!' ||
@@ -198,7 +198,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 									c == '{' || c == '}' || 
 									c == '[' || c == ']' || 
 									c == '.' || c == ',' ||
-									c == '~' || c == ';' )		state = OPER_OUT;
+									c == '~' )	state = OPER_OUT;
 							else if(isMultiOperator(c))	state = OPER_CHECK;
 							else					state = INVALID;
 						}
@@ -208,6 +208,7 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 			case COMMENT_START:	if(c == '*') 		state = ML_COMMENT;
 								else if(c == '/')	state = L_COMMENT;
 								else if(c == '=' || c == '_' || c == '"' || c == '`' ||
+										c == '(' || c == ')' ||
 										isWhiteSpace(c) || isLetter(c) || isNumber(c)){
 									((char*)lexeme->data)[lexeme->data_size++] = '/';
 									state = OPER_OUT;
@@ -233,10 +234,8 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 								if(c == '\n')		ml_comment_nl_flag = true;
 								break;
 
-			case OPER_CHECK:	if(	c == '_' || c == '"' || c == '`' || c == EOF ||
-									isWhiteSpace(c) || isLetter(c) || isNumber(c))
-									state = OPER_OUT;
-								else if(!isOperValid(lexeme, c)) state = OPER_ERROR;
+			case OPER_CHECK:	if(!isMultiOperator(c))				state = OPER_OUT;
+								else if(!isOperValid(lexeme, c))	state = OPER_ERROR;
 								break;
 
 			case WORD_LOAD:	if(isWhiteSpace(c) || isOperator(c) || c == EOF){
