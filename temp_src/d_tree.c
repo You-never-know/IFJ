@@ -72,60 +72,11 @@ d_node* next_left(d_node* node){
 	return node->left;
 
 }
-void prints_side(unsigned space,unsigned offset,unsigned old_space){
-	for(unsigned i = offset; i < space; i++){
-   		if(old_space>i)
-   			printf(" ");
-   		if(old_space==i)
-   			printf("|");
-   		if(old_space<i)
-   			printf("-");
-   }
-}
-void Print_tree2(d_node* TempTree, char* sufix, char fromdir)
-{
-    if (TempTree != NULL)
-     {
-	char* suf2 = (char*) malloc(strlen(sufix) + 4);
-	strcpy(suf2, sufix);
-        if (fromdir == 'L')
-	{
-	   suf2 = strcat(suf2, "  |");
-	   printf("%s\n", suf2);
-	}
-	else
-	   suf2 = strcat(suf2, "   ");
-	Print_tree2(TempTree->right, suf2, 'R');
-        printf("%s  +-[,%d]\n", sufix, TempTree->type);
-	strcpy(suf2, sufix);
-        if (fromdir == 'R')
-	   suf2 = strcat(suf2, "  |");
-	else
-	   suf2 = strcat(suf2, "   ");
-	Print_tree2(TempTree->left, suf2, 'L');
-	if (fromdir == 'R') printf("%s\n", suf2);
-	free(suf2);
-    }
-}
-
-void Print_tree(d_node* TempTree)
-{
-  printf("Struktura binarniho stromu:\n");
-  printf("\n");
-  if (TempTree != NULL)
-     Print_tree2(TempTree, "", 'X');
-  else
-     printf("strom je prazdny\n");
-  printf("\n");
-  printf("=================================================\n");
-}
-
 void delete_tree(d_node * root){
 
 	if(root==NULL)return;
 	delete_tree(root->left);
 	delete_tree(root->right);
-	free(root->data);
 	free(root);
 	root=NULL;
 	
