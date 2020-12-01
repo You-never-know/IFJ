@@ -25,6 +25,7 @@ typedef struct lex_u_list //linked list for test
 	struct lex_u_list *next;
 }lex_list;
 
+void Error(const char *msg);
 bool isWhiteSpace(const char c);
 bool isNumber(const char c);
 bool isLetter(const char c);
