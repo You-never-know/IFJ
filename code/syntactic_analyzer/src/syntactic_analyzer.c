@@ -54,13 +54,14 @@ lex_unit_t * getActiveToken() {
 
 bool Check_syntax(token_list * t_list, int * return_value, sym_list * id_tables, sym_tab * function_table) {
 
+	t_list=Active_token;
+
 	if (t_list == NULL || return_value == NULL || id_tables == NULL || function_table == NULL) {
 		if (return_value != NULL) {
 			*return_value = 99;
 		}
 		return false;
 	}
-
 
 	return true;
 
