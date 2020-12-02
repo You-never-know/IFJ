@@ -260,12 +260,182 @@ bool prog(){
 }
 
 
+bool body() {
+
+	// body starts
+	lex_unit_t* act = getActiveToken();
+	if (act == NULL)return false;
+
+	
+	if (!strcmp(act->data, "\n")) //NEW_LINE
+		return body22();
+	else if (!strcmp(act->data, "return")) //return
+		return body23();
+	else if (!strcmp(act->data, "if")) //if
+		return body24();
+	else if (act->unit_type == IDENTIFICATOR) //id
+		return body25();
+	else if (!strcmp(act->data, "for")) //for
+		return body26();
+}
+
+bool body22() {
+
+	// body22 starts
+	lex_unit_t* act = getActiveToken();
+	if (act == NULL)return false;
+
+	//NEW_LINE DONE IN BODY
+
+	//<NL>
+	if (!NL4(act))return false;
+
+	return body();
+}
+
+bool body23() {
+
+	// body23 starts
+	lex_unit_t* act = getActiveToken();
+	if (act == NULL)return false;
+
+	//RETURN DONE IN BODY
+
+	//<exp_list_start>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!exp_list_start(act))return false; //<exp_list_start> todo
+
+	//NEW_LINE
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "\n"))return false;
+
+	return body();
+}
+
+bool body24() { 
+
+	// body24 starts
+	lex_unit_t* act = getActiveToken();
+	if (act == NULL)return false;
+
+	//IF DONE IN BODY
+
+	//<expression>
+	if (!expression(act))return false; //<expression> todo
+
+	//{
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "{"))return false;
+
+	//NEW_LINE
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "\n"))return false;
+
+	//<body>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!body(act))return false;
+
+	//}
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "}"))return false;
+
+	//<else>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!else(act))return false; // !! RENAME ELSE ? 
+
+	//NEW_LINE
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "\n"))return false;
+
+	return body();
+}
+
+bool body25() {
+
+	// body25 starts
+	lex_unit_t* act = getActiveToken();
+	if (act == NULL)return false;
+
+	//ID DONE IN BODY
+
+	//<id_choose> 
+	if (!id_choose(act))return false; //<id_choose> todo
+
+	//NEW_LINE
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "\n"))return false;
+
+	return body();
+}
 
 
+bool body26() {
 
+	// body26 starts
+	lex_unit_t* act = getActiveToken();
+	if (act == NULL)return false;
 
+	//FOR DONE IN BODY
 
+	//<definition>
+	if (!definition(act))return false; //<definition> todo
 
+	//;
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, ";"))return false;
+
+	//<expression>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!expression(act))return false; //<expression> todo
+
+	//;
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, ";"))return false;
+
+	//<assignment>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!assignment(act))return false; //<assignment> todo
+
+	//{
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "{"))return false;
+
+	//NEW_LINE
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "\n"))return false;
+
+	//<body>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!body(act))return false;
+
+	//}
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "}"))return false;
+
+	//NEW_LINE
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "\n"))return false;
+
+	return body();
+}
 
 
 /*****************************************************************  End of syntactic function part **********************************************************************/
