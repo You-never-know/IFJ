@@ -107,12 +107,10 @@ bool par_list_start(lex_unit_t * act){
 
 	/* no params */
 
-	if(!strcmp(act->data,")"))return true;
+	if(!strcmp(act->data,")"))return true; // empty par list
 
 	/* id */
 
-	act=getNextToken();
-	if(act==NULL)return false;
 	if(act->unit_type!=IDENTIFICATOR)return false;
 
 	if(!type(getNextToken()))return false;
@@ -138,6 +136,51 @@ bool params(lex_unit_t * act){
 	else return true;	
 	
 }
+bool ret_list(lex_unit_t * act){
+	
+	if(act==NULL)return false;
+
+	/* end of ret list */
+
+	if(!strcmp(act->data,")"))return true;
+
+	/* "," separate types */
+
+	if(strcmp(act->data,","))return false;
+
+	/* required type */
+
+	if(!type(getNextToken()))return false;
+
+	return ret_list(getNextToken());
+
+}
+bool ret_list_start(lex_unit_t * act){
+
+	if(act==NULL)return false;
+
+	if(!strcmp(act->data,")"))return true; // empty ret list
+
+	if(!type(getActiveToken()))return false;
+
+	return ret_list(getNextToken());
+
+
+} 
+bool ret_vals(lex_unit_t * act){
+	if(act==NULL)return false;
+
+	/*colum requried */
+
+	if(strcmp(act->data,"("))return false;
+
+	if(!ret_list_start(getNextToken()))return false;
+	
+	act = getActiveToken();
+
+	if(strcmp(act->data,")"))return false;
+	else return true;
+}
 
 bool fun2(lex_unit_t * act){
 
@@ -153,8 +196,10 @@ bool fun2(lex_unit_t * act){
 	if(act==NULL)return false;
 	if(act->unit_type!=IDENTIFICATOR)return false;
 
-	// TO DO:
-	return params(getNextToken());
+
+	if(!params(getNextToken()))return false;
+
+	if(!ret_vals(getNextToken()))return false;
 
 
 }
