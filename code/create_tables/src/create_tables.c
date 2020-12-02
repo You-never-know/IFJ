@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 
 int ERROR_SET = 0;
 sym_list * result = NULL;
@@ -78,10 +79,10 @@ void set_error(int ERR_CODE, int *ret) {
  *  return sym_list or NULL if some error occured in function (malloc failed / bad parameters ...)
  *  if error happend function returns NULL and in ret the return code, function_table as NULL as well
  */ 
-sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
+sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_table) {
 
 	// check parameter
-	if (file == NULL || ret == NULL || function_table == NULL) {
+	if (start == NULL || ret == NULL || function_table == NULL) {
 		return NULL;
 	}
 
@@ -91,6 +92,8 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 			return NULL;
 		}
 	}
+
+	token_list * token_src = start;
 
 	// set default as fault, because we may not hit end properly
 	*ret = 2;
@@ -103,46 +106,32 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 	// while condition
 	bool cont = true;
 	result = sl_init(); // init result -> sym_list
-	bool keep = false;
 
 	// remember the item that is newly created
 	ht_item * remember = NULL; // remember the item with the function
 	ht_item * id_item = NULL; // remember fot the clasic table
 	Par * par = NULL;
 	lex_unit_t * remember_id = NULL; // remember the id
-
+	lex_unit_t *lex = NULL;
 
 	while (cont) {
-	
-		// alloc space for lex unit
-		lex_unit_t * lex = LexUnitCreate();
-		lex_unit_t * to_be_freed = lex;
-		if (lex == NULL) {
-			free(par);
-			LexUnitClear(to_be_freed);
-			LexUnitDelete(to_be_freed);
-			clean_function_table((*function_table));
-			free_table((*function_table));
-			*function_table = NULL;
-			fprintf(stderr, "lex malloc error\n");
-			clean_after();
-		}
-		LexUnitCtor(lex);
 		
-		lex = Analyze(file, lex);
+		if (token_src != NULL) {
+			lex = token_src->unit;
+		}
+		else {
+			lex = NULL;
+		}
+		token_src = token_src->next;
 		
 		if (lex == NULL) { // found EOF
 			if (result->first == NULL) {
-				LexUnitClear(to_be_freed);
-				LexUnitDelete(to_be_freed);
 				return result;
 			}
 			for (sl_elem_ptr ptr = result -> first; ptr != NULL; ptr = ptr -> r) {
 				if ((ptr->accessible) == true) { // some table is still active
 					free(par);
-					LexUnitClear(to_be_freed);
-					LexUnitDelete(to_be_freed);
-					clean_function_table((*function_table));
+					clean_table((*function_table));
 					free_table((*function_table));
 					*function_table = NULL;
 					sl_dissolve(result);
@@ -150,13 +139,13 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 				}
 			}
 
-			LexUnitClear(to_be_freed);
-			LexUnitDelete(to_be_freed);
+			
+			
 			if (ERROR_SET == 0) {
 				*ret = 0; // all tables are closed
 			}
 			else {
-				clean_function_table((*function_table));
+				clean_table((*function_table));
 				free_table((*function_table));
 				*function_table = NULL;
 				sl_dissolve(result);
@@ -171,9 +160,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 		if (lex->unit_type >= OPERATOR_ERR || lex->unit_type == ERROR) {
 			set_error(1, ret);
 			sl_dissolve(result);
-			LexUnitClear(to_be_freed);
-			LexUnitDelete(to_be_freed);
-			clean_function_table((*function_table));
+			clean_table((*function_table));
 			free_table((*function_table));
 			*function_table = NULL;
 			free(par);
@@ -181,7 +168,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 		}
 
 		// set as default
-		keep = false;
+		
 		
 		switch (state) {
 
@@ -207,19 +194,14 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							sym_tab * new = htab_create(BIG_TABLE);
 							if (new == NULL) {
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
 							}
-							keep = true; // we want to keep this one
+							// we want to 
 							sl_insert_last(result, new);
-							sl_set_act_last(result);
-														sl_set_act_naccessible(result); //''''''''''''''''''''''''''''''''''''''''''''''' DELETE
-
-
+							sl_set_act_last(result);											
 							remember = add_item(new, lex, true);
 							if (remember == NULL) {
 								clean_after();
@@ -260,20 +242,15 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							par = malloc_param(remember);
 							if (par == NULL) {
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
 							}
 
-							keep = true;
 							if (add_param_name(par, lex) == false) {
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
@@ -312,9 +289,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							state = PARAMETER_TYPE;
 							if (add_param_type(par, type) == false) { // add parameter type to the parameter
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
@@ -356,20 +331,15 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							par = malloc_param(remember);
 							if (par == NULL) {
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
 							}
 
-							keep = true;
 							if (add_param_name(par, lex) == false) {
-								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								free(par);	
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
@@ -423,9 +393,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							Ret * r = malloc_ret_val(remember);
 							if (r == NULL) {
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
@@ -434,9 +402,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							state = RETURN_TYPE;
 							if (add_ret_type(r, type) == false) { // add parameter type to the parameter
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
@@ -485,9 +451,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 								Ret * r = malloc_ret_val(remember);
 								if (r == NULL) {
 									free(par);
-									LexUnitClear(to_be_freed);
-									LexUnitDelete(to_be_freed);
-									clean_function_table((*function_table));
+									clean_table((*function_table));
 									free_table((*function_table));
 									*function_table = NULL;
 									clean_after();
@@ -496,9 +460,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 								state = RETURN_TYPE;
 								if (add_ret_type(r, type) == false) { // add parameter type to the parameter
 									free(par);
-									LexUnitClear(to_be_freed);
-									LexUnitDelete(to_be_freed);
-									clean_function_table((*function_table));
+									clean_table((*function_table));
 									free_table((*function_table));
 									*function_table = NULL;
 									clean_after();
@@ -534,10 +496,10 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 			case START_OF_SECTION:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "}", 1ul) == 0) {
 							if (result->act != NULL) {
-								sl_set_act_naccessible(result); // make the current table not accesible
+								sl_set_act_naccessible(result); // make the current table not accessible
 								sl_set_prev_act(result); // set the previous active
 								state = START_OF_SECTION;
-								while (sl_get_act_accessibility(result) != true) { // set active the first accesible previous one
+								while (sl_get_act_accessibility(result) != true) { // set active the first accessible previous one
 									if (result->act->l == NULL) { // it is the first table
 										state = START;
 										remember = NULL;
@@ -550,8 +512,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 						}
 						else if (lex->unit_type == IDENTIFICATOR) {
 							remember_id = lex;
-							keep = true;
-							state = ID;
+														state = ID;
 							break;
 						}
 						else if (lex->unit_type == KEYWORD && lex->data_size == 2 && memcmp(lex->data, "if", 2ul) == 0) {
@@ -597,21 +558,21 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 								break;
 							}
 							else {
-								LexUnitDelete(remember_id);
+								
 								set_error(3,ret);  
 							}
 						}
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "(", 1ul) == 0) {
-							LexUnitDelete(remember_id);
+							
 							state = RETURN;
 							break;
 						}
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, "=", 1ul) == 0) {
-							LexUnitDelete(remember_id);
+							
 							state = RETURN;
 							break;
 						}
-						LexUnitDelete(remember_id);
+						
 						state = START_OF_SECTION;  
 						break;
 
@@ -672,9 +633,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							sym_tab * new = htab_create(MEDIUM_TABLE);
 							if (new == NULL) {
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
@@ -693,13 +652,11 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 
 			case FOR:
 						// create new table
-						keep = false;                         
+						;                         
 						sym_tab * new = htab_create(1); // one identificator
 						if (new == NULL) {
 							free(par);
-							LexUnitClear(to_be_freed);
-							LexUnitDelete(to_be_freed);
-							clean_function_table((*function_table));
+							clean_table((*function_table));
 							free_table((*function_table));
 							*function_table = NULL;
 							clean_after();
@@ -713,16 +670,13 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							id_item = add_item(new, lex, false);
 							if (id_item == NULL) {
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
 							}
 							lex->table = id_item; // add pointer where the info for this 							
-							keep = true;
-							state = FOR_DECLARATION;
+														state = FOR_DECLARATION;
 							break;
 						}
 						else if (lex->unit_type == OPERATOR && memcmp(lex->data, ";", 1ul) == 0) {
@@ -739,16 +693,13 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 							id_item = add_item(result->act->st_data, lex, false);
 							if (id_item == NULL) {
 								free(par);
-								LexUnitClear(to_be_freed);
-								LexUnitDelete(to_be_freed);
-								clean_function_table((*function_table));
+								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
 								clean_after();
 							}
 							lex->table = id_item; // add pointer where the info for this 							
-							keep = true;
-							state = FOR_DECLARATION; 
+														state = FOR_DECLARATION; 
 							break;
 						}
 						else if (lex->unit_type == OPERATOR && memcmp(lex->data, ";", 1ul) == 0) {
@@ -839,9 +790,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 								sym_tab * new = htab_create(MEDIUM_TABLE); // medium table
 								if (new == NULL) {
 									free(par);
-									LexUnitClear(to_be_freed);
-									LexUnitDelete(to_be_freed);
-									clean_function_table((*function_table));
+									clean_table((*function_table));
 									free_table((*function_table));
 									*function_table = NULL;
 									clean_after();
@@ -860,15 +809,7 @@ sym_list * create_tables(FILE * file, int * ret, sym_tab ** function_table) {
 						fprintf(stderr, "Wrong state error\n");
 					 	break;
 
-
 		} // end of switch
-
-		// free the unit if not needed
-		if (keep == false) {
-			LexUnitClear(lex);
-			LexUnitDelete(lex);
-		}
-	
 	} // end of while 
 	
 
