@@ -175,7 +175,7 @@ bool ret_vals(lex_unit_t * act){
 	if(strcmp(act->data,"("))return false;
 
 	if(!ret_list_start(getNextToken()))return false;
-	
+
 	act = getActiveToken();
 
 	if(strcmp(act->data,")"))return false;
@@ -201,6 +201,21 @@ bool fun2(lex_unit_t * act){
 
 	if(!ret_vals(getNextToken()))return false;
 
+	/* body of func */
+
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(strcmp(act->data,"{"))return false;
+
+	/* new line required */
+
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(strcmp(act->data,"\n"))return false;
+
+	/*			   */
+	/* TODO: BODY  */
+	/*			   */ 
 
 }
 bool prog(){
