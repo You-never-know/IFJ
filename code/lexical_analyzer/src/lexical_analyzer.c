@@ -10,6 +10,11 @@
 
 #include "lexical_analyzer.h"
 
+void Error(const char *msg){
+	fprintf(stderr,"%s\n",msg);
+	exit(99); 
+}
+
 bool isWhiteSpace(const char c){
 	if(c < '!'){
 		const char whitespace[] = " \t\n\v\f\r\0";
@@ -153,6 +158,33 @@ bool NumSystemCheck(const char* str, const size_t str_size, const char number_ba
 		}
 	}
 	return true;
+}
+
+token_list* Loading_lex_units(FILE * go_file){
+	if(go_file==NULL)Error("file gone wild");
+	token_list *act = malloc(sizeof(token_list));
+	if(act==NULL)Error("list gone wild");
+	act->unit = malloc(sizeof(lex_unit_t));
+	if(act->unit==NULL)Error("Lexical unit allocation failed");
+	LexUnitCtor(act->unit);
+	token_list *first=act; // first ptr of lex_units
+	token_list * last_act = NULL;
+	while(Analyze(go_file, act->unit) != NULL){ // loading units
+		act->next = malloc(sizeof(token_list));
+		if(act->next == NULL) Error("list gone wild");
+		act->next->unit =malloc(sizeof(lex_unit_t));
+		if(act->next->unit == NULL) Error("Lexical unit allocation failed");
+		LexUnitCtor(act->next->unit);
+		last_act = act;
+		act=act->next;
+	}
+	if(act->unit == first->unit && act->unit->data_size == 0)first->unit = NULL;
+	LexUnitDelete(act->unit);
+	if(last_act != NULL){
+		free(last_act->next);
+		last_act->next = NULL;
+	}
+	return first;
 }
 
 lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
