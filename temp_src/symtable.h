@@ -69,7 +69,6 @@ bool add_param_type(Par* par, int type); // add type to the parameter
 Ret* malloc_ret_val(ht_item *item); // allocates and inicializes parameter
 bool add_ret_type(Ret* ret, int type); // add data to the parameter
 int clean_table(sym_tab *st); // removes all items from the table
-int clean_function_table(sym_tab *st); // removes all items from the table
 void free_table(sym_tab *st); // free the given table from memory
 bool add_access(ht_item * item,bool access); //add access to ID by default is false
 bool is_function(ht_item * item); // find if the item is a function
