@@ -4,7 +4,7 @@
 #define RETURN_ERR 6
 #define SYSTEM_ERROR 99
 #define SEM_PASSED 1
-#define E 0
+#define EN 0
 #define OP -1
 
 #include "prec_table.h"
