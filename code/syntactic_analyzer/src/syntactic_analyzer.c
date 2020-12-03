@@ -307,7 +307,7 @@ bool body25(lex_unit_t* act) {
 	if (!id_choose(act))return false;
 
 	//NEW_LINE
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "\n"))return false;
 
@@ -326,7 +326,7 @@ bool body26(lex_unit_t* act) {
 	if (!definition(act))return false;
 
 	//;
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, ";"))return false;
 
@@ -406,7 +406,7 @@ bool id_choose(lex_unit_t* act) {
 		return id_choose29(getNextToken());
 	else if (id_list(act)) //<id_list>
 		return id_choose30(getNextToken());
-	else if (!strcmp(act->data, "("))
+	else if (!strcmp(act->data, "(")) //(
 		return id_choose31(act_tmp); 
 
 	return false;
@@ -578,27 +578,23 @@ bool next(lex_unit_t* act) {
 	return true;
 }
 
-bool par_list_start(lex_unit_t* act) { 
+bool exp_list(lex_unit_t* act) {
 
-	//par_list_start starts
+	//exp_list starts
 	if (act == NULL)return false;
 
 	//eps
-	if (!strcmp(act->data, ")"))return true;
+	if (!strcmp(act->data, "\n"))return true;
 
-	return false;
+	//,
+	if (strcmp(act->data, ","))return false;
 
-}
-
-bool ret_list_start(lex_unit_t* act) {
-
-	//ret_list_start starts
+	//<expression>
+	act = getNextToken();
 	if (act == NULL)return false;
+	if (!expression(act))return false;
 
-	//eps
-	if (!strcmp(act->data, ")"))return true;
-
-	return false;
+	return exp_list(act);
 }
 
 bool exp_list_start(lex_unit_t* act) { 
@@ -608,6 +604,17 @@ bool exp_list_start(lex_unit_t* act) {
 
 	//eps
 	if (!strcmp(act->data, "\n"))return true;
+
+	if ((!strcmp(act->data, "("))|| act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER|| act->unit_type == STRING || act->unit_type == DECIMAL)
+		return exp_list_start(getNextToken());
+
+	//<expression>
+	if (!expression(act))return false;
+
+	//<exp_list>
+	act = getActiveToken();
+	if (act == NULL)return false;
+	if (!exp_list(act))return false;
 
 	return false;
 }
