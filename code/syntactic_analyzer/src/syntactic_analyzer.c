@@ -182,34 +182,31 @@ bool ret_vals(lex_unit_t * act){
 	else return true;
 }
 
-bool body(){
+bool body(lex_unit_t* act) {
 
 	// body starts
-	lex_unit_t* act = getActiveToken();
 	if (act == NULL)return false;
 
-	
+
 	if (!strcmp(act->data, "\n")) //NEW_LINE
-		return body22();
+		return body22(getNextToken());
 	else if (!strcmp(act->data, "return")) //return
-		return body23();
+		return body23(getNextToken());
 	else if (!strcmp(act->data, "if")) //if
-		return body24();
+		return body24(getNextToken());
 	else if (act->unit_type == IDENTIFICATOR) //id
-		return body25();
+		return body25(getNextToken());
 	else if (!strcmp(act->data, "for")) //for
-		return body26();
-	else if (!strcmp(act->data,"}"))
+		return body26(getNextToken());
+	else if (!strcmp(act->data, "}")) // ugh?
 		return true;
 
 	return false;
-
 }
 
-bool body22() {
+bool body22(lex_unit_t* act) {
 
 	// body22 starts
-	lex_unit_t* act = getActiveToken();
 	if (act == NULL)return false;
 
 	//NEW_LINE DONE IN BODY
@@ -217,20 +214,17 @@ bool body22() {
 	//<NL>
 	if (!NL4(act))return false;
 
-	return body();
+	return body(getNextToken());
 }
 
-bool body23() {
+bool body23(lex_unit_t* act) {
 
 	// body23 starts
-	lex_unit_t* act = getActiveToken();
 	if (act == NULL)return false;
 
 	//RETURN DONE IN BODY
 
 	//<exp_list_start>
-	act = getNextToken();
-	if (act == NULL)return false;
 	if (!exp_list_start(act))return false; //<exp_list_start> todo
 
 	//NEW_LINE
@@ -238,13 +232,12 @@ bool body23() {
 	if (act == NULL)return false;
 	if (strcmp(act->data, "\n"))return false;
 
-	return body();
+	return body(getNextToken());
 }
 
-bool body24() { 
+bool body24(lex_unit_t* act) {
 
 	// body24 starts
-	lex_unit_t* act = getActiveToken();
 	if (act == NULL)return false;
 
 	//IF DONE IN BODY
@@ -275,20 +268,19 @@ bool body24() {
 	//<else>
 	act = getNextToken();
 	if (act == NULL)return false;
-	if (strcmp(act->data,"else"))return false; 
+	if (!strcmp(else_r(act))return false; // IS OK?
 
 	//NEW_LINE
-	act = getNextToken();
-	if (act == NULL)return false;
-	if (strcmp(act->data, "\n"))return false;
+		act = getNextToken();
+		if (act == NULL)return false;
+		if (strcmp(act->data, "\n"))return false;
 
-	return body();
+		return body(getNextToken());
 }
 
-bool body25() {
+bool body25(lex_unit_t* act) {
 
 	// body25 starts
-	lex_unit_t* act = getActiveToken();
 	if (act == NULL)return false;
 
 	//ID DONE IN BODY
@@ -301,14 +293,13 @@ bool body25() {
 	if (act == NULL)return false;
 	if (strcmp(act->data, "\n"))return false;
 
-	return body();
+	return body(getNextToken());
 }
 
 
-bool body26() {
+bool body26(lex_unit_t* act) {
 
 	// body26 starts
-	lex_unit_t* act = getActiveToken();
 	if (act == NULL)return false;
 
 	//FOR DONE IN BODY
@@ -331,10 +322,9 @@ bool body26() {
 	if (act == NULL)return false;
 	if (strcmp(act->data, ";"))return false;
 
-	//<assignment>
 	act = getNextToken();
 	if (act == NULL)return false;
-	if (!assignment(act))return false; //<assignment> todo
+	if (!assignment(act))return false;
 
 	//{
 	act = getNextToken();
@@ -361,7 +351,162 @@ bool body26() {
 	if (act == NULL)return false;
 	if (strcmp(act->data, "\n"))return false;
 
-	return body();
+	return body(getNextToken());
+}
+
+
+bool id_list(lex_unit_t* act) {
+
+	// id_list starts
+	lex_unit_t* act = getActiveToken();
+	if (act == NULL)return false;
+
+	//,
+	if (strcmp(act->data, ","))return false;
+
+	//ID
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (act->unit_type != IDENTIFICATOR)return false;
+
+	return id_list(getNextToken());
+}
+
+bool id_choose(lex_unit_t* act) {
+
+	// id_choose starts
+	if (act == NULL)return false;
+
+	if (!strcmp(act->data, ":=")) //:=
+		return id_choose29(getNextToken());
+	else if (id_list(act)) //<id_list>
+		return id_choose30(getNextToken());
+	else if !strcmp(act->data, "("))
+		return id_choose31(getNextToken()); // getNextToken() vs act??
+	//TODO
+	else if
+		return true;
+
+	return false;
+}
+
+bool id_choose29(lex_unit_t* act) {
+
+	// id_choose29 starts
+	if (act == NULL)return false;
+
+	//:= DONE IN ID_CHOOSE
+
+	//<expression>
+	if (!expression(act))return false; //<expression> todo
+
+	return true;
+}
+
+bool id_choose30(lex_unit_t* act) {
+
+	// id_choose30 starts
+	if (act == NULL)return false;
+
+	//<id_list> DONE IN ID_CHOOSE
+
+	//=
+	if (strcmp(act->data, "="))return false;
+
+	//<exp/fun>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!exp_fun(act))return false; //<exp/fun> todo
+
+	return true;
+}
+
+bool id_choose31(lex_unit_t* act) {
+
+	// id_choose31 starts
+	if (act == NULL)return false;
+
+	//TODO
+
+	return true;
+}
+
+bool else_r(lex_unit_t* act) {
+
+	// id_choose31 starts
+	if (act == NULL)return false;
+
+	//else
+	if (strcmp(act->data, "else"))return false;
+
+	//{
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "{"))return false;
+
+	//NEW_LINE
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "\n"))return false;
+
+	//<body>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!body(act))return false;
+
+	//}
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "}"))return false;
+
+	return true;
+}
+
+bool definition(lex_unit_t* act) {
+
+	//definition starts
+	if (act == NULL)return false;
+
+	//ID
+	if (act->unit_type != IDENTIFICATOR)return false;
+
+	//:=
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, ":="))return false;
+
+	//<expression>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!expression(act))return false; //<expression> todo
+
+	return true;
+}
+
+bool assignment(lex_unit_t* act) {
+
+	//assignment starts
+	if (act == NULL)return false;
+
+	//ID
+	if (act->unit_type != IDENTIFICATOR)return false;
+
+	//<id_list>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!id_list(act))return false; //<expression> todo
+
+	//=
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "="))return false;
+
+	//<exp_list_start>
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (!exp_list_start(act))return false; //<exp_list_start> todo
+
+	return true;
 }
 
 bool fun2(lex_unit_t * act){
