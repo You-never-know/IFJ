@@ -307,7 +307,7 @@ bool body25(lex_unit_t* act) {
 	if (!id_choose(act))return false;
 
 	//NEW_LINE
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "\n"))return false;
 
