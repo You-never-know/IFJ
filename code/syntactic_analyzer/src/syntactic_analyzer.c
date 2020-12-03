@@ -7,8 +7,8 @@
 *
 **/
 
-#include "structs.h"
 #include "symtable.h"
+#include "syntactic_analyzer.h"
 #include "sym_list.h"
 #include "lexical_analyzer.h"
 #include "d_tree.h"
@@ -59,7 +59,7 @@ bool NL4(lex_unit_t *act){
 	if(act==NULL)return false;
 
 	if(!strcmp(act->data,"\n")){
-		return NL4(getNextToken()); //skipping NEW LINES
+		return NL4(getNextToken()); //skipping new lines
 	}
 	else{
 		return NL5(act); //got breakpoint
@@ -182,85 +182,7 @@ bool ret_vals(lex_unit_t * act){
 	else return true;
 }
 
-bool fun2(lex_unit_t * act){
-
-	if(act==NULL)return true; //end of file
-	
-	/* func required */
-
-	if(strcmp(act->data,"func"))return false;
-
-	/* id required */
-
-	act=getNextToken();
-	if(act==NULL)return false;
-	if(act->unit_type!=IDENTIFICATOR)return false;
-
-
-	if(!params(getNextToken()))return false;
-
-	if(!ret_vals(getNextToken()))return false;
-
-	/* body of func */
-
-	act=getNextToken();
-	if(act==NULL)return false;
-	if(strcmp(act->data,"{"))return false;
-
-	/* new line required */
-
-	act=getNextToken();
-	if(act==NULL)return false;
-	if(strcmp(act->data,"\n"))return false;
-
-	/*			   */
-	/* TODO: BODY  */
-	/*			   */ 
-
-}
-bool prog(){
-
-	/* prog starts */
-
-	lex_unit_t * act = getActiveToken();
-	if(act == NULL)return false;
-
-	/* optional new lines */
-
-	if(!NL4(act))return false; 
-
-	/* first have to package */
-
-	act=getActiveToken();
-	if(act==NULL)return false;
-	if(strcmp(act->data,"package"))return false; 
-
-	/* only main should occur */
-
-	act=getNextToken();
-	if(act==NULL)return false;
-	if(strcmp(act->data,"main"))return false;
-
-	/* new line required */
-
-	act=getNextToken();
-	if(act==NULL)return false;
-	if(strcmp(act->data,"\n"))return false;
-
-	/* optional new lines */
-
-	act = getNextToken();
-	if(act == NULL)return false;
-	if(!NL4(act))return false;
-
-	return fun2(getActiveToken());
-
-
-
-}
-
-
-bool body() {
+bool body(){
 
 	// body starts
 	lex_unit_t* act = getActiveToken();
@@ -277,6 +199,11 @@ bool body() {
 		return body25();
 	else if (!strcmp(act->data, "for")) //for
 		return body26();
+	else if (!strcmp(act->data,"}"))
+		return true;
+
+	return false;
+
 }
 
 bool body22() {
@@ -348,7 +275,7 @@ bool body24() {
 	//<else>
 	act = getNextToken();
 	if (act == NULL)return false;
-	if (!else(act))return false; // !! RENAME ELSE ? 
+	if (strcmp(act->data,"else"))return false; 
 
 	//NEW_LINE
 	act = getNextToken();
@@ -436,6 +363,86 @@ bool body26() {
 
 	return body();
 }
+
+bool fun2(lex_unit_t * act){
+
+	if(act==NULL)return true; //end of file
+	
+	/* func required */
+
+	if(strcmp(act->data,"func"))return false;
+
+	/* id required */
+
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(act->unit_type!=IDENTIFICATOR)return false;
+
+
+	if(!params(getNextToken()))return false;
+
+	if(!ret_vals(getNextToken()))return false;
+
+	/* body of func */
+
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(strcmp(act->data,"{"))return false;
+
+	/* new line required */
+
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(strcmp(act->data,"\n"))return false;
+
+	if(!body())return false;
+
+
+
+}
+bool prog(){
+
+	/* prog starts */
+
+	lex_unit_t * act = getActiveToken();
+	if(act == NULL)return false;
+
+	/* optional new lines */
+
+	if(!NL4(act))return false; 
+
+	/* first have to package */
+
+	act=getActiveToken();
+	if(act==NULL)return false;
+	if(strcmp(act->data,"package"))return false; 
+
+	/* only main should occur */
+
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(strcmp(act->data,"main"))return false;
+
+	/* new line required */
+
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(strcmp(act->data,"\n"))return false;
+
+	/* optional new lines */
+
+	act = getNextToken();
+	if(act == NULL)return false;
+	if(!NL4(act))return false;
+
+	return fun2(getActiveToken());
+
+
+
+}
+
+
+
 
 
 /*****************************************************************  End of syntactic function part **********************************************************************/

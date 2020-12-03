@@ -1,4 +1,4 @@
-CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc -I../structs/inc/ -I../symtable/inc/ -I../d_tree/inc/ -I../syntactic_analyzer/inc/ -I../lexical_analyzer/inc/ -I../lex_list/inc -I../sym_list/inc -I../prec_parser/inc/
+CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra -Iinc -I../structs/inc/ -I../symtable/inc/ -I../d_tree/inc/ -Iinc/ -I../lexical_analyzer/inc/ -I../lex_list/inc -I../sym_list/inc -I../prec_parser/inc/
 COMPILATOR = gcc $(CFLAGS) -o $@
 
 #paths to each dirictories
