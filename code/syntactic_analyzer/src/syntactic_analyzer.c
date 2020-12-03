@@ -268,14 +268,14 @@ bool body24(lex_unit_t* act) {
 	//<else>
 	act = getNextToken();
 	if (act == NULL)return false;
-	if (!strcmp(else_r(act))return false; // IS OK?
+	if (!strcmp(else_r(act)))return false; // IS OK?
 
 	//NEW_LINE
-		act = getNextToken();
-		if (act == NULL)return false;
-		if (strcmp(act->data, "\n"))return false;
+	act = getNextToken();
+	if (act == NULL)return false;
+	if (strcmp(act->data, "\n"))return false;
 
-		return body(getNextToken());
+	return body(getNextToken());
 }
 
 bool body25(lex_unit_t* act) {
@@ -381,7 +381,7 @@ bool id_choose(lex_unit_t* act) {
 		return id_choose29(getNextToken());
 	else if (id_list(act)) //<id_list>
 		return id_choose30(getNextToken());
-	else if !strcmp(act->data, "("))
+	else if (!strcmp(act->data, "("))
 		return id_choose31(getNextToken()); // getNextToken() vs act??
 	//TODO
 	else if
