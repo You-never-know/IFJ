@@ -340,6 +340,7 @@ bool body26(lex_unit_t* act) {
 	if (act == NULL)return false;
 	if (strcmp(act->data, ";"))return false;
 
+	//<assignment>
 	act = getNextToken();
 	if (act == NULL)return false;
 	if (!assignment(act))return false;
@@ -447,9 +448,9 @@ bool id_choose31(lex_unit_t* act) {
 	// id_choose31 starts
 	if (act == NULL)return false;
 
-	// act je ten vstupní token = ID
-	//global tlist má (
-	//make node
+	// act = ID
+	// global t_list : (
+	// make node
 	d_node* root = NULL;
 	root = d_node_create(NULL, NULL, DOLLAR);
 
@@ -577,7 +578,7 @@ bool next(lex_unit_t* act) {
 	return true;
 }
 
-bool par_list_start(lex_unit_t* act) { //TODO
+bool par_list_start(lex_unit_t* act) { 
 
 	//par_list_start starts
 	if (act == NULL)return false;
@@ -589,7 +590,7 @@ bool par_list_start(lex_unit_t* act) { //TODO
 
 }
 
-bool ret_list_start(lex_unit_t* act) { //TODO
+bool ret_list_start(lex_unit_t* act) {
 
 	//ret_list_start starts
 	if (act == NULL)return false;
@@ -600,7 +601,7 @@ bool ret_list_start(lex_unit_t* act) { //TODO
 	return false;
 }
 
-bool exp_list_start(lex_unit_t* act) { //TODO
+bool exp_list_start(lex_unit_t* act) { 
 
 	//exp_list_start starts
 	if (act == NULL)return false;
