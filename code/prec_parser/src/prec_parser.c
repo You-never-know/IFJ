@@ -300,19 +300,18 @@ bool match_rule() {
 
 /* Make the precedence syntactic analysis
  * 'token' the current token in the file
- * 'token' in -> the current | out -> the current after the expresion
  * 'root' the node where the tree structure comes
- * 'f' file for the lexical analyser
+ * 'start' tokens from the buffer start of expresion in end out
  * return true if happend corectly, false if not
  */
-bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun_tab) {
+bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym_tab * fun_tab) {
 
 	// check parameters
-	if (token == NULL || root == NULL || f == NULL) {
+	if (token == NULL || root == NULL || start == NULL) {
 		return false;
 	}
 
-	if ((*token) == NULL) {
+	if ((*start) == NULL) {
 		return false;
 	}
 
@@ -327,20 +326,20 @@ bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun
 	// help vaiables
 	bool finished = false; // end the cycle analyse is complete
 	bool get_token = true; // get another token or not from the file
-	int type = merge_event(*token, fun_tab); // get the first type
+	int type = merge_event(token, fun_tab); // get the first type
 
 	while (!finished) {
 		if (type != ERR) {
-			type = merge_event(*token, fun_tab);
+			type = merge_event(token, fun_tab);
 		}
 		if (type == ERR) {
 			get_token = false; // dont read anything from the input
 			type = DOLLAR; // set it as the input
 		}
-printf("TOKEN SIZE %ld\n",(*token)->data_size );
+printf("TOKEN SIZE %ld\n",(token)->data_size );
 
 		if (get_token) { // we create only new nodes
-			node = d_node_create(NULL, *token, type); // create node
+			node = d_node_create(NULL, token, type); // create node
 		}
 
 		int next_move = 42;
@@ -391,13 +390,13 @@ printf("TOKEN SIZE %ld\n",(*token)->data_size );
 
 
 		if (get_token) { // get the next token if needed
-			*token = LexUnitCreate();
-			LexUnitCtor(*token);
-			*token = Analyze(f, *token);
-			if((*token)==NULL){
-				type=ERR;
+			if ((*start) == NULL) {
+				clean();
+				return false;
 			}
-			printf("TOKEN PRINT %s; (%d) %d\n", (char*)(*token)->data,*((int*)(*token)->data), (*token)->unit_type);
+			token = (*start)->unit;
+			*start = (*start)->next;
+			printf("TOKEN PRINT %s; (%d) %d\n", (char*)(token)->data,*((int*)(token)->data), (token)->unit_type);
 
 		}
 	}
