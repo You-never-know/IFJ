@@ -194,14 +194,17 @@ bool expression(lex_unit_t* act) {
 	// expression starts
 	if (act == NULL)return false;
 
-	//TODO
+	d_node* root = NULL;
+	root = d_node_create(NULL, NULL, DOLLAR);
+
+	return Parse_expresion(act, root, &Active_token, fun_table);
+
 }
 
 bool body(lex_unit_t* act) {
 
 	// body starts
 	if (act == NULL)return false;
-
 
 	if (!strcmp(act->data, "\n")) //NEW_LINE
 		return body22(getNextToken());
@@ -213,7 +216,7 @@ bool body(lex_unit_t* act) {
 		return body25(act);
 	else if (!strcmp(act->data, "for")) //for
 		return body26(getNextToken());
-	else if (!strcmp(act->data, "}")) // end of body
+	else if (!strcmp(act->data, "}")) //eps
 		return true;
 
 	return false;
@@ -258,7 +261,7 @@ bool body24(lex_unit_t* act) {
 	//IF DONE IN BODY
 
 	//<expression>
-	if (!expression(act))return false; //<expression> todo
+	if (!expression(act))return false;
 
 	//{
 	act = getActiveToken();
@@ -404,9 +407,6 @@ bool id_choose(lex_unit_t* act) {
 		return id_choose30(getNextToken());
 	else if (!strcmp(act->data, "("))
 		return id_choose31(act_tmp); 
-	//TODO
-	else if
-		return true;
 
 	return false;
 }
@@ -419,7 +419,7 @@ bool id_choose29(lex_unit_t* act) {
 	//:= DONE IN ID_CHOOSE
 
 	//<expression>
-	if (!expression(act))return false; //<expression> todo
+	if (!expression(act))return false; 
 
 	return true;
 }
@@ -448,12 +448,12 @@ bool id_choose31(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	// act je ten vstupní token = ID
-	
-	//TODO
-	//volám prec pars 
 	//global tlist má (
-	//ukazovatel na ukazovatel !
 	//make node
+	d_node* root = NULL;
+	root = d_node_create(NULL, NULL, DOLLAR);
+
+	Parse_expresion(act, root, &Active_token, fun_table);
 
 	return true;
 }
@@ -497,6 +497,9 @@ bool definition(lex_unit_t* act) {
 	//definition starts
 	if (act == NULL)return false;
 
+	//eps
+	if (!strcmp(act->data, ";"))return true;
+
 	//ID
 	if (act->unit_type != IDENTIFICATOR)return false;
 
@@ -508,7 +511,7 @@ bool definition(lex_unit_t* act) {
 	//<expression>
 	act = getNextToken();
 	if (act == NULL)return false;
-	if (!expression(act))return false; //<expression> todo
+	if (!expression(act))return false; 
 
 	return true;
 }
@@ -518,13 +521,16 @@ bool assignment(lex_unit_t* act) {
 	//assignment starts
 	if (act == NULL)return false;
 
+	//eps
+	if (!strcmp(act->data, "{"))return true;
+
 	//ID
 	if (act->unit_type != IDENTIFICATOR)return false;
 
 	//<id_list>
 	act = getNextToken();
 	if (act == NULL)return false;
-	if (!id_list(act))return false; //<expression> todo
+	if (!id_list(act))return false;
 
 	//=
 	act = getNextToken();
@@ -545,9 +551,11 @@ bool exp_fun(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//<expression>
-	if (!expression(act))return false; //<expression> todo
+	if (!expression(act))return false;
 
 	//<next>
+	act = getActiveToken();
+	if (act == NULL)return false;
 	if (!next(act))return false; 
 
 	return true;
@@ -558,7 +566,12 @@ bool next(lex_unit_t* act) {
 	//next starts
 	if (act == NULL)return false;
 
+	//eps
+	if (!strcmp(act->data, "\n"))return true;
+
 	//<exp_list>
+	act = getNextToken();
+	if (act == NULL)return false;
 	if (!exp_list(act))return false;
 
 	return true;
@@ -569,7 +582,11 @@ bool par_list_start(lex_unit_t* act) { //TODO
 	//par_list_start starts
 	if (act == NULL)return false;
 
-	return true;
+	//eps
+	if (!strcmp(act->data, ")"))return true;
+
+	return false;
+
 }
 
 bool ret_list_start(lex_unit_t* act) { //TODO
@@ -577,7 +594,10 @@ bool ret_list_start(lex_unit_t* act) { //TODO
 	//ret_list_start starts
 	if (act == NULL)return false;
 
-	return true;
+	//eps
+	if (!strcmp(act->data, ")"))return true;
+
+	return false;
 }
 
 bool exp_list_start(lex_unit_t* act) { //TODO
@@ -585,7 +605,10 @@ bool exp_list_start(lex_unit_t* act) { //TODO
 	//exp_list_start starts
 	if (act == NULL)return false;
 
-	return true;
+	//eps
+	if (!strcmp(act->data, "\n"))return true;
+
+	return false;
 }
 
 bool fun2(lex_unit_t * act){
