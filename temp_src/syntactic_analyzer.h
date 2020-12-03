@@ -17,12 +17,36 @@ bool Check_syntax(token_list * t_list, int * return_value, sym_list * id_tables,
 
 
 /******************************** syntactic functions declarations ******************************/
-bool body();
-bool body22();
-bool body23();
-bool body24();
-bool body25();
-bool body26();
-
+bool NL5(lex_unit_t*);
+bool NL4(lex_unit_t*);
+bool type(lex_unit_t*);
+bool par_list(lex_unit_t*);
+bool par_list_start(lex_unit_t*);
+bool params(lex_unit_t*);
+bool ret_list(lex_unit_t*);
+bool ret_list_start(lex_unit_t*);
+bool ret_vals(lex_unit_t*);
+bool expression(lex_unit_t*);
+bool body(lex_unit_t*);
+bool body22(lex_unit_t*);
+bool body23(lex_unit_t*);
+bool body24(lex_unit_t*);
+bool body25(lex_unit_t*);
+bool body26(lex_unit_t*);
+bool id_list(lex_unit_t*);
+bool id_choose(lex_unit_t*);
+bool id_choose29(lex_unit_t*);
+bool id_choose30(lex_unit_t*);
+bool id_choose31(lex_unit_t*);
+bool else_r(lex_unit_t*);
+bool definition(lex_unit_t*);
+bool assignment(lex_unit_t*);
+bool exp_fun(lex_unit_t*);
+bool next(lex_unit_t*);
+bool par_list_start(lex_unit_t*);
+bool ret_list_start(lex_unit_t*);
+bool exp_list_start(lex_unit_t*);
+bool fun2(lex_unit_t*);
+bool prog();
 
 #endif
