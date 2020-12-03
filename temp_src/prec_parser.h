@@ -14,7 +14,7 @@
 #include "d_tree.h"
 #include <stdbool.h>
 
-bool Parse_expresion(lex_unit_t ** token, d_node * root, FILE * f, sym_tab * fun_tab); // make the precedence analysis of the expresion
+bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym_tab * fun_tab); // make the precedence analysis of the expresion
 
 
 #endif
