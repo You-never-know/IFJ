@@ -197,6 +197,8 @@ bool expression(lex_unit_t* act) {
 	d_node* root = NULL;
 	root = d_node_create(NULL, NULL, DOLLAR);
 
+	if (Active_token == NULL) return false;
+	Active_token = Active_token->next; // get the next token
 	return Parse_expresion(act, root, &Active_token, fun_table);
 
 }
@@ -307,7 +309,7 @@ bool body25(lex_unit_t* act) {
 	if (!id_choose(act))return false;
 
 	//NEW_LINE
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "\n"))return false;
 
@@ -578,29 +580,6 @@ bool next(lex_unit_t* act) {
 	return true;
 }
 
-bool par_list_start(lex_unit_t* act) { 
-
-	//par_list_start starts
-	if (act == NULL)return false;
-
-	//eps
-	if (!strcmp(act->data, ")"))return true;
-
-	return false;
-
-}
-
-bool ret_list_start(lex_unit_t* act) {
-
-	//ret_list_start starts
-	if (act == NULL)return false;
-
-	//eps
-	if (!strcmp(act->data, ")"))return true;
-
-	return false;
-}
-
 bool exp_list_start(lex_unit_t* act) { 
 
 	//exp_list_start starts
@@ -709,6 +688,8 @@ bool Check_syntax(token_list * t_list, int * return_value, sym_list * id_tables,
 
 	fun_table = function_table;
 	Active_token = t_list;
+
+
 
 	return true;
 
