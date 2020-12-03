@@ -17,6 +17,7 @@
 #include "prec_parser.h"
 
 token_list * Active_token = NULL;
+sym_tab* fun_table = NULL;
 
 
 lex_unit_t * getNextToken() {
@@ -25,8 +26,14 @@ lex_unit_t * getNextToken() {
 		return NULL;
 	}
 
-	lex_unit_t * to_be_returned = Active_token->unit;
 	Active_token = Active_token->next;
+	
+	if (Active_token == NULL) {
+		return NULL;
+	}
+
+	lex_unit_t * to_be_returned = Active_token->unit;
+
 	return to_be_returned;
 }
 
@@ -203,10 +210,10 @@ bool body(lex_unit_t* act) {
 	else if (!strcmp(act->data, "if")) //if
 		return body24(getNextToken());
 	else if (act->unit_type == IDENTIFICATOR) //id
-		return body25(getNextToken());
+		return body25(act);
 	else if (!strcmp(act->data, "for")) //for
 		return body26(getNextToken());
-	else if (!strcmp(act->data, "}")) //?ugh
+	else if (!strcmp(act->data, "}")) // end of body
 		return true;
 
 	return false;
@@ -254,7 +261,7 @@ bool body24(lex_unit_t* act) {
 	if (!expression(act))return false; //<expression> todo
 
 	//{
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "{"))return false;
 
@@ -276,7 +283,7 @@ bool body24(lex_unit_t* act) {
 	//<else>
 	act = getNextToken();
 	if (act == NULL)return false;
-	if (!strcmp(else_r(act)))return false; // IS OK?
+	if (!strcmp(else_r(act)))return false;
 
 	//NEW_LINE
 	act = getNextToken();
@@ -326,7 +333,7 @@ bool body26(lex_unit_t* act) {
 	if (!expression(act))return false;
 
 	//;
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, ";"))return false;
 
@@ -366,8 +373,10 @@ bool body26(lex_unit_t* act) {
 bool id_list(lex_unit_t* act) {
 
 	// id_list starts
-	lex_unit_t* act = getActiveToken();
 	if (act == NULL)return false;
+
+	//eps
+	if (!strcmp(act->data, "="))return true;
 
 	//,
 	if (strcmp(act->data, ","))return false;
@@ -385,12 +394,16 @@ bool id_choose(lex_unit_t* act) {
 	// id_choose starts
 	if (act == NULL)return false;
 
+	lex_unit_t* act_tmp = act; //ID
+	act = getNextToken();
+	if (act == NULL)return false;
+
 	if (!strcmp(act->data, ":=")) //:=
 		return id_choose29(getNextToken());
 	else if (id_list(act)) //<id_list>
 		return id_choose30(getNextToken());
 	else if (!strcmp(act->data, "("))
-		return id_choose31(getNextToken()); // getNextToken() vs act??
+		return id_choose31(act_tmp); 
 	//TODO
 	else if
 		return true;
@@ -434,7 +447,13 @@ bool id_choose31(lex_unit_t* act) {
 	// id_choose31 starts
 	if (act == NULL)return false;
 
+	// act je ten vstupní token = ID
+	
 	//TODO
+	//volám prec pars 
+	//global tlist má (
+	//ukazovatel na ukazovatel !
+	//make node
 
 	return true;
 }
@@ -443,6 +462,9 @@ bool else_r(lex_unit_t* act) {
 
 	// id_choose31 starts
 	if (act == NULL)return false;
+
+	//eps
+	if (!strcmp(act->data, "\n"))return true;
 
 	//else
 	if (strcmp(act->data, "else"))return false;
@@ -660,6 +682,9 @@ bool Check_syntax(token_list * t_list, int * return_value, sym_list * id_tables,
 		}
 		return false;
 	}
+
+	fun_table = function_table;
+	Active_token = t_list;
 
 	return true;
 
