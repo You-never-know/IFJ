@@ -61,7 +61,6 @@ lex_unit_t * getActiveToken() {
 
 bool NL5(lex_unit_t *act){
 
-	if(act==NULL)return true; // end of file
 
 	if (!strcmp(act->data, "package") || //only this should be accepted 
 		!strcmp(act->data, "func") ||
@@ -78,7 +77,7 @@ bool NL5(lex_unit_t *act){
 
 bool NL4(lex_unit_t *act){
 
-	if(act==NULL)return false;
+	if(act==NULL)return true;
 
 	if(!strcmp(act->data,"\n")){
 		return NL4(getNextToken()); //skipping new lines
@@ -309,7 +308,7 @@ bool body24(lex_unit_t* act) {
 	act = getNextToken();
 	if (act == NULL)return false;
 	if (!else_r(act))return false;
-printf("som tu za if \n");
+
 	//NEW_LINE
 	act = getNextToken();
 	if (act == NULL)return false;
@@ -681,7 +680,6 @@ bool fun2(lex_unit_t * act){
 
 	// call NL
 	act=getNextToken();
-	if(act==NULL)return false;
 	if(!NL4(act))return false; 
 	
 	return fun2(getActiveToken());
