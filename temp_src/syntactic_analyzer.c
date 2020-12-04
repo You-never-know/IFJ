@@ -164,7 +164,6 @@ bool ret_list(lex_unit_t * act){
 	/* end of ret list */
 
 	if(!strcmp(act->data,")")) {
-		getNextToken();
 		return true;
 	}
 
@@ -184,7 +183,6 @@ bool ret_list_start(lex_unit_t * act){
 	if(act==NULL)return false;
 
 	if(!strcmp(act->data,")")) {
-		getNextToken();
 		return true; // empty ret list
 	}
 	if(!type(getActiveToken()))return false;
