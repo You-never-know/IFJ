@@ -35,6 +35,17 @@ int get_the_top_operand() {
 }
 
 
+bool is_there_a_function() {
+
+	for (ll_elem_ptr tmp = stack->first; tmp != NULL; tmp = tmp->r) {
+		if (tmp->ll_data->type == F) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 // add hande after the last operand
 void add_handle() {
@@ -337,6 +348,12 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 	while (!finished) {
 		if (type != ERR) {
 			type = merge_event(token, fun_tab);
+
+			if (type == COMMA) {
+				if (!is_there_a_function()) {
+					type = ERR;
+				} 
+			}
 		}
 		if (type == ERR) {
 			get_token = false; // dont read anything from the input
@@ -377,7 +394,6 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 					root->right = NULL;
 					return false;
 				}
-				printf("Type before testing: %d\n", type );
 				if (test_end(type)) { // test if we are finished
 					finished = true;
 					get_token = false;
