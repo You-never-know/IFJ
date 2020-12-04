@@ -78,6 +78,10 @@ void sl_dissolve(sym_list* sl) {
 */
 void sl_insert_first(sym_list* sl, sym_tab* st_data) {
 
+	if ((sl == NULL) || (st_data == NULL)) {
+		return NULL;
+	}
+
 	//new item allocation
 	sl_elem_ptr tmp = (sl_elem_ptr)malloc(sizeof(struct sl_elem));
 
@@ -109,6 +113,10 @@ void sl_insert_first(sym_list* sl, sym_tab* st_data) {
 * Inserts the sym_tab* st_data as the last element of sym_list* sl
 */
 void sl_insert_last(sym_list* sl, sym_tab* st_data) {
+
+	if ((sl == NULL) || (st_data == NULL)) {
+		return NULL;
+	}
 
 	//new item allocation
 	sl_elem_ptr tmp = (sl_elem_ptr)malloc(sizeof(struct sl_elem));
@@ -142,6 +150,10 @@ void sl_insert_last(sym_list* sl, sym_tab* st_data) {
 */
 void sl_set_act_first(sym_list* sl) {
 
+	if (sl == NULL) {
+		return NULL;
+	}
+
 	sl->act = sl->first;
 
 }
@@ -151,6 +163,10 @@ void sl_set_act_first(sym_list* sl) {
 */
 void sl_set_act_last(sym_list* sl) {
 
+	if (sl == NULL) {
+		return NULL;
+	}
+
 	sl->act = sl->last;
 
 }
@@ -159,6 +175,10 @@ void sl_set_act_last(sym_list* sl) {
 * Moves the active element to the right
 */
 void sl_set_next_act(sym_list* sl) {
+
+	if (sl == NULL) {
+		return NULL;
+	}
 
 	if (sl->act)
 	{
@@ -174,6 +194,10 @@ void sl_set_next_act(sym_list* sl) {
 */
 void sl_set_prev_act(sym_list* sl) {
 
+	if (sl == NULL) {
+		return NULL;
+	}
+
 	if (sl->act)
 	{
 		if (sl->act->l != NULL) {
@@ -188,6 +212,10 @@ void sl_set_prev_act(sym_list* sl) {
 */
 void set_all_accessible(sym_list* sl) {
 
+	if (sl == NULL) {
+		return NULL;
+	}
+
 	sl_elem_ptr tmp = sl->first;
 
 	while (tmp != NULL) {
@@ -201,6 +229,10 @@ void set_all_accessible(sym_list* sl) {
 */
 void sl_set_act_naccessible(sym_list* sl) {
 
+	if (sl == NULL) {
+		return NULL;
+	}
+
 	sl->act->accessible = false;
 
 }
@@ -209,6 +241,10 @@ void sl_set_act_naccessible(sym_list* sl) {
 * Sets active item as accessible
 */
 void sl_set_act_accessible(sym_list* sl) {
+
+	if (sl == NULL) {
+		return NULL;
+	}
 
 	sl->act->accessible = true;
 
@@ -219,6 +255,10 @@ void sl_set_act_accessible(sym_list* sl) {
 */
 bool sl_get_act_accessibility(sym_list* sl) {
 
+	if (sl == NULL) {
+		return NULL;
+	}
+
 	return sl->act->accessible;
 
 }
@@ -227,6 +267,10 @@ bool sl_get_act_accessibility(sym_list* sl) {
 * Returns data of the actual item of sym_list* sl
 */
 sym_tab* sl_return_act(sym_list* sl) {
+
+	if (sl == NULL) {
+		return NULL;
+	}
 
 	//list is empty
 	if (!sl->act)
@@ -243,6 +287,10 @@ sym_tab* sl_return_act(sym_list* sl) {
 * Deletes the first element of sym_list* ll
 */
 void sl_del_first(sym_list* sl) {
+
+	if (sl == NULL) {
+		return NULL;
+	}
 
 	sl_elem_ptr tmp;
 
@@ -278,6 +326,10 @@ void sl_del_first(sym_list* sl) {
 */
 void sl_del_last(sym_list* sl) {
 
+	if (sl == NULL) {
+		return NULL;
+	}
+
 	sl_elem_ptr tmp;
 	if (sl->last != NULL) {//list is not empty
 		tmp = sl->last;
@@ -310,6 +362,10 @@ void sl_del_last(sym_list* sl) {
 */
 int sl_get_length(sym_list* sl) {
 
+	if (sl == NULL) {
+		return NULL;
+	}
+
 	return sl->length;
 }
 
@@ -317,6 +373,10 @@ int sl_get_length(sym_list* sl) {
 * Overwrites the contents of the active element of sym_list* sl with sym_tab* st_data
 */
 void sl_rewrite_act(sym_list* sl, sym_tab* st_data) {
+
+	if ((sl == NULL) || (st_data == NULL)) {
+		return NULL;
+	}
 
 	if (sl->act)
 	{
@@ -326,9 +386,13 @@ void sl_rewrite_act(sym_list* sl, sym_tab* st_data) {
 
 /*
 * Searches for lex_unit* lu in sym_list* sl
-* Returns NULL if not found otherwise the last found ht_item*
+* Returns NULL if param NULL or if not found otherwise the last found ht_item*
 */
 ht_item* sl_search(sym_list* sl, struct lex_unit* lu) {
+
+	if ((sl == NULL) || (lu == NULL)) {
+		return NULL;
+	}
 
 	ht_item* tmp = NULL;
 
