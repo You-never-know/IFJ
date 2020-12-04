@@ -226,8 +226,10 @@ bool expression(lex_unit_t* act) {
 }
 
 bool body(lex_unit_t* act) {
+
 	// body starts
 	if (act == NULL)return false;
+
 	if (!strcmp(act->data, "\n")) //NEW_LINE
 		return body22(getNextToken());
 	else if (!strcmp(act->data, "return")) //return
@@ -319,9 +321,12 @@ bool body24(lex_unit_t* act) {
 }
 
 bool body25(lex_unit_t* act) {
+
 	// body25 starts
 	if (act == NULL)return false;
+
 	//ID DONE IN BODY
+
 	//<id_choose> 
 	if (!id_choose(act))return false;
 
@@ -416,6 +421,7 @@ bool id_choose(lex_unit_t* act) {
 
 	// id_choose starts
 	if (act == NULL)return false;
+
 	lex_unit_t* act_tmp = act; //ID
 	act = getNextToken();
 	if (act == NULL)return false;
@@ -625,8 +631,8 @@ bool exp_list_start(lex_unit_t* act) {
 	//eps
 	if (!strcmp(act->data, "\n"))return true;
 
-	if ((!strcmp(act->data, "("))|| act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER|| act->unit_type == STRING || act->unit_type == DECIMAL)
-		return exp_list_start(getNextToken());
+	if (!((!strcmp(act->data, "("))|| act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER|| act->unit_type == STRING || act->unit_type == DECIMAL))
+		return false;
 
 	//<expression>
 	if (!expression(act))return false;
@@ -636,7 +642,7 @@ bool exp_list_start(lex_unit_t* act) {
 	if (act == NULL)return false;
 	if (!exp_list(act))return false;
 
-	return false;
+	return true;
 }
 
 bool fun2(lex_unit_t * act){
@@ -653,9 +659,11 @@ bool fun2(lex_unit_t * act){
 	if(act==NULL)return false;
 	if(act->unit_type!=IDENTIFICATOR)return false;
 
+
 	if(!params(getNextToken()))return false;
 
 	if(!ret_vals(getNextToken()))return false;
+
 	/* body of func */
 
 	act=getActiveToken();
@@ -690,27 +698,32 @@ bool fun2(lex_unit_t * act){
 bool prog(){
 
 	/* prog starts */
+
 	lex_unit_t * act = getActiveToken();
 	if(act == NULL)return false;
 
 	/* optional new lines */
 
 	if(!NL4(act))return false; 
+
 	/* first have to package */
 
 	act=getActiveToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"package"))return false; 
+
 	/* only main should occur */
 
 	act=getNextToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"main"))return false;
+
 	/* new line required */
 
 	act=getNextToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"\n"))return false;
+
 	/* optional new lines */
 
 	act = getNextToken();
@@ -718,6 +731,9 @@ bool prog(){
 	if(!NL4(act))return false;
 
 	return fun2(getActiveToken());
+
+
+
 }
 
 
