@@ -618,7 +618,7 @@ bool exp_list_start(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//eps
-	if (!strcmp(act->data, "\n"))return true;
+	if ((!strcmp(act->data, "\n")) || (!strcmp(act->data, "{")))return true;
 
 	if (((!strcmp(act->data, "(")) || act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER || act->unit_type == STRING || act->unit_type == DECIMAL)) {
 
