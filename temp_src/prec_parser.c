@@ -317,6 +317,7 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 		return false;
 	}
 
+	printf("Token data %s\n", (char *)token->data)	;
 	// init stack
 	stack = ll_init();
 	help = ll_init();
@@ -330,7 +331,7 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 	bool finished = false; // end the cycle analyse is complete
 	bool get_token = true; // get another token or not from the file
 	int type = merge_event(token, fun_tab); // get the first type
-
+printf("Token type %d\n", type)	;
 	while (!finished) {
 		if (type != ERR) {
 			type = merge_event(token, fun_tab);
@@ -386,7 +387,9 @@ printf("TOKEN SIZE %ld\n",(token)->data_size );
 			default:
 		
 				clean();
-				delete_tree(node);
+				if (get_token) {
+					delete_tree(node);
+				}
 				root->right = NULL;
 				return false;
 
