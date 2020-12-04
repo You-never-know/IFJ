@@ -256,7 +256,7 @@ bool body22(lex_unit_t* act) {
 	//<NL>
 	if (!NL4(act))return false;
 
-	return body(getNextToken());
+	return body(getActiveToken());
 }
 
 bool body23(lex_unit_t* act) {
@@ -299,7 +299,7 @@ bool body24(lex_unit_t* act) {
 	act = getNextToken();
 	if (act == NULL)return false;
 	if (!body(act))return false;
-
+printf("som tu za if \n");
 	//}
 	act = getNextToken();
 	if (act == NULL)return false;
