@@ -63,12 +63,13 @@ bool NL5(lex_unit_t *act){
 
 	if(act==NULL)return true; // end of file
 
-	if(!strcmp(act->data,"package") || //only this should be accepted 
-	   !strcmp(act->data,"func")	||
-	   !strcmp(act->data,"if")      ||
-	   !strcmp(act->data,"for")     ||
-	   !strcmp(act->data, "}")		||
-	   !strcmp(act->data,"return")) {
+	if (!strcmp(act->data, "package") || //only this should be accepted 
+		!strcmp(act->data, "func") ||
+		!strcmp(act->data, "if") ||
+		!strcmp(act->data, "for") ||
+		!strcmp(act->data, "}") ||
+		!strcmp(act->data, "return") ||
+		act->unit_type == IDENTIFICATOR) {
 		return true;
 	}
 	else
