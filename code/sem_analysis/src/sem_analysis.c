@@ -39,8 +39,8 @@ bool op(void* data){
 
 bool data_type(enum lex_units type){
 
-	return 	  (type == INTEGER 		 ||
-			   type == STRING 		 ||
+	return 	  (type == INTEGER ||
+			   type == STRING  ||
 			   type == DECIMAL);
 }
 
@@ -178,14 +178,14 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 
 	if(list_of_tables==NULL)return SYSTEM_ERROR; // no comment ;)
 
-	if(!strcmp(node->data->data,"=") || !strcmp(node->data->data,"if")){
+	if(!strcmp(node->data->data,"=") || !strcmp(node->data->data,"if") || !strcmp(node->data->data,":=")){
 
 		if(!strcmp(node->data->data,"if")){
 			if(relational_op(node->right->data->data)) // must be relational operator
 				return COMPATIBLE_ERR;
 		}
 
-		if(!strcmp(node->data->data,"=")){
+		if(!strcmp(node->data->data,"=") || !strcmp(node->data->data,":=")){
 			if(!relational_op(node->right->data->data)) // can not be relational operator
 				return COMPATIBLE_ERR;
 		}
@@ -200,7 +200,7 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 		return SEM_PASSED; // should be ok
 	}
 
-return SEM_PASSED;
 
+  return SEM_PASSED; 
  	
 }
