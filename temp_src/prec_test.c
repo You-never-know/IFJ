@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
 		while ((analyze != NULL) || (var != false)) {
 			//expect_true(Parse_expresion(&analyze, root , file, fun_tab));
 			
-			var = Parse_expresion(&analyze, root, &Active_token, function_table);
+			var = Parse_expresion(analyze, root, &Active_token, function_table);
 			if ((analyze != NULL) && (var != false)) {
 				print_tree(root);
 			}
