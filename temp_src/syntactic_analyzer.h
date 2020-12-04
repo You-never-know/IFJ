@@ -10,10 +10,11 @@
 #define SYNTACTIC_ANALYZER
 
 #include "lexical_analyzer.h"
+#include "symtable.h"
 #include "sym_list.h"
 #include <stdbool.h>
 
-bool Check_syntax(token_list * t_list, int * return_value, sym_list * id_tables, sym_tab * function_table); // make the syntactic analysis of the whole file
+int Check_syntax(token_list * t_list, sym_list * id_tables, sym_tab * function_table); // make the syntactic analysis of the whole file
 
 
 /******************************** syntactic functions declarations ******************************/
@@ -43,8 +44,7 @@ bool definition(lex_unit_t*);
 bool assignment(lex_unit_t*);
 bool exp_fun(lex_unit_t*);
 bool next(lex_unit_t*);
-bool par_list_start(lex_unit_t*);
-bool ret_list_start(lex_unit_t*);
+bool exp_list(lex_unit_t*);
 bool exp_list_start(lex_unit_t*);
 bool fun2(lex_unit_t*);
 bool prog();

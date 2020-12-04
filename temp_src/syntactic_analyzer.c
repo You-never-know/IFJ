@@ -12,12 +12,23 @@
 #include "sym_list.h"
 #include "lexical_analyzer.h"
 #include "d_tree.h"
+#include "prec_table.h"
 #include <stdbool.h>
 #include "lex_list.h"
 #include "prec_parser.h"
 
 token_list * Active_token = NULL;
 sym_tab* fun_table = NULL;
+int return_code = 0;
+int Err_set = 0;
+
+void set_return_code(int CODE) {
+
+	if (Err_set == 0) {
+		return_code = CODE;
+		Err_set++;
+	}
+}
 
 
 lex_unit_t * getNextToken() {
@@ -54,7 +65,9 @@ bool NL5(lex_unit_t *act){
 
 	if(!strcmp(act->data,"package") || //only this should be accepted 
 	   !strcmp(act->data,"func")	||
-	   !strcmp(act->data,"if")){
+	   !strcmp(act->data,"if")      ||
+	   !strcmp(act->data,"for")     ||
+	   !strcmp(act->data,"return")) {
 		return true;
 	}
 	else
@@ -149,7 +162,10 @@ bool ret_list(lex_unit_t * act){
 
 	/* end of ret list */
 
-	if(!strcmp(act->data,")"))return true;
+	if(!strcmp(act->data,")")) {
+		getNextToken();
+		return true;
+	}
 
 	/* "," separate types */
 
@@ -166,8 +182,10 @@ bool ret_list_start(lex_unit_t * act){
 
 	if(act==NULL)return false;
 
-	if(!strcmp(act->data,")"))return true; // empty ret list
-
+	if(!strcmp(act->data,")")) {
+		getNextToken();
+		return true; // empty ret list
+	}
 	if(!type(getActiveToken()))return false;
 
 	return ret_list(getNextToken());
@@ -177,6 +195,7 @@ bool ret_list_start(lex_unit_t * act){
 bool ret_vals(lex_unit_t * act){
 	if(act==NULL)return false;
 
+	if (!strcmp(act->data, "{")) return true;
 	/*colum requried */
 
 	if(strcmp(act->data,"("))return false;
@@ -186,7 +205,10 @@ bool ret_vals(lex_unit_t * act){
 	act = getActiveToken();
 
 	if(strcmp(act->data,")"))return false;
-	else return true;
+	else {
+		getNextToken();
+		return true;
+	}
 }
 
 bool expression(lex_unit_t* act) {
@@ -197,15 +219,15 @@ bool expression(lex_unit_t* act) {
 	d_node* root = NULL;
 	root = d_node_create(NULL, NULL, DOLLAR);
 
+	if (Active_token == NULL) return false;
+	Active_token = Active_token->next; // get the next token
 	return Parse_expresion(act, root, &Active_token, fun_table);
 
 }
 
 bool body(lex_unit_t* act) {
-
 	// body starts
 	if (act == NULL)return false;
-
 	if (!strcmp(act->data, "\n")) //NEW_LINE
 		return body22(getNextToken());
 	else if (!strcmp(act->data, "return")) //return
@@ -286,7 +308,7 @@ bool body24(lex_unit_t* act) {
 	//<else>
 	act = getNextToken();
 	if (act == NULL)return false;
-	if (!strcmp(else_r(act)))return false;
+	if (!else_r(act))return false;
 
 	//NEW_LINE
 	act = getNextToken();
@@ -297,12 +319,9 @@ bool body24(lex_unit_t* act) {
 }
 
 bool body25(lex_unit_t* act) {
-
 	// body25 starts
 	if (act == NULL)return false;
-
 	//ID DONE IN BODY
-
 	//<id_choose> 
 	if (!id_choose(act))return false;
 
@@ -326,7 +345,7 @@ bool body26(lex_unit_t* act) {
 	if (!definition(act))return false;
 
 	//;
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, ";"))return false;
 
@@ -397,7 +416,6 @@ bool id_choose(lex_unit_t* act) {
 
 	// id_choose starts
 	if (act == NULL)return false;
-
 	lex_unit_t* act_tmp = act; //ID
 	act = getNextToken();
 	if (act == NULL)return false;
@@ -406,7 +424,7 @@ bool id_choose(lex_unit_t* act) {
 		return id_choose29(getNextToken());
 	else if (id_list(act)) //<id_list>
 		return id_choose30(getNextToken());
-	else if (!strcmp(act->data, "("))
+	else if (!strcmp(act->data, "(")) //(
 		return id_choose31(act_tmp); 
 
 	return false;
@@ -447,16 +465,18 @@ bool id_choose31(lex_unit_t* act) {
 
 	// id_choose31 starts
 	if (act == NULL)return false;
-
+fprintf(stderr, "Token name %s\n", (char*)act->data);
+fprintf(stderr, "Token name %s\n", (char*)Active_token->unit->data);
 	// act = ID
 	// global t_list : (
 	// make node
 	d_node* root = NULL;
 	root = d_node_create(NULL, NULL, DOLLAR);
 
-	Parse_expresion(act, root, &Active_token, fun_table);
+	bool result = Parse_expresion(act, root, &Active_token, fun_table);
 
-	return true;
+	delete_tree(root);
+	return result;
 }
 
 bool else_r(lex_unit_t* act) {
@@ -578,27 +598,23 @@ bool next(lex_unit_t* act) {
 	return true;
 }
 
-bool par_list_start(lex_unit_t* act) { 
+bool exp_list(lex_unit_t* act) {
 
-	//par_list_start starts
+	//exp_list starts
 	if (act == NULL)return false;
 
 	//eps
-	if (!strcmp(act->data, ")"))return true;
+	if (!strcmp(act->data, "\n"))return true;
 
-	return false;
+	//,
+	if (strcmp(act->data, ","))return false;
 
-}
-
-bool ret_list_start(lex_unit_t* act) {
-
-	//ret_list_start starts
+	//<expression>
+	act = getNextToken();
 	if (act == NULL)return false;
+	if (!expression(act))return false;
 
-	//eps
-	if (!strcmp(act->data, ")"))return true;
-
-	return false;
+	return exp_list(act);
 }
 
 bool exp_list_start(lex_unit_t* act) { 
@@ -608,6 +624,17 @@ bool exp_list_start(lex_unit_t* act) {
 
 	//eps
 	if (!strcmp(act->data, "\n"))return true;
+
+	if ((!strcmp(act->data, "("))|| act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER|| act->unit_type == STRING || act->unit_type == DECIMAL)
+		return exp_list_start(getNextToken());
+
+	//<expression>
+	if (!expression(act))return false;
+
+	//<exp_list>
+	act = getActiveToken();
+	if (act == NULL)return false;
+	if (!exp_list(act))return false;
 
 	return false;
 }
@@ -626,57 +653,64 @@ bool fun2(lex_unit_t * act){
 	if(act==NULL)return false;
 	if(act->unit_type!=IDENTIFICATOR)return false;
 
-
 	if(!params(getNextToken()))return false;
 
 	if(!ret_vals(getNextToken()))return false;
-
 	/* body of func */
 
-	act=getNextToken();
+	act=getActiveToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"{"))return false;
 
 	/* new line required */
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(strcmp(act->data,"\n"))return false;
+	
+	if(!body(getNextToken()))return false;
 
+	// check }
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(strcmp(act->data,"}"))return false; 
+
+	// check NEW_LINE
 	act=getNextToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"\n"))return false;
 
-	if(!body())return false;
+	// call NL
+	act=getNextToken();
+	if(act==NULL)return false;
+	if(!NL4(act))return false; 
 
-
+	return fun2(getNextToken());
 
 }
 bool prog(){
 
 	/* prog starts */
-
 	lex_unit_t * act = getActiveToken();
 	if(act == NULL)return false;
 
 	/* optional new lines */
 
 	if(!NL4(act))return false; 
-
 	/* first have to package */
 
 	act=getActiveToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"package"))return false; 
-
 	/* only main should occur */
 
 	act=getNextToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"main"))return false;
-
 	/* new line required */
 
 	act=getNextToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"\n"))return false;
-
 	/* optional new lines */
 
 	act = getNextToken();
@@ -684,9 +718,6 @@ bool prog(){
 	if(!NL4(act))return false;
 
 	return fun2(getActiveToken());
-
-
-
 }
 
 
@@ -697,19 +728,20 @@ bool prog(){
 
 // Main function
 
-bool Check_syntax(token_list * t_list, int * return_value, sym_list * id_tables, sym_tab * function_table) {
+int Check_syntax(token_list * t_list, sym_list * id_tables, sym_tab * function_table) {
 
 
-	if (t_list == NULL || return_value == NULL || id_tables == NULL || function_table == NULL) {
-		if (return_value != NULL) {
-			*return_value = 99;
-		}
-		return false;
+	if (t_list == NULL || id_tables == NULL || function_table == NULL) {
+		return 99;
 	}
 
-	fun_table = function_table;
+	fun_table = function_table; // set the global 
 	Active_token = t_list;
 
-	return true;
+	if (prog() == false) {
+		set_return_code(2); // syntactic error
+	}
+
+	return return_code;
 
 } 

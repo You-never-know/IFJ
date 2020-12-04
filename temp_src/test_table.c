@@ -1,6 +1,7 @@
 #include "symtable.h"
 #include "structs.h"
 #include "create_tables.h"
+#include "lexical_analyzer.h"
 #include <stdio.h>
 #include <assert.h>
 
@@ -67,8 +68,11 @@ int main(int argc, char* argv[]) {
 			return 1; 
 		}
 		int ret = 0;
+
+		token_list * file_tokens = Loading_lex_units(file);
+
 		sym_tab* function_table = NULL;
-		sym_list* sl = create_tables(file, &ret, &function_table);
+		sym_list* sl = create_tables(file_tokens, &ret, &function_table);
 		printf("-----------------------------------------------\n");
 		printf("RET INT %d /n", ret);
 		printf("FUNCTION_TABlE PRINT\n");
@@ -95,8 +99,15 @@ int main(int argc, char* argv[]) {
 		}
 		printf("-----------------------------------------------\n");
 
+		for (token_list * tmp = file_tokens; tmp != NULL; ) {
+			token_list * to_be_deleted = tmp;
+			tmp = tmp->next;
+			LexUnitDelete(to_be_deleted->unit);
+			free(to_be_deleted);
+		}
+
 		if (function_table != NULL) {
-			clean_function_table(function_table);
+			clean_table(function_table);
 			free_table(function_table);
 		}
 		fclose(file);  // close the file

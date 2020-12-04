@@ -1,92 +1,57 @@
 #include "create_tables.h"
-#include "prec_parser.h"
-#include "d_tree.h"
 #include "structs.h"
 #include "symtable.h"
 #include "lexical_analyzer.h"
+#include "syntactic_analyzer.h"
+#include "sym_list.h"
 #include <stdio.h>
 #include <stdio.h>
 #include <string.h>
 
+void clean_token_list(token_list * t_list) {
+
+	if (t_list == NULL) {
+		return;
+	}
+
+	for (token_list * tmp = t_list; tmp != NULL;) {
+		token_list * to_be_deleted = tmp;
+		tmp = tmp->next;
+		LexUnitDelete(to_be_deleted->unit);
+		free(to_be_deleted);
+	}
+}
+
+
 int main() {
 
-	int ret = 0;
+	int return_value = 0;
 	FILE * f = stdin;
-	sym_tab * table = NULL;
+	sym_tab * function_table = NULL;
+	token_list * file_tokens = Loading_lex_units(f);
+	
+	sym_list *file_tables = create_tables(file_tokens, &return_value, &function_table);
+	printf("Return value of the create_tables: %d\n", return_value);
 
-	sym_list * sl = create_tables(f, &ret, &table);
-
-	if (ret != 0) {
-		sl_dissolve(sl);
-		clean_function_table(table);
-		free_table(table);
-		return ret;
+	if (return_value != 0) {
+		clean_token_list(file_tokens);
+		return return_value;
 	}
 
-	if(fseek(stdin, 0L, SEEK_SET) != 0) {
-		sl_dissolve(sl);
-		clean_function_table(table);
-		free_table(table);
-		return ret;
+	return_value = Check_syntax(file_tokens, file_tables, function_table);
+	printf("Return value of the transator: %d\n", return_value);
+
+	// clean memory
+	if (file_tables != NULL) {
+		sl_dissolve(file_tables);
 	}
-
-	lex_unit_t * tmp = LexUnitCreate();
-	lex_unit_t * tmp2 = tmp;
-	LexUnitCtor(tmp);
-	tmp = Analyze(f, tmp);
-
-	while (tmp != NULL) {
-
-		/*if (tmp->unit_type == IDENTIFICATOR) {
-
-			d_node * node = d_node_create(NULL, NULL, 0);
-			bool try = Parse_expresion(&tmp, node, f, table);
-			if (try == true) {
-				delete_tree(node);
-			}
-			else {
-				if (tmp->unit_type == OPERATOR && ((tmp->data_size == 2 && memcmp(tmp->data, ":=" , 2ul) == 0 )|| (tmp->data_size == 1 && memcmp(tmp->data, "=" , 1ul) == 0))) {
-
-					tmp = LexUnitCreate();
-					tmp2 = tmp;
-					LexUnitCtor(tmp);
-					tmp = Analyze(f, tmp);
-					d_node * node = d_node_create(NULL, NULL, 0);
-					if (Parse_expresion(&tmp, node, f, table) == false) {
-						sl_dissolve(sl);
-						clean_function_table(table);
-						free_table(table);
-						return 2;
-					}
-					delete_tree(node);
-				}
-			}
-		}*/
-		if ((tmp->unit_type >= INTEGER && tmp->unit_type <= STRING) || (tmp->unit_type == OPERATOR && (tmp->data_size == 1 && memcmp(tmp->data, "(" , 1ul) == 0 ))) {
-			d_node * node = d_node_create(NULL, NULL, 0);
-			if (Parse_expresion(&tmp, node, f, table) == false) {
-				sl_dissolve(sl);
-				clean_function_table(table);
-				free_table(table);
-				return 2;
-			}
-			delete_tree(node);
-		}
-		else {
-			LexUnitDelete(tmp2);
-		}
-
-		tmp = LexUnitCreate();
-		tmp2 = tmp;
-		LexUnitCtor(tmp);
-		tmp = Analyze(f, tmp);
-
+	if (function_table != NULL) {
+		clean_table(function_table);
+		free_table(function_table);
 	}
-	LexUnitDelete(tmp2);
+	clean_token_list(file_tokens);
 
-	sl_dissolve(sl);
-	clean_function_table(table);
-	free_table(table);
-	return ret;
+	return return_value;
+	
 }
 

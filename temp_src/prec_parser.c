@@ -81,6 +81,7 @@ bool match() {
 	 	case  I: // E -> i
 			ll_del_first(help);
 			if (ll_get_length(help) != 0) {
+				delete_tree(tmp);
 				return false;
 			}
 			tmp->type = E;
@@ -281,6 +282,7 @@ bool match_rule() {
 		}
 		else if (tmp->type == HANDLE) { // the help stack is ready
 			ll_del_first(stack); // remove the handle
+			delete_tree(tmp);
 			if (match() == false) {
 				return false;
 			}
@@ -367,6 +369,7 @@ printf("TOKEN SIZE %ld\n",(token)->data_size );
 					get_token = false;
 				}
 				else { // rule not found
+					delete_tree(node);
 					clean();
 					root->right = NULL;
 					return false;
@@ -382,41 +385,44 @@ printf("TOKEN SIZE %ld\n",(token)->data_size );
 			default:
 		
 				clean();
-	
+				delete_tree(node);
 				root->right = NULL;
 				return false;
 
 		}
 
-
 		if (get_token) { // get the next token if needed
 			if ((*start) == NULL) {
+				delete_tree(node);
 				clean();
 				return false;
 			}
 			token = (*start)->unit;
 			*start = (*start)->next;
 			printf("TOKEN PRINT %s; (%d) %d\n", (char*)(token)->data,*((int*)(token)->data), (token)->unit_type);
-
+	
 		}
 	}
 
 	// test if everything happend correctly
 	if (stack->length == 2 && help->length == 0) {
-			d_node * top = ll_return_first_data(stack);
-			ll_del_first(stack);
+		d_node * top = ll_return_first_data(stack);
+		ll_del_first(stack);
 
-			if (top == NULL) {
-				clean();
-				root->right = NULL;
-				return false;
-			}
-			else if (top->type == E) {
-				root->right = top;
-				clean();
-				return true;
-			}
+		if (top == NULL) {
+			clean();
+			delete_tree(top);
+			root->right = NULL;
+			return false;
 		}
+		else if (top->type == E) {
+			root->right = top;
+			clean();
+			return true;
+		}
+
+			delete_tree(top);
+	}
 
 		clean();
 		root->right = NULL;

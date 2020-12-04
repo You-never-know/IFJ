@@ -19,19 +19,20 @@
 
 #define CHUNK_SIZE 128 // Defines how much space is allocated when previous buffer overflows
 
-typedef struct lex_u_list //linked list for test 
+typedef struct token_u_list //linked list for test 
 {
 	lex_unit_t * unit;
-	struct lex_u_list *next;
-}lex_list_t;
+	struct token_u_list *next;
+}token_list;
 
+void Error(const char *msg);
 bool isWhiteSpace(const char c);
 bool isNumber(const char c);
 bool isLetter(const char c);
 bool isOperator(const char c);
 bool isMultiOperator(const char c);
 bool isKeyword(const lex_unit_t* lex);
-lex_list_t* Loading_lex_units(FILE * go_file);
+token_list* Loading_lex_units(FILE * go_file);
 
 
 /*

@@ -11,10 +11,9 @@ CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra
 COMPILATOR = gcc $(CFLAGS) -o $@
 
 
-all:  lex_test test_table prec_test 
-#all: translate
+all:  test_table prec_test translate #lex_test
 
-translate: translate.o lexical_analyzer.o structs.o symtable.o prec_parser.o d_tree.o sym_list.o lex_list.o prec_table.o create_tables.o
+translate: translate.o lexical_analyzer.o structs.o symtable.o prec_parser.o d_tree.o sym_list.o lex_list.o prec_table.o create_tables.o syntactic_analyzer.o
 	$(COMPILATOR) $^
 
 translate.o: translate.c create_tables.h prec_parser.h d_tree.h structs.h symtable.h
@@ -63,6 +62,9 @@ prec_table.o: prec_table.c prec_table.h
 	$(COMPILATOR) -c $<
 
 create_tables.o: create_tables.c create_tables.h 
+	$(COMPILATOR) -c $<
+
+syntactic_analyzer.o: syntactic_analyzer.c syntactic_analyzer.h
 	$(COMPILATOR) -c $<
 
 clean_go:
