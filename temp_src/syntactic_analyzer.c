@@ -380,7 +380,7 @@ bool body26(lex_unit_t* act) {
 	if (!body(act))return false;
 
 	//}
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
 
