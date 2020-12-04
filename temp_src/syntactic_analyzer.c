@@ -67,6 +67,7 @@ bool NL5(lex_unit_t *act){
 	   !strcmp(act->data,"func")	||
 	   !strcmp(act->data,"if")      ||
 	   !strcmp(act->data,"for")     ||
+	   !strcmp(act->data, "}")		||
 	   !strcmp(act->data,"return")) {
 		return true;
 	}
@@ -631,18 +632,21 @@ bool exp_list_start(lex_unit_t* act) {
 	//eps
 	if (!strcmp(act->data, "\n"))return true;
 
-	if (!((!strcmp(act->data, "("))|| act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER|| act->unit_type == STRING || act->unit_type == DECIMAL))
-		return false;
+	if (!((!strcmp(act->data, "(")) || act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER || act->unit_type == STRING || act->unit_type == DECIMAL)) {
 
-	//<expression>
-	if (!expression(act))return false;
+		//<expression>
+		if (!expression(act))return false;
 
-	//<exp_list>
-	act = getActiveToken();
-	if (act == NULL)return false;
-	if (!exp_list(act))return false;
+		//<exp_list>
+		act = getActiveToken();
+		if (act == NULL)return false;
+		if (!exp_list(act))return false;
 
-	return true;
+		return true;
+	}
+	return false;
+
+
 }
 
 bool fun2(lex_unit_t * act){
