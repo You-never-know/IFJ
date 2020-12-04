@@ -320,6 +320,7 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 	// init stack
 	stack = ll_init();
 	help = ll_init();
+	int reads = 0;
 
 	// put $ to the stack
 	d_node * node = d_node_create(NULL, NULL, DOLLAR); // create node with $
@@ -397,8 +398,14 @@ printf("TOKEN SIZE %ld\n",(token)->data_size );
 				clean();
 				return false;
 			}
-			token = (*start)->unit;
-			*start = (*start)->next;
+			if (reads == 0) {
+				token = (*start)->unit;
+			}
+			else {
+				*start = (*start)->next;
+				token = (*start)->unit;
+			}	
+			reads++;
 			printf("TOKEN PRINT %s; (%d) %d\n", (char*)(token)->data,*((int*)(token)->data), (token)->unit_type);
 	
 		}
