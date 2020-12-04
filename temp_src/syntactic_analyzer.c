@@ -299,17 +299,17 @@ bool body24(lex_unit_t* act) {
 	act = getNextToken();
 	if (act == NULL)return false;
 	if (!body(act))return false;
-printf("som tu za if \n");
+
 	//}
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
-
+	
 	//<else>
 	act = getNextToken();
 	if (act == NULL)return false;
 	if (!else_r(act))return false;
-
+printf("som tu za if \n");
 	//NEW_LINE
 	act = getNextToken();
 	if (act == NULL)return false;
