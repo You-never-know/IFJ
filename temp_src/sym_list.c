@@ -79,7 +79,7 @@ void sl_dissolve(sym_list* sl) {
 void sl_insert_first(sym_list* sl, sym_tab* st_data) {
 
 	if ((sl == NULL) || (st_data == NULL)) {
-		return NULL;
+		return;
 	}
 
 	//new item allocation
@@ -115,7 +115,7 @@ void sl_insert_first(sym_list* sl, sym_tab* st_data) {
 void sl_insert_last(sym_list* sl, sym_tab* st_data) {
 
 	if ((sl == NULL) || (st_data == NULL)) {
-		return NULL;
+		return;
 	}
 
 	//new item allocation
@@ -151,7 +151,7 @@ void sl_insert_last(sym_list* sl, sym_tab* st_data) {
 void sl_set_act_first(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return;
 	}
 
 	sl->act = sl->first;
@@ -164,7 +164,7 @@ void sl_set_act_first(sym_list* sl) {
 void sl_set_act_last(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return;
 	}
 
 	sl->act = sl->last;
@@ -177,7 +177,7 @@ void sl_set_act_last(sym_list* sl) {
 void sl_set_next_act(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return;
 	}
 
 	if (sl->act)
@@ -195,7 +195,7 @@ void sl_set_next_act(sym_list* sl) {
 void sl_set_prev_act(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return;
 	}
 
 	if (sl->act)
@@ -213,7 +213,7 @@ void sl_set_prev_act(sym_list* sl) {
 void set_all_accessible(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return;
 	}
 
 	sl_elem_ptr tmp = sl->first;
@@ -230,7 +230,7 @@ void set_all_accessible(sym_list* sl) {
 void sl_set_act_naccessible(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return;
 	}
 
 	sl->act->accessible = false;
@@ -243,7 +243,7 @@ void sl_set_act_naccessible(sym_list* sl) {
 void sl_set_act_accessible(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return;
 	}
 
 	sl->act->accessible = true;
@@ -289,7 +289,7 @@ sym_tab* sl_return_act(sym_list* sl) {
 void sl_del_first(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return;
 	}
 
 	sl_elem_ptr tmp;
@@ -327,7 +327,7 @@ void sl_del_first(sym_list* sl) {
 void sl_del_last(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return;
 	}
 
 	sl_elem_ptr tmp;
@@ -375,7 +375,7 @@ int sl_get_length(sym_list* sl) {
 void sl_rewrite_act(sym_list* sl, sym_tab* st_data) {
 
 	if ((sl == NULL) || (st_data == NULL)) {
-		return NULL;
+		return;
 	}
 
 	if (sl->act)
