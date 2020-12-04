@@ -197,8 +197,6 @@ bool expression(lex_unit_t* act) {
 	d_node* root = NULL;
 	root = d_node_create(NULL, NULL, DOLLAR);
 
-	if (Active_token == NULL) return false;
-	Active_token = Active_token->next; // get the next token
 	return Parse_expresion(act, root, &Active_token, fun_table);
 
 }
@@ -607,18 +605,20 @@ bool exp_list_start(lex_unit_t* act) {
 	//eps
 	if (!strcmp(act->data, "\n"))return true;
 
-	if ((!strcmp(act->data, "("))|| act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER|| act->unit_type == STRING || act->unit_type == DECIMAL)
-		return exp_list_start(getNextToken());
+	if ((!strcmp(act->data, "(")) || act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER || act->unit_type == STRING || act->unit_type == DECIMAL) {
+		//<expression>
+		if (!expression(act))return false;
 
-	//<expression>
-	if (!expression(act))return false;
+		//<exp_list>
+		act = getActiveToken();
+		if (act == NULL)return false;
+		if (!exp_list(act))return false;
 
-	//<exp_list>
-	act = getActiveToken();
-	if (act == NULL)return false;
-	if (!exp_list(act))return false;
+		return false;
+	}
+	return exp_list_start(getNextToken());
 
-	return false;
+
 }
 
 bool fun2(lex_unit_t * act){
@@ -718,8 +718,6 @@ bool Check_syntax(token_list * t_list, int * return_value, sym_list * id_tables,
 
 	fun_table = function_table;
 	Active_token = t_list;
-
-
 
 	return true;
 
