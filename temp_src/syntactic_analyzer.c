@@ -264,10 +264,10 @@ bool body23(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//RETURN DONE IN BODY
-
+printf("body 23 pokracovat\n");
 	//<exp_list_start>
 	if (!exp_list_start(act))return false;
-
+printf("tu som sa nedostal\n");
 	//NEW_LINE
 	act = getNextToken();
 	if (act == NULL)return false;
@@ -332,7 +332,7 @@ bool body25(lex_unit_t* act) {
 	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "\n"))return false;
-
+	
 	return body(getNextToken());
 }
 
@@ -459,7 +459,6 @@ bool id_choose30(lex_unit_t* act) {
 	act = getNextToken();
 	if (act == NULL)return false;
 	if (!exp_fun(act))return false;
-
 	return true;
 }
 
@@ -611,7 +610,7 @@ bool exp_list(lex_unit_t* act) {
 	act = getNextToken();
 	if (act == NULL)return false;
 	if (!expression(act))return false;
-
+	act = getActiveToken(); 
 	return exp_list(act);
 }
 
