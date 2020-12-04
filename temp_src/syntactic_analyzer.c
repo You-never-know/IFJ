@@ -675,7 +675,7 @@ bool fun2(lex_unit_t * act){
 
 	// check NEW_LINE
 	act=getNextToken();
-	if(act==NULL)return false;
+	if(act==NULL)return true;
 	if(strcmp(act->data,"\n"))return false;
 
 	// call NL
