@@ -423,7 +423,7 @@ bool id_choose(lex_unit_t* act) {
 
 	if (!strcmp(act->data, ":=")) //:=
 		return id_choose29(getNextToken());
-	else if ((!strcmp(act->data, ",")) || (!strcmp(act->data, "="))) //<id_list>
+	else if ((!strcmp(act->data, ",")) || (!strcmp(act->data, "=") == 0)) //<id_list>
 		return id_choose30(getActiveToken());
 	else if (!strcmp(act->data, "(")) //(
 		return id_choose31(act_tmp); 
