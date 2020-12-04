@@ -264,7 +264,6 @@ bool body23(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//RETURN DONE IN BODY
-printf("body 23 pokracovat\n");
 	//<exp_list_start>
 	if (!exp_list_start(act))return false;
 printf("tu som sa nedostal\n");
@@ -622,7 +621,7 @@ bool exp_list_start(lex_unit_t* act) {
 	//eps
 	if (!strcmp(act->data, "\n"))return true;
 
-	if (!((!strcmp(act->data, "(")) || act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER || act->unit_type == STRING || act->unit_type == DECIMAL)) {
+	if (((!strcmp(act->data, "(")) || act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER || act->unit_type == STRING || act->unit_type == DECIMAL)) {
 
 		//<expression>
 		if (!expression(act))return false;
