@@ -551,7 +551,7 @@ bool assignment(lex_unit_t* act) {
 	if (!id_list(act))return false;
 
 	//=
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "="))return false;
 
