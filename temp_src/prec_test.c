@@ -108,6 +108,7 @@ int main(int argc, char* argv[]) {
 		if (file == NULL) {
 			return 1;
 		}
+		token_list* Active_token = NULL; //fix later
 		sym_tab* function_table = htab_create(MEDIUM_TABLE);
 		//sym_tab* function_table = NULL;
 		//int ret=0;
@@ -120,7 +121,8 @@ int main(int argc, char* argv[]) {
 		bool var = true;
 		while ((analyze != NULL) || (var != false)) {
 			//expect_true(Parse_expresion(&analyze, root , file, fun_tab));
-			var = Parse_expresion(&analyze, root, file, function_table);
+			
+			var = Parse_expresion(&analyze, root, &Active_token, function_table);
 			if ((analyze != NULL) && (var != false)) {
 				print_tree(root);
 			}
