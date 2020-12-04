@@ -5,7 +5,7 @@ enum lex_units id_type_search(sym_list * list_of_tables,lex_unit_t * name){
 	ht_item *act=sl_search(list_of_tables,name);
 	
 	if(act==NULL){ // item is not defined or accesible 
-		return ERROR; 
+		return STR_ERR; 
 	}
 	else{
 		if(act->id==NULL)return ERROR;
@@ -18,10 +18,10 @@ Func * func_search(sym_tab * main,lex_unit_t *name){
 	ht_item *act=find_item(main,name);
 	
 	if(act==NULL){ // item is not defined or accesible 
-		return ERROR; 
+		return NULL; 
 	}
 	else{
-		if(act->func==NULL)return ERROR;
+		if(act->func==NULL)return NULL;
 		return act->func;
 	}
 
@@ -192,9 +192,20 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 
 		enum lex_units right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree
 		
+		unsigned err;
+
+		switch (right_sd){
+
+			case STR_ERR:
+				err=DEFINE_ERR;
+					break;
+			default:
+				err=COMPATIBLE_ERR;
+		}
+		
 		for(d_node * tmp=node->left;tmp!=NULL;tmp=next_left(tmp)){ //pushing left side of tree		
 			if(id_type_search(list_of_tables,tmp->data)!=right_sd) // comp data types 
-				return COMPATIBLE_ERR;
+				return err;
 		}
 
 		return SEM_PASSED; // should be ok
