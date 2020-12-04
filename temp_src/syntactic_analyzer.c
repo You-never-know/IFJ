@@ -304,7 +304,7 @@ bool body24(lex_unit_t* act) {
 	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
-	
+
 	//<else>
 	act = getNextToken();
 	if (act == NULL)return false;
@@ -423,7 +423,7 @@ bool id_choose(lex_unit_t* act) {
 
 	if (!strcmp(act->data, ":=")) //:=
 		return id_choose29(getNextToken());
-	else if ((!strcmp(act->data, ",")) || (!strcmp(act->data, "=") == 0)) //<id_list>
+	else if ((!strcmp(act->data, ",")) || (strcmp(act->data, "=") == 0)) //<id_list>
 		return id_choose30(getActiveToken());
 	else if (!strcmp(act->data, "(")) //(
 		return id_choose31(act_tmp); 
@@ -504,7 +504,7 @@ bool else_r(lex_unit_t* act) {
 	if (!body(act))return false;
 
 	//}
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
 
