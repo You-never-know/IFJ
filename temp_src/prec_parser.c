@@ -158,6 +158,7 @@ bool match() {
 		case F:
 			if (ll_get_length(help) == 4) { // E -> f(E)
 				d_node * fun = tmp; // f
+				fun->type = E;
 				ll_del_first(help);
 				d_node * LB = ll_return_first_data(help); // (
 				ll_del_first(help);
@@ -181,6 +182,7 @@ bool match() {
 				return false;
 			}else if (ll_get_length(help) == 3) { // E -> f()
 				d_node* func = tmp; // f
+				func->type = E;
 				ll_del_first(help);
 				d_node* LB = ll_return_first_data(help); // (
 				ll_del_first(help);
@@ -210,6 +212,7 @@ bool match() {
 				ll_del_first(help); // we already have f
 
 				d_node * function = tmp;
+				function->type = E;
 				d_node * under_node = function;
 				d_node * node = ll_return_first_data(help);
 				ll_del_first(help);
@@ -330,7 +333,7 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 		return false;
 	}
 
-	printf("Token data %s\n\n", (char *)token->data)	;
+
 	// init stack
 	stack = ll_init();
 	help = ll_init();
