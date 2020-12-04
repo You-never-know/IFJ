@@ -363,7 +363,7 @@ void sl_del_last(sym_list* sl) {
 int sl_get_length(sym_list* sl) {
 
 	if (sl == NULL) {
-		return NULL;
+		return -1;
 	}
 
 	return sl->length;
