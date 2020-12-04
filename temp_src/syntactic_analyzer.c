@@ -266,12 +266,11 @@ bool body23(lex_unit_t* act) {
 	//RETURN DONE IN BODY
 	//<exp_list_start>
 	if (!exp_list_start(act))return false;
-printf("tu som sa nedostal\n");
+
 	//NEW_LINE
-	act = getNextToken();
+	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "\n"))return false;
-
 	return body(getNextToken());
 }
 
@@ -639,7 +638,6 @@ bool exp_list_start(lex_unit_t* act) {
 }
 
 bool fun2(lex_unit_t * act){
-
 	if(act==NULL)return true; //end of file
 	
 	/* func required */
@@ -671,7 +669,7 @@ bool fun2(lex_unit_t * act){
 	if(!body(getNextToken()))return false;
 
 	// check }
-	act=getNextToken();
+	act=getActiveToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"}"))return false; 
 
@@ -684,8 +682,8 @@ bool fun2(lex_unit_t * act){
 	act=getNextToken();
 	if(act==NULL)return false;
 	if(!NL4(act))return false; 
-
-	return fun2(getNextToken());
+	
+	return fun2(getActiveToken());
 
 }
 bool prog(){
