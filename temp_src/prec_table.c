@@ -66,11 +66,11 @@ enum tokens merge_event(lex_unit_t* lex, sym_tab* st) {
 
 	case IDENTIFICATOR:
 		//printf("IDENTIFICATOR\n");
-		if(find_item(st, lex)==NULL)
-			return I;
-		else
+		if(find_item(st, lex)==NULL) 
+			return I; 
+		else 
 			return F;
-
+		
 	case INTEGER: case DECIMAL: case STRING:
 	//printf("INTEGER/DECIMAL/STRING\n");
 		return I;

@@ -34,6 +34,8 @@ int get_the_top_operand() {
 
 }
 
+
+
 // add hande after the last operand
 void add_handle() {
 
@@ -317,7 +319,7 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 		return false;
 	}
 
-	printf("Token data %s\n", (char *)token->data)	;
+	printf("Token data %s\n\n", (char *)token->data)	;
 	// init stack
 	stack = ll_init();
 	help = ll_init();
@@ -331,7 +333,7 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 	bool finished = false; // end the cycle analyse is complete
 	bool get_token = true; // get another token or not from the file
 	int type = merge_event(token, fun_tab); // get the first type
-printf("Token type %d\n", type)	;
+
 	while (!finished) {
 		if (type != ERR) {
 			type = merge_event(token, fun_tab);
@@ -340,7 +342,6 @@ printf("Token type %d\n", type)	;
 			get_token = false; // dont read anything from the input
 			type = DOLLAR; // set it as the input
 		}
-printf("TOKEN SIZE %ld\n",(token)->data_size );
 
 		if (get_token) { // we create only new nodes
 			node = d_node_create(NULL, token, type); // create node
@@ -371,12 +372,12 @@ printf("TOKEN SIZE %ld\n",(token)->data_size );
 					get_token = false;
 				}
 				else { // rule not found
-					delete_tree(node);
+					if (get_token) delete_tree(node);
 					clean();
 					root->right = NULL;
 					return false;
 				}
-
+				printf("Type before testing: %d\n", type );
 				if (test_end(type)) { // test if we are finished
 					finished = true;
 					get_token = false;
@@ -413,6 +414,8 @@ printf("TOKEN SIZE %ld\n",(token)->data_size );
 	
 		}
 	}
+
+	printf("\n\n\n\n\n\n");
 
 	// test if everything happend correctly
 	if (stack->length == 2 && help->length == 0) {

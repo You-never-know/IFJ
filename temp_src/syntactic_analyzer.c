@@ -214,13 +214,11 @@ bool expression(lex_unit_t* act) {
 
 	// expression starts
 	if (act == NULL)return false;
-	fprintf(stderr, "Token data: %s\n", (char*)(act->data));
 	d_node* root = NULL;
 	root = d_node_create(NULL, NULL, DOLLAR);
 
 	if (Active_token == NULL) return false;
 	Active_token = Active_token->next; // get the next token
-	fprintf(stderr, "Token data: %s\n", (char*)Active_token->unit->data);
 	bool result = Parse_expresion(act, root, &Active_token, fun_table);
 	delete_tree(root);
 	return result;
@@ -228,7 +226,6 @@ bool expression(lex_unit_t* act) {
 
 bool body(lex_unit_t* act) {
 
-	fprintf(stderr, "Token data: %s\n", (char*)(act->data));
 	// body starts
 	if (act == NULL)return false;
 
@@ -326,7 +323,6 @@ bool body25(lex_unit_t* act) {
 
 	// body25 starts
 	if (act == NULL)return false;
-fprintf(stderr, "Token data: %s\n", (char*)(act->data));
 	//ID DONE IN BODY
 
 	//<id_choose> 
@@ -347,7 +343,6 @@ bool body26(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//FOR DONE IN BODY
-fprintf(stderr, "Token name %s\n", (char*)act->data);
 	//<definition>
 	if (!definition(act))return false;
 
@@ -423,16 +418,14 @@ bool id_choose(lex_unit_t* act) {
 
 	// id_choose starts
 	if (act == NULL)return false;
-fprintf(stderr, "Token data: %s\n", (char*)(act->data));
 	lex_unit_t* act_tmp = act; //ID
 	act = getNextToken();
-	fprintf(stderr, "Token data: %s\n", (char*)(act->data));
 	if (act == NULL)return false;
 
 	if (!strcmp(act->data, ":=")) //:=
 		return id_choose29(getNextToken());
-	else if (id_list(act)) //<id_list>
-		return id_choose30(getNextToken());
+	else if ((!strcmp(act->data, ",")) || (!strcmp(act->data, "=") == 0)) //<id_list>
+		return id_choose30(getActiveToken());
 	else if (!strcmp(act->data, "(")) //(
 		return id_choose31(act_tmp); 
 
@@ -445,7 +438,6 @@ bool id_choose29(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//:= DONE IN ID_CHOOSE
-	fprintf(stderr, "Token data: %d\n", *(int*)(act->data));
 	//<expression>
 	if (!expression(act))return false; 
 
@@ -458,10 +450,11 @@ bool id_choose30(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//<id_list> DONE IN ID_CHOOSE
+	if (!id_list(act)) return false;
 
 	//=
+	act = getActiveToken();
 	if (strcmp(act->data, "="))return false;
-
 	//<exp/fun>
 	act = getNextToken();
 	if (act == NULL)return false;
@@ -598,8 +591,6 @@ bool next(lex_unit_t* act) {
 	if (!strcmp(act->data, "\n"))return true;
 
 	//<exp_list>
-	act = getNextToken();
-	if (act == NULL)return false;
 	if (!exp_list(act))return false;
 
 	return true;
