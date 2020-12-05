@@ -10,10 +10,11 @@
 #define SYNTACTIC_ANALYZER
 
 #include "lexical_analyzer.h"
+#include "symtable.h"
 #include "sym_list.h"
 #include <stdbool.h>
 
-bool Check_syntax(token_list * t_list, int * return_value, sym_list * id_tables, sym_tab * function_table); // make the syntactic analysis of the whole file
+int Check_syntax(token_list * t_list, sym_list * id_tables, sym_tab * function_table); // make the syntactic analysis of the whole file
 
 
 /******************************** syntactic functions declarations ******************************/

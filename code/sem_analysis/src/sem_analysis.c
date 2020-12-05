@@ -236,9 +236,9 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 			if((enum lex_units)return_types->type!=right_sd)
 					return err;
 
-			if(tmp->left==NULL && return_types!=NULL) /* both have to end with NULL */
+			if(tmp->left==NULL && return_types->next!=NULL) /* both have to end with NULL */
 				return RETURN_ERR;
-			if(tmp->left!=NULL && return_types==NULL)
+			if(tmp->left!=NULL && return_types->next==NULL)
 				return RETURN_ERR;
 
 			return_types=return_types->next;

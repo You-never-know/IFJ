@@ -134,7 +134,6 @@ void delete_tree(d_node * root){
 	if(root==NULL)return;
 	delete_tree(root->left);
 	delete_tree(root->right);
-	free(root->data);
 	free(root);
 	root=NULL;
 	

@@ -125,10 +125,10 @@ void Lex_count(FILE* go_file){
 }
 
 
-void Prints_lex(lex_list* First,int number_of_units){//-1 ignores assert 
+void Prints_lex(token_list* First,int number_of_units){//-1 ignores assert 
 	int counter=0;
 	if(First == NULL){if(number_of_units!=-1)assert(counter==number_of_units);return;}
-	lex_list* tmp = First;
+	token_list* tmp = First;
 	fprintf(stdout,"~~~~~~~~\n");
 	fprintf(stdout,"Lexemes:\n");
 	fprintf(stdout,"-+-------------------\n");
@@ -198,13 +198,13 @@ FILE* Creating_file(bool wanna_count,bool open_only,const char *filename,const c
 
 
 
-void Free_Lex_Units(lex_list* first){
+void Free_Lex_Units(token_list* first){
 	/// Check function argument
 	if(first == NULL) return;
 
 	/// Loop through & free each unit in 'lex_unit_t' linked list
-	lex_list* tmp;
-	lex_list* tmp_next;
+	token_list* tmp;
+	token_list* tmp_next;
 	for(tmp = first; tmp != NULL; tmp = tmp_next){
 		tmp_next = tmp->next;
 		LexUnitDelete(tmp->unit);
@@ -221,7 +221,7 @@ int main()
 
 	fprintf(stdout,"\n======TEST01_ID======\n");
 	FILE * go_file=Creating_file(1,0,"test01.go","casa casca + 44 8454343 ***a=4*2 ");
-	lex_list* lex_first=Loading_lex_units(go_file);
+	token_list* lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
