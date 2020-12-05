@@ -72,6 +72,15 @@ d_node* next_left(d_node* node){
 	return node->left;
 
 }
+
+d_node* next_right(d_node* node){
+	if(node==NULL){
+		fprintf(stderr,"root is NULL\n");
+		return node;
+	}
+	return node->right;
+
+}
 void prints_side(unsigned space,unsigned offset,unsigned old_space){
 	for(unsigned i = offset; i < space; i++){
    		if(old_space>i)

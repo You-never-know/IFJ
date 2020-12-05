@@ -25,6 +25,7 @@ d_node * d_node_create(d_node * node,lex_unit_t * r_data,int r_type); //creates 
 d_node * d_node_insert_left(d_node * node,d_node * left_node); //insert left son 
 d_node * d_node_insert_right(d_node * node,d_node * right_node); //insert right son
 d_node * next_left(d_node* node); // gives you next left ptr
+d_node* next_right(d_node* node);// gives you next right ptr
 void Print_tree(d_node* TempTree); // prints tree
 void delete_tree(d_node * root); //deletes tree;
 
