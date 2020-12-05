@@ -34,6 +34,19 @@ int get_the_top_operand() {
 
 }
 
+
+bool is_there_a_function() {
+
+	for (ll_elem_ptr tmp = stack->first; tmp != NULL; tmp = tmp->r) {
+		if (tmp->ll_data->type == F) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
 // add hande after the last operand
 void add_handle() {
 
@@ -81,6 +94,7 @@ bool match() {
 	 	case  I: // E -> i
 			ll_del_first(help);
 			if (ll_get_length(help) != 0) {
+				delete_tree(tmp);
 				return false;
 			}
 			tmp->type = E;
@@ -144,6 +158,7 @@ bool match() {
 		case F:
 			if (ll_get_length(help) == 4) { // E -> f(E)
 				d_node * fun = tmp; // f
+				fun->type = E;
 				ll_del_first(help);
 				d_node * LB = ll_return_first_data(help); // (
 				ll_del_first(help);
@@ -167,6 +182,7 @@ bool match() {
 				return false;
 			}else if (ll_get_length(help) == 3) { // E -> f()
 				d_node* func = tmp; // f
+				func->type = E;
 				ll_del_first(help);
 				d_node* LB = ll_return_first_data(help); // (
 				ll_del_first(help);
@@ -196,6 +212,7 @@ bool match() {
 				ll_del_first(help); // we already have f
 
 				d_node * function = tmp;
+				function->type = E;
 				d_node * under_node = function;
 				d_node * node = ll_return_first_data(help);
 				ll_del_first(help);
@@ -281,6 +298,7 @@ bool match_rule() {
 		}
 		else if (tmp->type == HANDLE) { // the help stack is ready
 			ll_del_first(stack); // remove the handle
+			delete_tree(tmp);
 			if (match() == false) {
 				return false;
 			}
@@ -315,9 +333,11 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 		return false;
 	}
 
+
 	// init stack
 	stack = ll_init();
 	help = ll_init();
+	int reads = 0;
 
 	// put $ to the stack
 	d_node * node = d_node_create(NULL, NULL, DOLLAR); // create node with $
@@ -331,12 +351,17 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 	while (!finished) {
 		if (type != ERR) {
 			type = merge_event(token, fun_tab);
+
+			if (type == COMMA) {
+				if (!is_there_a_function()) {
+					type = ERR;
+				} 
+			}
 		}
 		if (type == ERR) {
 			get_token = false; // dont read anything from the input
 			type = DOLLAR; // set it as the input
 		}
-printf("TOKEN SIZE %ld\n",(token)->data_size );
 
 		if (get_token) { // we create only new nodes
 			node = d_node_create(NULL, token, type); // create node
@@ -367,11 +392,11 @@ printf("TOKEN SIZE %ld\n",(token)->data_size );
 					get_token = false;
 				}
 				else { // rule not found
+					if (get_token) delete_tree(node);
 					clean();
 					root->right = NULL;
 					return false;
 				}
-
 				if (test_end(type)) { // test if we are finished
 					finished = true;
 					get_token = false;
@@ -382,41 +407,54 @@ printf("TOKEN SIZE %ld\n",(token)->data_size );
 			default:
 		
 				clean();
-	
+				if (get_token) {
+					delete_tree(node);
+				}
 				root->right = NULL;
 				return false;
 
 		}
-
 
 		if (get_token) { // get the next token if needed
 			if ((*start) == NULL) {
+				delete_tree(node);
 				clean();
 				return false;
 			}
-			token = (*start)->unit;
-			*start = (*start)->next;
+			if (reads == 0) {
+				token = (*start)->unit;
+			}
+			else {
+				*start = (*start)->next;
+				token = (*start)->unit;
+			}	
+			reads++;
 			printf("TOKEN PRINT %s; (%d) %d\n", (char*)(token)->data,*((int*)(token)->data), (token)->unit_type);
-
+	
 		}
 	}
 
+	printf("\n\n\n\n\n\n");
+
 	// test if everything happend correctly
 	if (stack->length == 2 && help->length == 0) {
-			d_node * top = ll_return_first_data(stack);
-			ll_del_first(stack);
+		d_node * top = ll_return_first_data(stack);
+		ll_del_first(stack);
 
-			if (top == NULL) {
-				clean();
-				root->right = NULL;
-				return false;
-			}
-			else if (top->type == E) {
-				root->right = top;
-				clean();
-				return true;
-			}
+		if (top == NULL) {
+			clean();
+			delete_tree(top);
+			root->right = NULL;
+			return false;
 		}
+		else if (top->type == E) {
+			root->right = top;
+			clean();
+			return true;
+		}
+
+			delete_tree(top);
+	}
 
 		clean();
 		root->right = NULL;

@@ -169,8 +169,10 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 			else if (tmp->func->func_name->data == NULL || lex->data == NULL) {
 				continue;
 			}
-			else if (strncmp((char *)tmp->func->func_name->data, (char *)lex->data, lex->data_size)) {
-				return tmp;
+			else if (tmp->func->func_name->data_size == lex->data_size) {
+				if (strcmp((char *)tmp->func->func_name->data, (char *)lex->data) == 0) {
+					return tmp;
+				}
 			}
 		}
 		else if(tmp->id!=NULL){
@@ -180,8 +182,10 @@ ht_item *find_item(sym_tab *st, struct lex_unit * lex) {
 			else if (tmp->id->id_name->data == NULL || lex->data == NULL) {
 				continue;
 			}
-			else if (strncmp((char *)tmp->id->id_name->data, (char *)lex->data, lex->data_size) == 0) {
-				return tmp;
+			else if (tmp->id->id_name->data_size == lex->data_size) {
+				if (strcmp((char *)tmp->id->id_name->data, (char *)lex->data) == 0) {
+					return tmp;
+				}
 			}
 		}
 	}	
