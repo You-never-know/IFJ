@@ -210,10 +210,12 @@ bool ret_vals(lex_unit_t * act){
 	}
 }
 
-bool expression(lex_unit_t* act, d_node * root) {
+bool expression(lex_unit_t* act) {
 
 	// expression starts
 	if (act == NULL)return false;
+	d_node* root = NULL;
+	root = d_node_create(NULL, NULL, DOLLAR);
 
 	if (Active_token == NULL) return false;
 	Active_token = Active_token->next; // get the next token
