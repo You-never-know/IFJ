@@ -13,6 +13,7 @@ enum lex_units id_type_search(sym_list * list_of_tables,lex_unit_t * name){
 	}
 }
 
+
 Func * func_search(sym_tab * main,lex_unit_t *name){
 
 	ht_item *act=find_item(main,name);
@@ -24,6 +25,15 @@ Func * func_search(sym_tab * main,lex_unit_t *name){
 		if(act->func==NULL)return NULL;
 		return act->func;
 	}
+
+}
+
+enum lex_units return_type_search(sym_tab * main,lex_unit_t * name){
+
+	Func * act = func_search(main,name);
+	if(act==NULL)return ERROR;
+
+	return (act->return_val==NULL)? ERROR : act->return_val->type;
 
 }
 
@@ -197,8 +207,6 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 
 	if(node->data==NULL)return SYSTEM_ERROR;
 
-	if(node->right==NULL)return SYSTEM_ERROR; // no id or value to assign
-
 	if(list_of_tables==NULL)return SYSTEM_ERROR; // no comment ;)
 
 	unsigned err; /* semantic err to be returned */
@@ -216,14 +224,20 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 				return COMPATIBLE_ERR;
 		}
 
-		 right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree
-		
+		for(d_node * tmp=node->left;tmp!=NULL;tmp=next_left(tmp)){ //pushing left side of tree	
 
-		err=err_sieve(right_sd); /* possible err */
-		
-		for(d_node * tmp=node->left;tmp!=NULL;tmp=next_left(tmp)){ //pushing left side of tree		
-			if(id_type_search(list_of_tables,tmp->data)!=right_sd) // comp data types 
-				return err;
+			if(node->right!=NULL){ // assignment may not occur
+				
+				if(tmp->right->data->unit_type==IDENTIFICATOR && func_search(main,node->right->data)!=NULL)
+					 right_sd=return_type_search(main,node->right->data); // chcek return type of func
+				else right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree 
+
+				err=err_sieve(right_sd); /* possible err */
+
+				if(id_type_search(list_of_tables,tmp->data)!=right_sd) // comp data types 
+					return err;
+			}
+
 		}
 
 		return SEM_PASSED; // should be ok
