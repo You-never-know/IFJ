@@ -68,7 +68,17 @@ unsigned err_sieve(enum lex_units err){
 		}
 	}
 
+bool return_not_found(lex_unit_t *name,sym_tab * main){
 
+	Func * act = func_search(main,name);
+	if(act==NULL){
+		fprintf(stderr,"func not found\n");
+		return false;
+	}
+
+	return(act->return_val==NULL)?true:false;
+	
+}
 
 enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 
@@ -181,7 +191,7 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 
 }
 
-unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_unit_t* func_name,bool should_return){
+unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_unit_t* func_name){
 
 	if(node==NULL)return SYSTEM_ERROR; //  tree is build incorrectly
 
@@ -222,7 +232,7 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 	if(!strcmp(node->data->data,"return")){
 
 		Func * act_func=func_search(main,func_name);
-		if(act_func==NULL && act_func->return_val==NULL) /* return required */
+		if(act_func==NULL && (act_func->return_val==NULL && node->left!=NULL)) /* return required */
 			return RETURN_ERR;
 
 		Ret * return_types=act_func->return_val;
