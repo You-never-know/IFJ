@@ -3,9 +3,9 @@
 #define PARAM_ERR 6
 #define RETURN_ERR 6
 #define SYSTEM_ERROR 99
-#define SEM_PASSED 1
-#define EN 0
-#define OP -1
+#define SEM_PASSED 0
+
+
 
 #include "prec_table.h"
 #include "symtable.h"

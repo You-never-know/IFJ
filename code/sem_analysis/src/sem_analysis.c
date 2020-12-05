@@ -56,6 +56,19 @@ bool relational_op(void *data){
 			    !strcmp(data,">=") || !strcmp(data,"<="));
 }
 
+unsigned err_sieve(enum lex_units err){
+
+		switch (err){
+								/* sieve for correct err */
+			case STR_ERR:
+				return DEFINE_ERR;
+					
+			default:
+				return COMPATIBLE_ERR;
+		}
+	}
+
+
 
 enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 
@@ -178,6 +191,9 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 
 	if(list_of_tables==NULL)return SYSTEM_ERROR; // no comment ;)
 
+	unsigned err; /* semantic err to be returned */
+	enum lex_units right_sd; /* data type of tree check */
+
 	if(!strcmp(node->data->data,"=") || !strcmp(node->data->data,"if") || !strcmp(node->data->data,":=")){
 
 		if(!strcmp(node->data->data,"if")){
@@ -190,18 +206,10 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 				return COMPATIBLE_ERR;
 		}
 
-		enum lex_units right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree
+		 right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree
 		
-		unsigned err;
 
-		switch (right_sd){
-
-			case STR_ERR:
-				err=DEFINE_ERR;
-					break;
-			default:
-				err=COMPATIBLE_ERR;
-		}
+		err=err_sieve(right_sd); /* possible err */
 		
 		for(d_node * tmp=node->left;tmp!=NULL;tmp=next_left(tmp)){ //pushing left side of tree		
 			if(id_type_search(list_of_tables,tmp->data)!=right_sd) // comp data types 
@@ -209,6 +217,36 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 		}
 
 		return SEM_PASSED; // should be ok
+	}
+
+	if(!strcmp(node->data->data,"return")){
+
+		Func * act_func=func_search(main,func_name);
+		if(act_func==NULL && act_func->return_val==NULL) /* return required */
+			return RETURN_ERR;
+
+		Ret * return_types=act_func->return_val;
+
+		for(d_node * tmp=node->left;tmp!=NULL && return_types!=NULL;tmp=next_left(tmp)){
+
+			right_sd=tree_check(node->right,list_of_tables);
+
+			err=err_sieve(right_sd); /* possible err */
+
+			if((enum lex_units)return_types->type!=right_sd)
+					return err;
+
+			if(tmp->left==NULL && return_types!=NULL) /* both have to end with NULL */
+				return RETURN_ERR;
+			if(tmp->left!=NULL && return_types==NULL)
+				return RETURN_ERR;
+
+			return_types=return_types->next;
+
+
+		}
+
+
 	}
 
 
