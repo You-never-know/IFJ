@@ -8,7 +8,7 @@ enum lex_units id_type_search(sym_list * list_of_tables,lex_unit_t * name){
 		return STR_ERR; 
 	}
 	else{
-		if(act->id==NULL)return ERROR;
+		if(act->id==NULL || !act->id->accesible)return ERROR;
 		return act->id->type; //return correct type
 	}
 }
