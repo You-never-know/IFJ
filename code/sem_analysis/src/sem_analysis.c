@@ -28,14 +28,6 @@ Func * func_search(sym_tab * main,lex_unit_t *name){
 
 }
 
-enum lex_units return_type_search(sym_tab * main,lex_unit_t * name){
-
-	Func * act = func_search(main,name);
-	if(act==NULL)return ERROR;
-
-	return (act->return_val==NULL)? ERROR : act->return_val->type;
-
-}
 
 bool op(void* data){
 
@@ -72,9 +64,12 @@ unsigned err_sieve(enum lex_units err){
 								/* sieve for correct err */
 			case STR_ERR:
 				return DEFINE_ERR;
+
+			case ERROR:
+				return COMPATIBLE_ERR;
 					
 			default:
-				return COMPATIBLE_ERR;
+				return SEM_PASSED;
 		}
 	}
 
@@ -201,51 +196,102 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 
 }
 
-unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_unit_t* func_name){
-
-	if(node==NULL)return SYSTEM_ERROR; //  tree is build incorrectly
-
-	if(node->data==NULL)return SYSTEM_ERROR;
-
-	if(list_of_tables==NULL)return SYSTEM_ERROR; // no comment ;)
+unsigned assignment(d_node * node,sym_tab * main,sym_list * list_of_tables){
 
 	unsigned err; /* semantic err to be returned */
 	enum lex_units right_sd; /* data type of tree check */
 
-	if(!strcmp(node->data->data,"=") || !strcmp(node->data->data,"if") || !strcmp(node->data->data,":=")){
+	if(!strcmp(node->data->data,":=") && !strcmp(node->left->data->data,"_"))
+		return OTHER_SEMANTIC;
 
-		if(!strcmp(node->data->data,"if")){
-			if(relational_op(node->right->data->data)) // must be relational operator
-				return COMPATIBLE_ERR;
-		}
 
-		if(!strcmp(node->data->data,"=") || !strcmp(node->data->data,":=")){
-			if(!relational_op(node->right->data->data)) // can not be relational operator
-				return COMPATIBLE_ERR;
-		}
+	for(d_node * tmp=node->left;tmp!=NULL;tmp=next_left(tmp)){ //pushing left side of tree	
 
-		for(d_node * tmp=node->left;tmp!=NULL;tmp=next_left(tmp)){ //pushing left side of tree	
+			if(node->right!=NULL){ // expression may not occur
 
-			if(node->right!=NULL){ // assignment may not occur
+				if(!relational_op(node->right->data->data)) // can not be relational operator
+					return COMPATIBLE_ERR;
 				
-				if(tmp->right->data->unit_type==IDENTIFICATOR && func_search(main,node->right->data)!=NULL)
-					 right_sd=return_type_search(main,node->right->data); // chcek return type of func
-				else right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree 
+				if(tmp->right->data->unit_type==IDENTIFICATOR && func_search(main,node->right->data)!=NULL){
+						
+						Func * act = func_search(main,node->right->data);
 
-				err=err_sieve(right_sd); /* possible err */
+						Ret * return_vals = act->return_val;
 
-				if(id_type_search(list_of_tables,tmp->data)!=right_sd) // comp data types 
+						while(return_vals!=NULL && tmp!=NULL){
+
+							if((enum lex_units)return_vals->type!=id_type_search(list_of_tables,tmp->data))
+								return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
+										COMPATIBLE_ERR
+										: err_sieve(id_type_search(list_of_tables,tmp->data));
+
+							if(tmp->left==NULL && return_vals->next!=NULL) 
+									return RETURN_ERR;
+
+							if(tmp->left!=NULL && strcmp(tmp->left->data->data,"_") && return_vals->next==NULL)
+									return RETURN_ERR;
+
+							return_vals = return_vals->next;
+
+							tmp=next_left(tmp);
+
+
+						}
+				}	
+				else{ 
+
+					right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree 
+
+					err=err_sieve(right_sd); /* possible err */
+
+					if(err!=SEM_PASSED)
 					return err;
-			}
 
+					if(id_type_search(list_of_tables,tmp->data)!=right_sd) 
+						return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
+								COMPATIBLE_ERR
+								: err_sieve(id_type_search(list_of_tables,tmp->data));
+				
+			}
 		}
 
-		return SEM_PASSED; // should be ok
 	}
 
-	if(!strcmp(node->data->data,"return")){
+		return SEM_PASSED; // should be ok		
+				
+}
+
+unsigned if_case(d_node * node,sym_list * list_of_tables){
+
+	unsigned err; /* semantic err to be returned */
+	enum lex_units right_sd; /* data type of tree check */
+
+	if(relational_op(node->right->data->data)) // must be relational operator
+			return COMPATIBLE_ERR;
+
+	right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree 
+
+	err=err_sieve(right_sd); /* possible err */
+
+	if(err!=SEM_PASSED)
+		return err;
+
+	if(id_type_search(list_of_tables,node->data)!=right_sd) 
+		return (err_sieve(id_type_search(list_of_tables,node->data))==SEM_PASSED)? 
+				COMPATIBLE_ERR
+				: err_sieve(id_type_search(list_of_tables,node->data));
+
+	return SEM_PASSED;
+
+}
+
+unsigned return_case(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_unit_t* func_name){
+
+		unsigned err; /* semantic err to be returned */
+		enum lex_units right_sd; /* data type of tree check */
 
 		Func * act_func=func_search(main,func_name);
+		
 		if(act_func==NULL && (act_func->return_val==NULL && node->left!=NULL)) /* return required */
 			return RETURN_ERR;
 
@@ -257,6 +303,9 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 
 			err=err_sieve(right_sd); /* possible err */
 
+			if(err!=SEM_PASSED)
+				return err;
+
 			if((enum lex_units)return_types->type!=right_sd)
 					return err;
 
@@ -267,13 +316,33 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 
 			return_types=return_types->next;
 
-
 		}
 
+		return SEM_PASSED;
 
-	}
+}
+
+unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_unit_t* func_name){
+
+	if(node==NULL)return SYSTEM_ERROR; //  tree is build incorrectly
+
+	if(node->data==NULL)return SYSTEM_ERROR;
+
+	if(node->left==NULL && strcmp(node->data->data,"if"))return SYSTEM_ERROR;
+
+	if(list_of_tables==NULL)return SYSTEM_ERROR; // no comment ;)
 
 
-  return SEM_PASSED; 
+	if(!strcmp(node->data->data,"=") || !strcmp(node->data->data,":="))
+		return assignment(node,main,list_of_tables);
+
+	if(!strcmp(node->data->data,"if"))
+		return if_case(node,list_of_tables);
+
+	if(!strcmp(node->data->data,"return"))
+		return return_case(node,main,list_of_tables,func_name);
+
+		
+  	return SYSTEM_ERROR; 
  	
 }

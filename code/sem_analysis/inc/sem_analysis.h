@@ -4,6 +4,9 @@
 #define RETURN_ERR 6
 #define SYSTEM_ERROR 99
 #define SEM_PASSED 0
+#define NEW_VAR 4 
+#define OTHER_SEMANTIC 7
+
 
 
 
