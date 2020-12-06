@@ -363,10 +363,10 @@ bool body24(lex_unit_t* act) {
 		return false;
 	}
 	print_tree3(if_tree);
-	/*unsigned err = Sem_analysis(if_tree, fun_table, tables, func_name); ///////////////////////// IF TREE
+	unsigned err = Sem_analysis(if_tree, fun_table, tables, func_name); ///////////////////////// IF TREE
 	if (err != 0) {
 		set_return_code(err);
-	}*/
+	}
 	delete_tree(if_tree);
 
 	//{
