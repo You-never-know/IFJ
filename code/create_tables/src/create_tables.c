@@ -185,6 +185,9 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 						// if correct
 						if (lex->unit_type == IDENTIFICATOR) {
 							state = FUNCTION_ID; // next state
+							if (strcmp(lex->data, "_") == 0) {
+								set_error(7, ret);
+							}
 
 							if (find_item((*function_table), lex) != NULL) {
 								set_error(3, ret);
@@ -550,6 +553,9 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 		
 			case ID:
 						if (lex->unit_type == OPERATOR && memcmp(lex->data, ":=", 2ul) == 0) {
+							if (strcmp(remember_id->data, "_") == 0) {
+								set_error(7, ret);
+							}
 							if (find_item(result->act->st_data, remember_id) == NULL) {
 								ht_item * item = add_item(result->act->st_data ,remember_id ,false);
 								id_item = item; // remember this item
