@@ -813,11 +813,6 @@ bool exp_list(lex_unit_t* act, d_node * id) {
 
 	//eps
 	if (!strcmp(act->data, "\n") || (!strcmp(act->data, "{"))) {
-		if (id != NULL) {
-			if (id->type == DOLLAR) {
-				delete_tree(id);
-			}
-		}
 		return true;
 	}
 
@@ -831,7 +826,7 @@ bool exp_list(lex_unit_t* act, d_node * id) {
 	if (!expression(act, id))return false;
 	act = getActiveToken(); 
 
-	if (id->type == DOLLAR) {
+	if (id->type == DOLLAR && !(!strcmp(act->data, "\n") || (!strcmp(act->data, "{")))) {
 		d_node * body_k = d_node_create(NULL, NULL, DOLLAR);
 		d_node_insert_left(id, body_k);
 	}
@@ -851,8 +846,8 @@ bool exp_list_start(lex_unit_t* act, d_node * body) {
 
 		//<expression>
 		if (!expression(act, body))return false;
-	
-		if (body == DOLLAR) {
+		
+		if (body->type == DOLLAR) {
 			d_node * body2 = d_node_create(NULL, NULL, DOLLAR);
 			d_node_insert_left(body, body2);
 			body = body2;
