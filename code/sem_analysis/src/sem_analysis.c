@@ -87,6 +87,9 @@ bool return_not_found(lex_unit_t *name,sym_tab * main){
 
 enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 
+	if(rh_node==NULL)
+		return ERROR;
+
 	if(rh_node->left==NULL && rh_node->right==NULL){
 		
 		if(rh_node->data->unit_type==IDENTIFICATOR)
@@ -196,7 +199,9 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 
 }
 
-unsigned assignment(d_node * node,sym_tab * main,sym_list * list_of_tables){
+unsigned assignment_exp(d_node * node,sym_list * list_of_tables){
+
+	if(node->left==NULL)return SYSTEM_ERROR;
 
 	unsigned err; /* semantic err to be returned */
 	enum lex_units right_sd; /* data type of tree check */
@@ -207,58 +212,95 @@ unsigned assignment(d_node * node,sym_tab * main,sym_list * list_of_tables){
 
 	for(d_node * tmp=node->left;tmp!=NULL;tmp=next_left(tmp)){ //pushing left side of tree	
 
-			if(node->right!=NULL){ // expression may not occur
-
-				if(!relational_op(node->right->data->data)) // can not be relational operator
+			if(!relational_op(tmp->right->data->data)) // can not be relational operator
 					return COMPATIBLE_ERR;
-				
-				if(tmp->right->data->unit_type==IDENTIFICATOR && func_search(main,node->right->data)!=NULL){
-						
-						Func * act = func_search(main,node->right->data);
+		
+			right_sd=tree_check(tmp->right,list_of_tables); // chceck derivation tree 
 
-						Ret * return_vals = act->return_val;
+			err=err_sieve(right_sd); /* possible err */
 
-						while(return_vals!=NULL && tmp!=NULL){
+			if(err!=SEM_PASSED)
+				return err;
 
-							if((enum lex_units)return_vals->type!=id_type_search(list_of_tables,tmp->data))
-								return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
-										COMPATIBLE_ERR
-										: err_sieve(id_type_search(list_of_tables,tmp->data));
-
-							if(tmp->left==NULL && return_vals->next!=NULL) 
-									return RETURN_ERR;
-
-							if(tmp->left!=NULL && strcmp(tmp->left->data->data,"_") && return_vals->next==NULL)
-									return RETURN_ERR;
-
-							return_vals = return_vals->next;
-
-							tmp=next_left(tmp);
-
-
-						}
-				}	
-				else{ 
-
-					right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree 
-
-					err=err_sieve(right_sd); /* possible err */
-
-					if(err!=SEM_PASSED)
-					return err;
-
-					if(id_type_search(list_of_tables,tmp->data)!=right_sd) 
-						return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
+			if(id_type_search(list_of_tables,tmp->data)!=right_sd) 
+					return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
 								COMPATIBLE_ERR
 								: err_sieve(id_type_search(list_of_tables,tmp->data));
-				
-			}
-		}
-
+			
 	}
 
 		return SEM_PASSED; // should be ok		
 				
+}
+
+unsigned assignment_func(d_node * node,sym_tab * main,sym_list * list_of_tables){
+
+	if(node->left==NULL)return SYSTEM_ERROR;
+
+	/* special case */
+
+	if(!strcmp(node->data->data,":=") && !strcmp(node->left->data->data,"_")){
+		return OTHER_SEMANTIC;
+	}
+
+		Func * act = func_search(main,node->right->data);
+
+		Ret * return_vals = act->return_val;
+
+
+		if(return_vals==NULL)
+			return RETURN_ERR;
+
+					/*return checks*/
+	for(d_node * tmp=node->left;tmp!=NULL && return_vals!=NULL;tmp=next_left(tmp)){ //pushing left side of tree	
+				
+
+				if((enum lex_units)return_vals->type!=id_type_search(list_of_tables,tmp->data))
+							return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
+									COMPATIBLE_ERR
+									: err_sieve(id_type_search(list_of_tables,tmp->data));
+
+				if(tmp->left==NULL && return_vals->next!=NULL) 
+								return RETURN_ERR;
+
+				if(tmp->left!=NULL && strcmp(tmp->left->data->data,"_") && return_vals->next==NULL)
+								return RETURN_ERR;
+
+				return_vals = return_vals->next;
+				
+	}
+
+	/* param chcek */
+
+	Par * params = act->parameters;
+
+	if(params == NULL && node->right->left != NULL)
+		return PARAM_ERR;
+
+	if(params != NULL && node->right->left == NULL)
+		return PARAM_ERR;
+
+	for(d_node * tmp = node->right->left; tmp!=NULL && params!=NULL;tmp=next_left(tmp)){
+
+			if(data_type(tmp->data->unit_type)){
+				if((enum lex_units)params->type!=(enum lex_units)tmp->data->unit_type)
+					return PARAM_ERR;
+			}
+			else if(tmp->data->unit_type==IDENTIFICATOR){
+				if((enum lex_units)params->type!=id_type_search(list_of_tables,tmp->data))
+					return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
+							COMPATIBLE_ERR
+							: err_sieve(id_type_search(list_of_tables,tmp->data));
+			}
+			else
+				return SYSTEM_ERROR;
+
+
+	}
+
+ 	 return SEM_PASSED;
+
+
 }
 
 unsigned if_case(d_node * node,sym_list * list_of_tables){
@@ -287,6 +329,8 @@ unsigned if_case(d_node * node,sym_list * list_of_tables){
 
 unsigned return_case(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_unit_t* func_name){
 
+		if(node->left==NULL)return SYSTEM_ERROR;
+
 		unsigned err; /* semantic err to be returned */
 		enum lex_units right_sd; /* data type of tree check */
 
@@ -299,7 +343,7 @@ unsigned return_case(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_
 
 		for(d_node * tmp=node->left;tmp!=NULL && return_types!=NULL;tmp=next_left(tmp)){
 
-			right_sd=tree_check(node->right,list_of_tables);
+			right_sd=tree_check(tmp->right,list_of_tables);
 
 			err=err_sieve(right_sd); /* possible err */
 
@@ -328,13 +372,14 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 
 	if(node->data==NULL)return SYSTEM_ERROR;
 
-	if(node->left==NULL && strcmp(node->data->data,"if"))return SYSTEM_ERROR;
-
 	if(list_of_tables==NULL)return SYSTEM_ERROR; // no comment ;)
 
 
-	if(!strcmp(node->data->data,"=") || !strcmp(node->data->data,":="))
-		return assignment(node,main,list_of_tables);
+	if((!strcmp(node->data->data,"=") || !strcmp(node->data->data,":="))&& node->right==NULL)
+		return assignment_exp(node,list_of_tables);
+
+	if((!strcmp(node->data->data,"=") || !strcmp(node->data->data,":=")) && node->right!=NULL)
+		return assignment_func(node,main,list_of_tables);
 
 	if(!strcmp(node->data->data,"if"))
 		return if_case(node,list_of_tables);
