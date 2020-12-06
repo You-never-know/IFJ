@@ -19,6 +19,7 @@
 
 token_list * Active_token = NULL;
 sym_tab* fun_table = NULL;
+sym_list* tables = NULL;
 int return_code = 0;
 int Err_set = 0;
 
@@ -288,6 +289,9 @@ bool body24(lex_unit_t* act) {
 	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "{"))return false;
+	sl_set_act_accessible(tables); //open
+	sl_elem_ptr tmp_ptr = tables->act;
+	sl_set_next_act(tables);
 
 	//NEW_LINE
 	act = getNextToken();
@@ -303,6 +307,8 @@ bool body24(lex_unit_t* act) {
 	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
+
+	tmp_ptr->accessible = false; //lock
 
 	//<else>
 	act = getNextToken();
@@ -341,6 +347,11 @@ bool body26(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//FOR DONE IN BODY
+
+	sl_set_act_accessible(tables); //open
+	sl_elem_ptr tmp_ptr2 = tables->act;
+	sl_set_next_act(tables);
+
 	//<definition>
 	if (!definition(act))return false;
 
@@ -369,6 +380,10 @@ bool body26(lex_unit_t* act) {
 	if (act == NULL)return false;
 	if (strcmp(act->data, "{"))return false;
 
+	sl_set_act_accessible(tables); //open
+	sl_elem_ptr tmp_ptr = tables->act;
+	sl_set_next_act(tables);
+
 	//NEW_LINE
 	act = getNextToken();
 	if (act == NULL)return false;
@@ -383,6 +398,9 @@ bool body26(lex_unit_t* act) {
 	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
+
+	tmp_ptr->accessible = false; //lock
+	tmp_ptr2->accessible = false; //lock
 
 	//NEW_LINE
 	act = getNextToken();
@@ -492,6 +510,10 @@ bool else_r(lex_unit_t* act) {
 	if (act == NULL)return false;
 	if (strcmp(act->data, "{"))return false;
 
+	sl_set_act_accessible(tables); //open
+	sl_elem_ptr tmp_ptr = tables->act;
+	sl_set_next_act(tables);
+
 	//NEW_LINE
 	act = getNextToken();
 	if (act == NULL)return false;
@@ -506,6 +528,8 @@ bool else_r(lex_unit_t* act) {
 	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
+
+	tmp_ptr->accessible = false; //lock
 
 	return true;
 }
@@ -599,7 +623,7 @@ bool exp_list(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//eps
-	if (!strcmp(act->data, "\n"))return true;
+	if ((!strcmp(act->data, "\n")) || (!strcmp(act->data, "{"))return true;
 
 	//,
 	if (strcmp(act->data, ","))return false;
@@ -618,7 +642,7 @@ bool exp_list_start(lex_unit_t* act) {
 	if (act == NULL)return false;
 
 	//eps
-	if ((!strcmp(act->data, "\n")) || (!strcmp(act->data, "{")))return true;
+	if (!strcmp(act->data, "\n"))return true;
 
 	if (((!strcmp(act->data, "(")) || act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER || act->unit_type == STRING || act->unit_type == DECIMAL)) {
 
@@ -660,6 +684,9 @@ bool fun2(lex_unit_t * act){
 	act=getActiveToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"{"))return false;
+	sl_set_act_accessible(tables); //open
+	sl_elem_ptr tmp_ptr = tables->act;
+	sl_set_next_act(tables);
 
 	/* new line required */
 	act=getNextToken();
@@ -672,6 +699,8 @@ bool fun2(lex_unit_t * act){
 	act=getActiveToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"}"))return false; 
+
+	tmp_ptr->accessible = false; //lock
 
 	// check NEW_LINE
 	act=getNextToken();
@@ -741,6 +770,8 @@ int Check_syntax(token_list * t_list, sym_list * id_tables, sym_tab * function_t
 		return 99;
 	}
 
+	tables = id_tables; // set the global 
+	sl_set_act_first(tables);
 	fun_table = function_table; // set the global 
 	Active_token = t_list;
 
