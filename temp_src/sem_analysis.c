@@ -3,9 +3,10 @@
 enum lex_units id_type_search(sym_list * list_of_tables,lex_unit_t * name){
 
 	ht_item *act=sl_search(list_of_tables,name);
-	
+
 	if(act==NULL || act->id==NULL || !act->id->accesible){ // item is not defined or accesible 
-		return STR_ERR; 
+		return STR_ERR;
+
 	}
 	else{
 		return act->id->type; //return correct type
@@ -159,6 +160,26 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 
 		}
 
+		if(op(rh_node->right->data->data) && rh_node->left->data->unit_type==IDENTIFICATOR){ //left side ID right side OP
+			
+
+			enum lex_units r_n = tree_check(rh_node->right,list_of_tables);
+			enum lex_units l_n = id_type_search(list_of_tables,rh_node->left->data);
+
+			if(r_n!=l_n){
+		    	
+		    	if(!is_err(r_n) && !is_err(l_n))
+		    		return ERROR;
+		    	else if(is_err(r_n))
+		    		return r_n;
+		    	else
+		    		return l_n;
+		    }
+
+			 return r_n;
+
+		}
+
 		if(data_type(rh_node->right->data->unit_type) && op(rh_node->left->data->data)){
 
 			enum lex_units r_n = rh_node->right->data->unit_type;
@@ -179,25 +200,6 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 			
 		}
 
-		if(op(rh_node->right->data->data) && rh_node->left->data->unit_type==IDENTIFICATOR){ //left side ID right side OP
-			
-
-			enum lex_units r_n = tree_check(rh_node->right,list_of_tables);
-			enum lex_units l_n = id_type_search(list_of_tables,rh_node->left->data);
-
-			if(r_n!=l_n){
-		    	
-		    	if(!is_err(r_n) && !is_err(l_n))
-		    		return ERROR;
-		    	else if(is_err(r_n))
-		    		return r_n;
-		    	else
-		    		return l_n;
-		    }
-
-			 return r_n;
-
-		}
 
 		if(op(rh_node->right->data->data) && data_type(rh_node->left->data->unit_type)){
 
@@ -246,6 +248,46 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 			/* err data type compatibility */
 			return ERROR;
 		}
+
+		if(data_type(rh_node->left->data->unit_type) && rh_node->right->data->unit_type==IDENTIFICATOR){ //both sides ID
+			
+			enum lex_units r_n = id_type_search(list_of_tables,rh_node->right->data);
+			enum lex_units l_n = rh_node->left->data->unit_type;
+
+			if(r_n!=l_n){
+		    	
+		    	if(!is_err(r_n) && !is_err(l_n))
+		    		return ERROR;
+		    	else if(is_err(r_n))
+		    		return r_n;
+		    	else
+		    		return l_n;
+		    }
+
+			 return r_n;
+		}
+
+		if(rh_node->left->data->unit_type==IDENTIFICATOR && data_type(rh_node->right->data->unit_type)){ //both sides ID
+			
+			enum lex_units r_n = rh_node->right->data->unit_type;
+			enum lex_units l_n = id_type_search(list_of_tables,rh_node->left->data);
+
+			if(r_n!=l_n){
+		    	
+		    	if(!is_err(r_n) && !is_err(l_n))
+		    		return ERROR;
+		    	else if(is_err(r_n))
+		    		return r_n;
+		    	else
+		    		return l_n;
+		    }
+
+			 return r_n;
+		}
+
+
+
+
 	}
 
 	if(rh_node->right==NULL && rh_node->left!=NULL){
@@ -282,17 +324,27 @@ unsigned assignment_exp(d_node * node,sym_list * list_of_tables){
 
 	if(node->left==NULL)return SYSTEM_ERROR;
 
+
 	unsigned err; /* semantic err to be returned */
 	enum lex_units right_sd; /* data type of tree check */
+	if(!strcmp(node->data->data,":=")){
 
-	if(!strcmp(node->data->data,":=") && !strcmp(node->left->data->data,"_"))
-		return OTHER_SEMANTIC;
+		if(!strcmp(node->left->data->data,"_"))
+			return OTHER_SEMANTIC;
 
+		ht_item *act=sl_search(list_of_tables,node->left->data);
+		if(act==NULL || act->id==NULL)return SYSTEM_ERROR;
+
+		act->id->accesible=true;
+	}
+
+	 
 
 	for(d_node * tmp=node->left;tmp!=NULL;tmp=next_left(tmp)){ //pushing left side of tree	
-
-			if(!relational_op(tmp->right->data->data)) // can not be relational operator
+			
+			if(relational_op(tmp->right->data->data)) // can not be relational operator
 					return COMPATIBLE_ERR;
+
 		
 			right_sd=tree_check(tmp->right,list_of_tables); // chceck derivation tree 
 
@@ -456,15 +508,13 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 	if((!strcmp(node->data->data,"=") || !strcmp(node->data->data,":="))&& node->right==NULL)
 		return assignment_exp(node,list_of_tables);
 
-	if((!strcmp(node->data->data,"=") || !strcmp(node->data->data,":=")) && node->right!=NULL)
+	else if(!strcmp(node->data->data,"=")  && node->right!=NULL)
 		return assignment_func(node,main,list_of_tables);
 
-	if(!strcmp(node->data->data,"if"))
+	else if(!strcmp(node->data->data,"if"))
 		return if_case(node,list_of_tables);
 
-
-
-	if(!strcmp(node->data->data,"return"))
+	else if(!strcmp(node->data->data,"return"))
 		return return_case(node,main,list_of_tables,func_name);
 
 		

@@ -578,13 +578,14 @@ bool id_choose(lex_unit_t* act) {
 	if (!strcmp(act->data, ":=")) {//:=
 		operator->data = act;
 		bool decide = id_choose29(getNextToken(), operator);
+		operator->left->right = operator->right;
+		operator->right=NULL;
 		print_tree3(operator);
 		if (decide == true) {
-			/*unsigned err = Sem_analysis(operator, fun_table, tables, func_name); ///////////////////////// := tree
+			unsigned err = Sem_analysis(operator, fun_table, tables, func_name); ///////////////////////// := tree
 			if (err != SEM_PASSED) {
 				set_return_code(err);
-				printf("error\n");
-			}*/
+			}
 
 			// send to generate code
 		}
@@ -633,10 +634,10 @@ bool id_choose30(lex_unit_t* act, d_node * assignment) {
 	if (act == NULL)return false;
 	if (!exp_fun(act, assignment))return false; 
 	print_tree3(assignment);
-	/*unsigned err = Sem_analysis(assignment, fun_table, tables, func_name); //////////////////////////////////////// = tree
+	unsigned err = Sem_analysis(assignment, fun_table, tables, func_name); //////////////////////////////////////// = tree
 	if (err != 0) {
 		set_return_code(err);
-	}*/
+	}
 	// send to generate code
 	delete_tree(assignment);
 
