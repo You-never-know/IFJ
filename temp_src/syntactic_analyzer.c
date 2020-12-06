@@ -438,7 +438,7 @@ bool body26(lex_unit_t* act) {
 	sl_elem_ptr tmp_ptr2 = tables->act;
 	sl_set_next_act(tables);
 
-	d_node * for_tree = d_node_create(NULL, for_tmp, DOLLAR);
+	d_node * for_tree = d_node_create(NULL, for_tmp, E);
 	d_node * body1 = d_node_create(NULL, NULL, DOLLAR);
 	d_node_insert_left(for_tree, body1);
 	//<definition>
@@ -713,7 +713,7 @@ bool definition(lex_unit_t* act, d_node * root) {
 	//eps
 	if (!strcmp(act->data, ";"))return true;
 	d_node * equal = d_node_create(NULL, NULL, E);
-	d_node_insert_left(root, equal);
+	d_node_insert_right(root, equal);
 
 	//ID
 	if (act->unit_type != IDENTIFICATOR)return false;
@@ -814,11 +814,6 @@ bool exp_list(lex_unit_t* act, d_node * id) {
 
 	//eps
 	if (!strcmp(act->data, "\n") || (!strcmp(act->data, "{"))) {
-		if (id != NULL) {
-			if (id->type == DOLLAR) {
-				delete_tree(id);
-			}
-		}
 		return true;
 	}
 
@@ -832,7 +827,7 @@ bool exp_list(lex_unit_t* act, d_node * id) {
 	if (!expression(act, id))return false;
 	act = getActiveToken(); 
 
-	if (id->type == DOLLAR) {
+	if (id->type == DOLLAR && !(!strcmp(act->data, "\n") || (!strcmp(act->data, "{")))) {
 		d_node * body_k = d_node_create(NULL, NULL, DOLLAR);
 		d_node_insert_left(id, body_k);
 	}
@@ -852,8 +847,8 @@ bool exp_list_start(lex_unit_t* act, d_node * body) {
 
 		//<expression>
 		if (!expression(act, body))return false;
-	
-		if (body == DOLLAR) {
+		
+		if (body->type == DOLLAR) {
 			d_node * body2 = d_node_create(NULL, NULL, DOLLAR);
 			d_node_insert_left(body, body2);
 			body = body2;
