@@ -438,7 +438,7 @@ bool body26(lex_unit_t* act) {
 	sl_elem_ptr tmp_ptr2 = tables->act;
 	sl_set_next_act(tables);
 
-	d_node * for_tree = d_node_create(NULL, for_tmp, DOLLAR);
+	d_node * for_tree = d_node_create(NULL, for_tmp, E);
 	d_node * body1 = d_node_create(NULL, NULL, DOLLAR);
 	d_node_insert_left(for_tree, body1);
 	//<definition>
@@ -712,7 +712,7 @@ bool definition(lex_unit_t* act, d_node * root) {
 	//eps
 	if (!strcmp(act->data, ";"))return true;
 	d_node * equal = d_node_create(NULL, NULL, E);
-	d_node_insert_left(root, equal);
+	d_node_insert_right(root, equal);
 
 	//ID
 	if (act->unit_type != IDENTIFICATOR)return false;
