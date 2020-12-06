@@ -29,7 +29,6 @@ int main() {
 	FILE * f = stdin;
 	sym_tab * function_table = NULL;
 	token_list * file_tokens = Loading_lex_units(f);
-	
 	sym_list *file_tables = create_tables(file_tokens, &return_value, &function_table);
 	printf("Return value of the create_tables: %d\n", return_value);
 

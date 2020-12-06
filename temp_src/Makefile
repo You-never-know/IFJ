@@ -13,7 +13,7 @@ COMPILATOR = gcc $(CFLAGS) -o $@
 
 all:  test_table prec_test translate #lex_test
 
-translate: translate.o lexical_analyzer.o structs.o symtable.o prec_parser.o d_tree.o sym_list.o lex_list.o prec_table.o create_tables.o syntactic_analyzer.o
+translate: translate.o lexical_analyzer.o structs.o symtable.o prec_parser.o d_tree.o sym_list.o lex_list.o prec_table.o create_tables.o syntactic_analyzer.o sem_analysis.o
 	$(COMPILATOR) $^
 
 translate.o: translate.c create_tables.h prec_parser.h d_tree.h structs.h symtable.h
@@ -65,6 +65,9 @@ create_tables.o: create_tables.c create_tables.h
 	$(COMPILATOR) -c $<
 
 syntactic_analyzer.o: syntactic_analyzer.c syntactic_analyzer.h
+	$(COMPILATOR) -c $<
+
+sem_analysis.o: sem_analysis.c sem_analysis.h
 	$(COMPILATOR) -c $<
 
 clean_go:
