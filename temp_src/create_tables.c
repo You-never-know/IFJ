@@ -32,6 +32,295 @@ void clean_after() {
 	exit(99);
 }
 
+// add implicit functions to the function table
+token_list * implicit_functions(sym_tab * function_table) {
+
+	token_list * first = NULL;
+	token_list *act = malloc(sizeof(token_list));
+	first = act;
+	char * f = malloc(7);
+	strcpy(f, "inputs");
+	lex_unit_t * tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 6;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	ht_item * item = add_item(function_table, act->unit, true);
+	Ret * r = malloc_ret_val(item);
+	add_ret_type(r, STRING);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+
+	//////////////////////////////////////////////////////////////////
+
+	f = malloc(7);
+	strcpy(f, "inputi");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 6;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	item = add_item(function_table, act->unit, true);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+
+	//////////////////////////////////////////////////////////////////
+	
+	f = malloc(7);
+	strcpy(f, "inputf");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 6;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	item = add_item(function_table, act->unit, true);
+	r = malloc_ret_val(item);
+	add_ret_type(r, DECIMAL);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+
+	/////////////////////////////////////////////////////////////////////
+
+	f = malloc(6);
+	strcpy(f, "print");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 5;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	item = add_item(function_table, act->unit, true);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+
+	/////////////////////////////////////////////////////////////////////
+
+	f = malloc(10);
+	strcpy(f, "int2float");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 9;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	item = add_item(function_table, act->unit, true);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+	Par * p = malloc_param(item);
+	f = malloc(2);
+	strcpy(f, "i");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 2;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+	add_param_name(p, act->unit);
+	add_param_type(p, INTEGER);
+	r = malloc_ret_val(item);
+	add_ret_type(r, DECIMAL);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+
+	///////////////////////////////////////////////////////////////////////
+
+	f = malloc(10);
+	strcpy(f, "float2int");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 9;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	item = add_item(function_table, act->unit, true);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+	p = malloc_param(item);
+	f = malloc(2);
+	strcpy(f, "f");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 2;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+	add_param_name(p, act->unit);
+	add_param_type(p, DECIMAL);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+
+	///////////////////////////////////////////////////////////////////////
+
+	f = malloc(4);
+	strcpy(f, "len");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 3;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	item = add_item(function_table, act->unit, true);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+	p = malloc_param(item);
+	f = malloc(2);
+	strcpy(f, "s");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 2;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+	add_param_name(p, act->unit);
+	add_param_type(p, STRING);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+
+	///////////////////////////////////////////////////////////////////////
+
+	f = malloc(7);
+	strcpy(f, "substr");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 6;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	item = add_item(function_table, act->unit, true);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+	p = malloc_param(item);
+	f = malloc(2);
+	strcpy(f, "s");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 2;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+	add_param_name(p, act->unit);
+	add_param_type(p, STRING);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+	p = malloc_param(item);
+	f = malloc(2);
+	strcpy(f, "i");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 2;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+	add_param_name(p, act->unit);
+	add_param_type(p, INTEGER);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+	p = malloc_param(item);
+	f = malloc(2);
+	strcpy(f, "n");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 2;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+	add_param_name(p, act->unit);
+	add_param_type(p, INTEGER);
+	r = malloc_ret_val(item);
+	add_ret_type(r, STRING);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+
+	///////////////////////////////////////////////////////////////////////
+
+	f = malloc(4);
+	strcpy(f, "ord");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 3;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	item = add_item(function_table, act->unit, true);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+	p = malloc_param(item);
+	f = malloc(2);
+	strcpy(f, "s");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 2;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+	add_param_name(p, act->unit);
+	add_param_type(p, STRING);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+	p = malloc_param(item);
+	f = malloc(2);
+	strcpy(f, "i");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 2;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+	add_param_name(p, act->unit);
+	add_param_type(p, INTEGER);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+
+	///////////////////////////////////////////////////////////////////////
+
+	f = malloc(4);
+	strcpy(f, "chr");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 3;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+
+	item = add_item(function_table, act->unit, true);
+	act->next = malloc(sizeof(token_list));
+	act = act->next;
+	p = malloc_param(item);
+	f = malloc(2);
+	strcpy(f, "i");
+	tf = LexUnitCreate();
+	tf->data = f;
+	tf->data_size = 2;
+	tf->unit_type = IDENTIFICATOR;
+	act->unit = tf;
+	add_param_name(p, act->unit);
+	add_param_type(p, INTEGER);
+	r = malloc_ret_val(item);
+	add_ret_type(r, STRING);
+	r = malloc_ret_val(item);
+	add_ret_type(r, INTEGER);
+	
+	return first;
+}
+/*
+Par* malloc_param(ht_item *item); // allocates and inicializes parameter
+bool add_param_name(Par* par, struct lex_unit *lex); // add data to the parameter
+bool add_param_type(Par* par, int type); // add type to the parameter
+Ret* malloc_ret_val(ht_item *item); // allocates and inicializes parameter
+bool add_ret_type(Ret* ret, int type); // add data to the parameter
+*/
 
 // copy one item from one table to the another
 void copy_function_to_table (ht_item * copy, sym_tab *  to) {
@@ -79,10 +368,10 @@ void set_error(int ERR_CODE, int *ret) {
  *  return sym_list or NULL if some error occured in function (malloc failed / bad parameters ...)
  *  if error happend function returns NULL and in ret the return code, function_table as NULL as well
  */ 
-sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_table) {
+sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_table, token_list ** to_be_cleaned) {
 
 	// check parameter
-	if (start == NULL || ret == NULL || function_table == NULL) {
+	if (start == NULL || ret == NULL || function_table == NULL || to_be_cleaned == NULL) {
 		return NULL;
 	}
 
@@ -92,6 +381,8 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 			return NULL;
 		}
 	}
+
+	*to_be_cleaned = implicit_functions(*function_table);
 
 	token_list * token_src = start;
 

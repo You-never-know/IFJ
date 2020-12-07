@@ -29,11 +29,13 @@ int main() {
 	FILE * f = stdin;
 	sym_tab * function_table = NULL;
 	token_list * file_tokens = Loading_lex_units(f);
-	sym_list *file_tables = create_tables(file_tokens, &return_value, &function_table);
+	token_list * implicit_functions = NULL;
+	sym_list *file_tables = create_tables(file_tokens, &return_value, &function_table, &implicit_functions);
 	printf("Return value of the create_tables: %d\n", return_value);
 
 	if (return_value != 0) {
 		clean_token_list(file_tokens);
+		clean_token_list(implicit_functions);
 		return return_value;
 	}
 
@@ -49,6 +51,7 @@ int main() {
 		free_table(function_table);
 	}
 	clean_token_list(file_tokens);
+	clean_token_list(implicit_functions);
 
 	return return_value;
 	
