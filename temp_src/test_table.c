@@ -70,9 +70,9 @@ int main(int argc, char* argv[]) {
 		int ret = 0;
 
 		token_list * file_tokens = Loading_lex_units(file);
-
-		sym_tab* function_table = NULL;
-		sym_list* sl = create_tables(file_tokens, &ret, &function_table);
+		token_list* ird = NULL;
+ 		sym_tab* function_table = NULL;
+		sym_list* sl = create_tables(file_tokens, &ret, &function_table, &ird);
 		printf("-----------------------------------------------\n");
 		printf("RET INT %d /n", ret);
 		printf("FUNCTION_TABlE PRINT\n");
@@ -100,6 +100,13 @@ int main(int argc, char* argv[]) {
 		printf("-----------------------------------------------\n");
 
 		for (token_list * tmp = file_tokens; tmp != NULL; ) {
+			token_list * to_be_deleted = tmp;
+			tmp = tmp->next;
+			LexUnitDelete(to_be_deleted->unit);
+			free(to_be_deleted);
+		}
+
+		for (token_list * tmp = ird; tmp != NULL; ) {
 			token_list * to_be_deleted = tmp;
 			tmp = tmp->next;
 			LexUnitDelete(to_be_deleted->unit);

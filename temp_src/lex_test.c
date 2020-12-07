@@ -13,12 +13,6 @@
 #include <ctype.h>
 #include <unistd.h>
 
-typedef struct lex_u_list //linked list for test 
-{
-	lex_unit_t * unit;
-	struct lex_u_list *next;
-}lex_list;
-
 unsigned WORD_COUNT=0;
 
 void Error(const char *msg){
@@ -135,10 +129,10 @@ void Lex_count(FILE* go_file){
 }
 
 
-void Prints_lex(lex_list* First,int number_of_units){//-1 ignores assert 
+void Prints_lex(lex_list_t* First,int number_of_units){//-1 ignores assert 
 	int counter=0;
 	if(First == NULL){if(number_of_units!=-1)assert(counter==number_of_units);return;}
-	lex_list* tmp = First;
+	lex_list_t* tmp = First;
 	fprintf(stdout,"~~~~~~~~\n");
 	fprintf(stdout,"Lexemes:\n");
 	fprintf(stdout,"-+-------------------\n");
@@ -206,17 +200,17 @@ FILE* Creating_file(bool wanna_count,bool open_only,const char *filename,const c
 	return go_file;
 }
 
-lex_list* Loading_lex_units(FILE * go_file){
+lex_list_t* Loading_lex_units(FILE * go_file){
 	if(go_file==NULL)Error("file gone wild");
-	lex_list *act = malloc(sizeof(lex_list));
+	lex_list_t *act = malloc(sizeof(lex_list_t));
 	if(act==NULL)Error("list gone wild");
 	act->unit = malloc(sizeof(lex_unit_t));
 	if(act->unit==NULL)Error("Lexical unit allocation failed");
 	LexUnitCtor(act->unit);
-	lex_list *first=act; // first ptr of lex_units
-	lex_list * last_act = NULL;
+	lex_list_t *first=act; // first ptr of lex_units
+	lex_list_t * last_act = NULL;
 	while(Analyze(go_file, act->unit) != NULL){ // loading units
-		act->next = malloc(sizeof(lex_list));
+		act->next = malloc(sizeof(lex_list_t));
 		if(act->next == NULL) Error("list gone wild");
 		act->next->unit =malloc(sizeof(lex_unit_t));
 		if(act->next->unit == NULL) Error("Lexical unit allocation failed");
@@ -233,13 +227,13 @@ lex_list* Loading_lex_units(FILE * go_file){
 	return first;
 }
 
-void Free_Lex_Units(lex_list* first){
+void Free_Lex_Units(lex_list_t* first){
 	/// Check function argument
 	if(first == NULL) return;
 
 	/// Loop through & free each unit in 'lex_unit_t' linked list
-	lex_list* tmp;
-	lex_list* tmp_next;
+	lex_list_t* tmp;
+	lex_list_t* tmp_next;
 	for(tmp = first; tmp != NULL; tmp = tmp_next){
 		tmp_next = tmp->next;
 		LexUnitDelete(tmp->unit);
@@ -256,7 +250,7 @@ int main()
 
 	fprintf(stdout,"\n======TEST01_ID======\n");
 	FILE * go_file=Creating_file(1,0,"test01.go","casa casca + 44 8454343 ***a=4*2 ");
-	lex_list* lex_first=Loading_lex_units(go_file);
+	lex_list_t* lex_first=Loading_lex_units(go_file);
 	Prints_lex(lex_first,WORD_COUNT);
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
@@ -466,6 +460,7 @@ int main()
 	Free_Lex_Units(lex_first);
 	fclose(go_file);
 
+	printf("%ld\n",sizeof(lex_unit_t));
 
 
 
