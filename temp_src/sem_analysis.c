@@ -28,6 +28,23 @@ Func * func_search(sym_tab * main,lex_unit_t *name){
 
 }
 
+bool main_fun(sym_tab * main){
+
+	lex_unit_t main_func;
+	main_func.unit_type = IDENTIFICATOR;
+	main_func.data = "main";
+	main_func.data_size = 4;
+	main_func.table = NULL;
+
+	if(find_item(main,&main_func)==NULL)
+		return false;
+	else
+		return true;
+
+
+	
+}
+
 
 bool op(void* data){
 
