@@ -107,6 +107,7 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 		
 		if(rh_node->data->unit_type==IDENTIFICATOR)
 			return id_type_search(list_of_tables,rh_node->data);
+
 		
 		if(data_type(rh_node->data->unit_type))
 			return rh_node->data->unit_type;
@@ -286,8 +287,6 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 		}
 
 
-
-
 	}
 
 	if(rh_node->right==NULL && rh_node->left!=NULL){
@@ -350,13 +349,18 @@ unsigned assignment_exp(d_node * node,sym_list * list_of_tables){
 
 			err=err_sieve(right_sd); /* possible err */
 
+			if(err==COMPATIBLE_ERR && !strcmp(node->data->data,":="))
+				err=NEW_VAR;
+
 			if(err!=SEM_PASSED)
 				return err;
+
 
 			if(id_type_search(list_of_tables,tmp->data)!=right_sd) 
 					return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
 								COMPATIBLE_ERR
 								: err_sieve(id_type_search(list_of_tables,tmp->data));
+
 			
 	}
 
@@ -366,25 +370,25 @@ unsigned assignment_exp(d_node * node,sym_list * list_of_tables){
 
 unsigned assignment_func(d_node * node,sym_tab * main,sym_list * list_of_tables){
 
-	if(node->left==NULL)return SYSTEM_ERROR;
-
 	/* special case */
+
 
 	if(!strcmp(node->data->data,":=") && !strcmp(node->left->data->data,"_")){
 		return OTHER_SEMANTIC;
 	}
 
+
 		Func * act = func_search(main,node->right->data);
 
 		Ret * return_vals = act->return_val;
 
-
 		if(return_vals==NULL)
-			return RETURN_ERR;
+			return RETURN_ERR; 
 
-					/*return checks*/
+
+						/*return checks*/
 	for(d_node * tmp=node->left;tmp!=NULL && return_vals!=NULL;tmp=next_left(tmp)){ //pushing left side of tree	
-				
+			
 
 				if((enum lex_units)return_vals->type!=id_type_search(list_of_tables,tmp->data))
 							return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
@@ -405,13 +409,9 @@ unsigned assignment_func(d_node * node,sym_tab * main,sym_list * list_of_tables)
 
 	Par * params = act->parameters;
 
-	if(params == NULL && node->right->left != NULL)
-		return PARAM_ERR;
-
-	if(params != NULL && node->right->left == NULL)
-		return PARAM_ERR;
 
 	for(d_node * tmp = node->right->left; tmp!=NULL && params!=NULL;tmp=next_left(tmp)){
+
 
 			if(data_type(tmp->data->unit_type)){
 				if((enum lex_units)params->type!=(enum lex_units)tmp->data->unit_type)
@@ -425,7 +425,14 @@ unsigned assignment_func(d_node * node,sym_tab * main,sym_list * list_of_tables)
 			}
 			else
 				return SYSTEM_ERROR;
+	
+			if(params->next == NULL && tmp->left != NULL)
+					return PARAM_ERR;
 
+			if(params->next != NULL && tmp->left == NULL)
+					return PARAM_ERR;
+
+			params=params->next;
 
 	}
 
@@ -478,22 +485,70 @@ unsigned return_case(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_
 
 			err=err_sieve(right_sd); /* possible err */
 
+
+
 			if(err!=SEM_PASSED)
 				return err;
 
 			if((enum lex_units)return_types->type!=right_sd)
-					return err;
+						return(err_sieve(right_sd)==SEM_PASSED)? 
+							COMPATIBLE_ERR
+							: err_sieve(right_sd);
+				
 
 			if(tmp->left==NULL && return_types->next!=NULL) /* both have to end with NULL */
 				return RETURN_ERR;
 			if(tmp->left!=NULL && return_types->next==NULL)
 				return RETURN_ERR;
 
+		
 			return_types=return_types->next;
 
 		}
 
 		return SEM_PASSED;
+
+}
+
+unsigned func_no_return(d_node * node,sym_tab * main,sym_list * list_of_tables){
+
+
+	Func * act = func_search(main,node->data);
+		
+	Par * params = act->parameters;
+
+
+	for(d_node * tmp = node->left; tmp!=NULL && params!=NULL;tmp=next_left(tmp)){
+
+
+			if(data_type(tmp->data->unit_type)){
+				if((enum lex_units)params->type!=(enum lex_units)tmp->data->unit_type)
+					return PARAM_ERR;
+			}
+			else if(tmp->data->unit_type==IDENTIFICATOR){
+				if((enum lex_units)params->type!=id_type_search(list_of_tables,tmp->data))
+					return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
+							COMPATIBLE_ERR
+							: err_sieve(id_type_search(list_of_tables,tmp->data));
+			}
+			else
+				return SYSTEM_ERROR;
+
+			if(params->next == NULL && tmp->left != NULL){
+				return PARAM_ERR;
+			}
+
+			if(params->next!= NULL && tmp->left == NULL){
+				return PARAM_ERR;
+			}
+
+			params=params->next;
+
+
+	}
+
+ 	 return SEM_PASSED;
+
 
 }
 
@@ -516,6 +571,8 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 
 	else if(!strcmp(node->data->data,"return"))
 		return return_case(node,main,list_of_tables,func_name);
+	else
+		return func_no_return(node,main,list_of_tables);
 
 		
   	return SYSTEM_ERROR; 

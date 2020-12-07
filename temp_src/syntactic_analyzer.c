@@ -333,10 +333,10 @@ bool body23(lex_unit_t* act) {
 		return false;
 	}
 	print_tree3(return_tree);
-	/*unsigned err = Sem_analysis(return_tree, fun_table, tables, func_name);  /////////////////////////// RETURN TREE
+	unsigned err = Sem_analysis(return_tree, fun_table, tables, func_name);  /////////////////////////// RETURN TREE
 	if (err != 0) {
 		set_return_code(err);
-	}*/
+	}                            
 	delete_tree(return_tree);
 
 	//NEW_LINE
@@ -589,6 +589,7 @@ bool id_choose(lex_unit_t* act) {
 
 			// send to generate code
 		}
+
 		delete_tree(operator);
 
 		return decide;
@@ -655,10 +656,11 @@ bool id_choose31(lex_unit_t* act) {
 	root = d_node_create(NULL, NULL, F);
 
 	bool result = Parse_expresion(act, root, &Active_token, fun_table);
-	/*unsigned err = Sem_analysis(root->right, fun_table, tables, func_name); //////////////////////////////////////// Function alone 
+	print_tree3(root->right);
+	unsigned err = Sem_analysis(root->right, fun_table, tables, func_name); //////////////////////////////////////// Function alone 
 	if (err != 0) {
 		set_return_code(err);
-	}*/
+	}
 	// send to generate code
 	delete_tree(root);
 
@@ -848,7 +850,12 @@ bool exp_list_start(lex_unit_t* act, d_node * body) {
 		//<expression>
 		if (!expression(act, body))return false;
 		
-		if (body->type == DOLLAR) {
+		act=getActiveToken();
+
+		if (!strcmp(act->data, "\n"))return true;
+
+
+		if (body->type == DOLLAR){
 			d_node * body2 = d_node_create(NULL, NULL, DOLLAR);
 			d_node_insert_left(body, body2);
 			body = body2;
