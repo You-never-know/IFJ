@@ -10,6 +10,7 @@ func factorial(n int) (int) {
     tmp = factorial(dec_n)
     return n * tmp
   }
+
 }
 
 func main() {
@@ -28,4 +29,5 @@ func main() {
   } else {
     print("Chyba pri nacitani celeho cisla!\n")	
   }
+  
 }

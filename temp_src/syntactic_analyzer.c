@@ -177,6 +177,11 @@ bool par_list(lex_unit_t * act){
 	if(act==NULL)return false;
 	if(act->unit_type!=IDENTIFICATOR)return false;
 
+	ht_item *act_it=sl_search(tables,act);
+
+	if(act_it!=NULL && act_it->id!=NULL)
+		act_it->id->accesible=true;
+
 	if(!type(getNextToken()))return false;
 
 	return par_list(getNextToken());
@@ -195,6 +200,12 @@ bool par_list_start(lex_unit_t * act){
 	/* id */
 
 	if(act->unit_type!=IDENTIFICATOR)return false;
+
+	ht_item *act_it=sl_search(tables,act);
+
+	if(act_it!=NULL && act_it->id!=NULL)
+		act_it->id->accesible=true;
+
 
 	if(!type(getNextToken()))return false;
 
@@ -890,6 +901,10 @@ bool fun2(lex_unit_t * act){
 	if(act->unit_type!=IDENTIFICATOR)return false;
 	func_name = act;
 
+	sl_set_act_accessible(tables); //open
+	sl_elem_ptr tmp_ptr = tables->act;
+	sl_set_next_act(tables);
+
 	if(!params(getNextToken()))return false;
 
 	if(!ret_vals(getNextToken()))return false;
@@ -899,9 +914,7 @@ bool fun2(lex_unit_t * act){
 	act=getActiveToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"{"))return false;
-	sl_set_act_accessible(tables); //open
-	sl_elem_ptr tmp_ptr = tables->act;
-	sl_set_next_act(tables);
+	
 
 	/* new line required */
 	act=getNextToken();

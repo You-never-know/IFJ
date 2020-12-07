@@ -388,8 +388,10 @@ unsigned assignment_func(d_node * node,sym_tab * main,sym_list * list_of_tables)
 
 						/*return checks*/
 	for(d_node * tmp=node->left;tmp!=NULL && return_vals!=NULL;tmp=next_left(tmp)){ //pushing left side of tree	
-			
+					
+				
 
+				if(strcmp(tmp->data->data,"_"))
 				if((enum lex_units)return_vals->type!=id_type_search(list_of_tables,tmp->data))
 							return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
 									COMPATIBLE_ERR
@@ -400,6 +402,7 @@ unsigned assignment_func(d_node * node,sym_tab * main,sym_list * list_of_tables)
 
 				if(tmp->left!=NULL && strcmp(tmp->left->data->data,"_") && return_vals->next==NULL)
 								return RETURN_ERR;
+				
 
 				return_vals = return_vals->next;
 				
@@ -409,9 +412,15 @@ unsigned assignment_func(d_node * node,sym_tab * main,sym_list * list_of_tables)
 
 	Par * params = act->parameters;
 
+		if(params == NULL && node->right->left != NULL){
+				return PARAM_ERR;
+		}
+
+		if(params != NULL && node->right->left == NULL){
+				return PARAM_ERR;
+		}
 
 	for(d_node * tmp = node->right->left; tmp!=NULL && params!=NULL;tmp=next_left(tmp)){
-
 
 			if(data_type(tmp->data->unit_type)){
 				if((enum lex_units)params->type!=(enum lex_units)tmp->data->unit_type)
@@ -517,9 +526,17 @@ unsigned func_no_return(d_node * node,sym_tab * main,sym_list * list_of_tables){
 		
 	Par * params = act->parameters;
 
+	if(params == NULL && node->left != NULL){
+				return PARAM_ERR;
+	}
+
+	if(params == NULL && node->left == NULL){
+				return PARAM_ERR;
+	}
+
+
 
 	for(d_node * tmp = node->left; tmp!=NULL && params!=NULL;tmp=next_left(tmp)){
-
 
 			if(data_type(tmp->data->unit_type)){
 				if((enum lex_units)params->type!=(enum lex_units)tmp->data->unit_type)
@@ -571,6 +588,8 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 
 	else if(!strcmp(node->data->data,"return"))
 		return return_case(node,main,list_of_tables,func_name);
+	else if(!strcmp(node->data->data,"print"))
+		return SEM_PASSED;
 	else
 		return func_no_return(node,main,list_of_tables);
 
