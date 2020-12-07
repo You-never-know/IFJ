@@ -51,8 +51,11 @@ void print_tree_in(d_node* root, char* suf, char direction)
 			if (root->data->unit_type == 4) {
 				printf("%s  +-[%d; type %d]\n", suf, *((int*)root->data->data), root->data->unit_type);
 			}
+			else if (root->data->unit_type == 5) {
+				printf("%s  +-[%f; type %d]\n", suf, *((double*)root->data->data), root->data->unit_type);
+			}
 			else {
-				printf("%s  +-[%s; type %d]\n", suf, (char*)root->data->data, root->data->unit_type);
+				printf("%s  +-[%s ; type %d]\n", suf, (char*)root->data->data, root->data->unit_type);
 			}
 
 		}
@@ -512,7 +515,6 @@ bool body26(lex_unit_t* act) {
 	}
 print_tree3(for_tree);
 	// send to generate code            /////////// /////////////////////////// FOR TREE 
-	delete_tree(for_tree);
 
 	//{
 	act = getActiveToken();
@@ -528,19 +530,43 @@ print_tree3(for_tree);
 
 	//NEW_LINE
 	act = getNextToken();
-	if (act == NULL)return false;
-	if (strcmp(act->data, "\n"))return false;
+	if (act == NULL) {
+		delete_tree(for_tree);
+		return false;
+	}
+	if (strcmp(act->data, "\n")) {
+		delete_tree(for_tree);
+		return false;
+	}
 
 	//<body>
 	act = getNextToken();
-	if (act == NULL)return false;
-	if (!body(act))return false;
+	if (act == NULL) {
+		delete_tree(for_tree);
+		return false;
+	}
+	if (!body(act)) {
+		delete_tree(for_tree);
+		return false;
+	}
 
 	//}
 	act = getActiveToken();
-	if (act == NULL)return false;
-	if (strcmp(act->data, "}"))return false;
+	if (act == NULL) {
+		delete_tree(for_tree);
+		return false;
+	}
+	if (strcmp(act->data, "}")) {
+		delete_tree(for_tree);
+		return false;
+	}
 
+	d_node * closing_bracket = d_node_create(NULL, act, R_BRACKET);
+	print_tree3(closing_bracket);
+	// send to generate code
+
+	delete_tree(closing_bracket);
+	delete_tree(for_tree);
 	tmp_ptr->accessible = false; //lock
 	tmp_ptr2->accessible = false; //lock
 
@@ -730,6 +756,11 @@ bool definition(lex_unit_t* act, d_node * root) {
 
 	//ID
 	if (act->unit_type != IDENTIFICATOR)return false;
+	ht_item *act_it=sl_search(tables,act);
+
+	if(act_it!=NULL && act_it->id!=NULL)
+		act_it->id->accesible=true;
+	
 	d_node * id = d_node_create(NULL, act, I);
 	d_node_insert_left(equal, id);
 
