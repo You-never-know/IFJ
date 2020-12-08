@@ -671,7 +671,7 @@ bool id_choose31(lex_unit_t* act) {
 	if (err != 0) {
 		set_return_code(err);
 	}
-	//code_gen(root->right, stdout, tables);
+	code_gen(root->right, stdout, tables);
 	delete_tree(root);
 
 	return result;

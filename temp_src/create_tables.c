@@ -453,7 +453,6 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 			clean_table((*function_table));
 			free_table((*function_table));
 			*function_table = NULL;
-			free(par);
 			return NULL;
 		}
 
@@ -486,7 +485,6 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 							// create new table
 							sym_tab * new = htab_create(BIG_TABLE);
 							if (new == NULL) {
-								free(par);
 								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
@@ -620,7 +618,6 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 							} 
 							par = malloc_param(remember);
 							if (par == NULL) {
-								free(par);
 								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
@@ -628,7 +625,6 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 							}
 
 							if (add_param_name(par, lex) == false) {
-								free(par);	
 								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;

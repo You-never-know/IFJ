@@ -211,6 +211,8 @@ bool add_data(ht_item *item, int type) {
 	return false;
 }
 
+// change the accessibility in the current id
+// return true if it happend correctly, false if not
 bool add_access(ht_item * item,bool access){
 	
 	if(item==NULL){
