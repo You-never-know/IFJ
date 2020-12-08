@@ -448,8 +448,6 @@ unsigned assignment_func(d_node * node,sym_tab * main,sym_list * list_of_tables)
 
 	for(d_node * tmp = node->right->left; tmp!=NULL && params!=NULL;tmp=next_left(tmp)){
 
-
-
 			if(data_type(tmp->data->unit_type)){
 				if((enum lex_units)params->type!=(enum lex_units)tmp->data->unit_type)
 					return PARAM_ERR;
@@ -533,7 +531,7 @@ unsigned return_case(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_
 
 			if((enum lex_units)return_types->type!=right_sd)
 						return(err_sieve(right_sd)==SEM_PASSED)? 
-							COMPATIBLE_ERR
+							RETURN_ERR
 							: err_sieve(right_sd);
 				
 
