@@ -35,7 +35,7 @@ bool isLetter(char c){
 }
 
 bool isOperator(const char c){
-	const char operators[] = "+-*/%=&|^<>!~(){}[].,;:";
+	const char operators[] = "+-*/%=|^<>!~(){}[].,;:";
 	for(unsigned char i = 0; i < 23; i++){
 		if(c == operators[i]) return true;
 	}
@@ -46,7 +46,7 @@ bool isOperator(const char c){
  * Checks if given char is an operator that can be part of multi-char operator
  */
 bool isMultiOperator(const char c){
-	const char operators[] = "+-*%=&|^<>!:"; // '/' is missing intentionally
+	const char operators[] = "+-*%=|^<>!:"; // '/' is missing intentionally
 	for(unsigned char i = 0; i < 12; i++){
 		if(c == operators[i]) return true;
 	}
