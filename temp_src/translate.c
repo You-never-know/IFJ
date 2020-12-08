@@ -17,7 +17,7 @@ void clean_token_list(token_list * t_list) {
 	for (token_list * tmp = t_list; tmp != NULL;) {
 		token_list * to_be_deleted = tmp;
 		tmp = tmp->next;
-		LexUnitDelete(to_be_deleted->unit);
+		//LexUnitDelete(to_be_deleted->unit);
 		free(to_be_deleted);
 	}
 }
@@ -51,7 +51,7 @@ int main() {
 		free_table(function_table);
 	}
 	clean_token_list(file_tokens);
-	clean_token_list(implicit_functions);
+	//clean_token_list(implicit_functions);
 
 	return return_value;
 	
