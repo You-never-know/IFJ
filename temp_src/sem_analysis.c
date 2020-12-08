@@ -28,7 +28,7 @@ Func * func_search(sym_tab * main,lex_unit_t *name){
 
 }
 
-bool main_fun(sym_tab * main){
+unsigned main_fun(sym_tab * main){
 
 	lex_unit_t main_func;
 	main_func.unit_type = IDENTIFICATOR;
@@ -36,10 +36,18 @@ bool main_fun(sym_tab * main){
 	main_func.data_size = 4;
 	main_func.table = NULL;
 
-	if(find_item(main,&main_func)==NULL)
-		return false;
-	else
-		return true;
+	ht_item *act=find_item(main,&main_func);
+
+	if(act==NULL || act->func==NULL )
+		return OTHER_SEMANTIC;
+	else{
+		
+		if(act->func->parameters !=NULL ||
+		   act->func->return_val !=NULL )
+			return RETURN_ERR;
+
+		return SEM_PASSED;
+	}
 
 
 	

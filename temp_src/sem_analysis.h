@@ -21,4 +21,4 @@
 //---------------------------------------------------------------------------- prototypes
 unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_unit_t* func_name);
 bool return_not_found(lex_unit_t *name,sym_tab * main);
-bool main_fun(sym_tab * main);
+unsigned main_fun(sym_tab * main);
