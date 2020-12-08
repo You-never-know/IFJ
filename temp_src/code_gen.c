@@ -7,17 +7,15 @@
 **/
 
 
+#include <string.h>
+#include <stdio.h>
 #include "code_gen.h"
 #include "stack.h"
 #include "structs.h"
 #include "prec_table.h"
-#include <string.h>
 #include "symtable.h"
-#include <string.h>
-#include <stdio.h>
 
-/// REWORK float conversion
-/// REWORK CONCAT bitch
+/// REWORK figure out CONCAT instruction
 char in_function = 0; // Boolean substitute
 stack_t* label_stack = NULL;
 stack_t* var_stack = NULL; // For frame reference
@@ -29,9 +27,9 @@ void retval_move_reverse(d_node* root, FILE* file_descriptor){
 		return;
 	}
 	if(root->left != NULL) retval_move_reverse(root->left, file_descriptor);
-	char tmp_frame[3] = {0,0,0};
+	char tmp_frame[3] = "LF";
 	s_find(var_stack, tmp_frame, (char*)root->data->data);
-	fprintf(file_descriptor, "MOVE %s@%s TF@%%%d\n", tmp_frame, (char*)root->data->data, r_index++);
+	fprintf(file_descriptor, "MOVE %s@%s TF@%%retval%d\n", tmp_frame, (char*)root->data->data, r_index++);
 }
 
 void expr_unpack(d_node* root, FILE* file_descriptor){
@@ -167,7 +165,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 					else{
 						switch(tmp->data->unit_type){
 							case INTEGER:	fprintf(file_descriptor, "MOVE TF@%%%d int@%d\n", par_index, *(int*)tmp->data->data); break;
-							case DECIMAL:	fprintf(file_descriptor, "MOVE TF@%%%d float@%f\n", par_index, *(double*)tmp->data->data); break;
+							case DECIMAL:	fprintf(file_descriptor, "MOVE TF@%%%d float@%a\n", par_index, *(double*)tmp->data->data); break;
 							default:		fprintf(file_descriptor, "MOVE TF@%%%d %s@%s\n", par_index, tmp_frame, (char*)tmp->data->data); break;
 						}
 					}
@@ -175,13 +173,12 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 				}
 
 				/// "Call" the function
-				/// REWORK finish
-				if		(strcmp((char*)root->right->data->data, "inputs")) {}
-				else if	(strcmp((char*)root->right->data->data, "inputi")) {}
-				else if	(strcmp((char*)root->right->data->data, "inputf")) {}
+				if		(strcmp((char*)root->right->data->data, "inputs"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@retval0 string\nMOVE TF@retval1 int@1\n");
+				else if	(strcmp((char*)root->right->data->data, "inputi"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@retval0 int\nMOVE TF@retval1 int@1\n");
+				else if	(strcmp((char*)root->right->data->data, "inputf"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@retval0 float\nMOVE TF@retval1 int@1\n");
 				else if	(strcmp((char*)root->right->data->data, "int2float"))	fprintf(file_descriptor, "PUSHS TF@%%0\nINT2FLOATS\n");
 				else if	(strcmp((char*)root->right->data->data, "float2int"))	fprintf(file_descriptor, "PUSHS TF@%%0\nFLOAT2INTS\n");
-				else if	(strcmp((char*)root->right->data->data, "len"))			fprintf(file_descriptor, "DEFVAR TF%%tmp0\nSTRLEN TF%%tmp0 tf%%0\nPUSHS TF%%tmp0\n");
+				else if	(strcmp((char*)root->right->data->data, "len"))			fprintf(file_descriptor, "DEFVAR TF@%%retval0\nSTRLEN TF@%%retval0 TF@%%0\n");
 				else if	(strcmp((char*)root->right->data->data, "substr")) {}
 				else if	(strcmp((char*)root->right->data->data, "ord"))			fprintf(file_descriptor, "PUSHS TF@%%0\nPUSHS TF@%%1\nSTR2INTS\n");
 				else if	(strcmp((char*)root->right->data->data, "chr"))			fprintf(file_descriptor, "PUSHS TF@%%0\nINT2CHARS\n");
@@ -195,7 +192,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 
 
 				/// Get rid of temrporary variables
-				fprintf(file_descriptor, "POPFRAME\nPUSHFRAME\n");
+				fprintf(file_descriptor, "CREATEFRAME\n");
 			}
 		}
 	}
@@ -209,7 +206,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 						break;
 					}
 					case DECIMAL:{
-						fprintf(file_descriptor, "PUSHS float@%f\n", *((double*)root->right->data->data));
+						fprintf(file_descriptor, "PUSHS float@%a\n", *((double*)root->right->data->data));
 						break;
 					}
 					case IDENTIFICATOR:{
@@ -228,7 +225,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 						break;
 					}
 					case DECIMAL:{
-						fprintf(file_descriptor, "PUSHS float@%f\n", *((double*)root->left->data->data));
+						fprintf(file_descriptor, "PUSHS float@%a\n", *((double*)root->left->data->data));
 						break;
 					}
 					case IDENTIFICATOR:{
@@ -248,7 +245,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 					break;
 				}
 				case DECIMAL:{
-					fprintf(file_descriptor, "PUSHS float@%f\n", *(double*)root->data->data);
+					fprintf(file_descriptor, "PUSHS float@%a\n", *(double*)root->data->data);
 					break;
 				}
 				case STRING:{
@@ -353,8 +350,8 @@ void for_unpack(d_node* root, FILE* file_descriptor){
 
 	/// Set up resources
 	static int for_count = 0;
-	char tmp_frame[3] = "GF";
-	if(in_function) tmp_frame[0] = 'L';
+	//char tmp_frame[3] = "GF";
+	//if(in_function) tmp_frame[0] = 'L';
 
 	/// Write initialization
 	expr_unpack(root->left->right, file_descriptor);
@@ -387,16 +384,15 @@ void if_unpack(d_node* root, FILE* file_descriptor){
 	//char* tmp_lex_data = root->data->data;
 	size_t tmp_lex_size = root->data->data_size;
 
-	/// REWORK frames
 	/// "Define" 'cmp' variable
-	fprintf(file_descriptor, "DEFVAR TF@%%cmp%d\n", if_count);
+	fprintf(file_descriptor, "DEFVAR TF@%%if_cmp%d\n", if_count);
 
 	/// "Compute" condition
 	expr_unpack(root->right, file_descriptor);
-	fprintf(file_descriptor, "POPS TF@%%cmp%d\n", if_count);
+	fprintf(file_descriptor, "POPS TF@%%if_cmp%d\n", if_count);
 
 	/// Write conditional jump
-	fprintf(file_descriptor, "JUMPIFNEQ else_%d TF@%%cmp%d bool@true\n", if_count, if_count);
+	fprintf(file_descriptor, "JUMPIFNEQ else_%d TF@%%if_cmp%d bool@true\n", if_count, if_count);
 
 	/// Push labels onto stack
 	tmp_lex_size = sprintf(str, "if_%d_end", if_count);
@@ -454,11 +450,12 @@ void code_gen(d_node* root, FILE* file_descriptor){
 	/// Set up resources
 	static char code_beginning = 1; // boolean substitute
 
-	/// Write header for code
+	/// Write code header
+	/// REWORK dynamic exit code
 	if(code_beginning){
 		label_stack = stack_init();
 		var_stack = stack_init();
-		fprintf(file_descriptor, ".IFJcode20\nJUMP main\n\n");
+		fprintf(file_descriptor, ".IFJcode20\nJUMP main\nEXIT 0\n");
 		code_beginning = 0;
 	}
 
@@ -616,7 +613,7 @@ void code_gen(d_node* root, FILE* file_descriptor){
 				else{
 					switch(tmp->data->unit_type){
 						case INTEGER:	fprintf(file_descriptor, "MOVE TF@%%%d int@%d\n", par_index, *(int*)tmp->data->data); break;
-						case DECIMAL:	fprintf(file_descriptor, "MOVE TF@%%%d float@%f\n", par_index, *(double*)tmp->data->data); break;
+						case DECIMAL:	fprintf(file_descriptor, "MOVE TF@%%%d float@%a\n", par_index, *(double*)tmp->data->data); break;
 						default:		fprintf(file_descriptor, "MOVE TF@%%%d %s@%s\n", par_index, tmp_frame, (char*)tmp->data->data); break;
 					}
 				}
@@ -624,15 +621,14 @@ void code_gen(d_node* root, FILE* file_descriptor){
 			}
 
 			/// "Call" the function
-			/// REWORK finish
 			if		(strcmp((char*)root->right->data->data, "print")){
 				for(int i = 0; i < par_index; i++){
 					fprintf(file_descriptor, "WRITE TF@%%%d\n", i);
 				}
 			}
-			else if	(strcmp((char*)root->right->data->data, "inputs")) {}
-			else if	(strcmp((char*)root->right->data->data, "inputi")) {}
-			else if	(strcmp((char*)root->right->data->data, "inputf")) {}
+			else if	(strcmp((char*)root->right->data->data, "inputs"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nREAD TF@retval0 string\n");
+			else if	(strcmp((char*)root->right->data->data, "inputi"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nREAD TF@retval0 int\n");
+			else if	(strcmp((char*)root->right->data->data, "inputf"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nREAD TF@retval0 float\n");
 			else if	(strcmp((char*)root->right->data->data, "int2float"))	fprintf(file_descriptor, "PUSHS TF@%%0\nINT2FLOATS\nPOPS TF@%%0\n");
 			else if	(strcmp((char*)root->right->data->data, "float2int"))	fprintf(file_descriptor, "PUSHS TF@%%0\nFLOAT2INTS\nPOPS TF@%%0\n");
 			else if	(strcmp((char*)root->right->data->data, "len"))			fprintf(file_descriptor, "DEFVAR TF%%tmp0\nSTRLEN TF%%tmp0 tf%%0\n");
@@ -642,7 +638,7 @@ void code_gen(d_node* root, FILE* file_descriptor){
 			else fprintf(file_descriptor, "CALL %s\n", (char*)root->right->data->data);
 
 			/// Get rid of temrporary variables
-			fprintf(file_descriptor, "POPFRAME\nPUSHFRAME\n");
+			fprintf(file_descriptor, "CREATEFRAME\n");
 
 
 			break;
