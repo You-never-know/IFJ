@@ -313,7 +313,15 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	/// "Preform" operation on the stack
 	switch(((char*)root->data->data)[0]){
 		case '*': fprintf(file_descriptor, "MULS\n"); break;
-		case '/': fprintf(file_descriptor, "IDIVS\n"); break;
+		case '/':{
+			if(	root->right->data->unit_type == INTEGER ||
+				root->left->data->unit_type == INTEGER  ||
+				(sl_search(sl, root->right->data) != NULL && sl_search(sl, root->right->data)->id->type == INTEGER) || 
+				(sl_search(sl, root->left->data) != NULL && sl_search(sl, root->left->data)->id->type == INTEGER))
+				 fprintf(file_descriptor, "IDIVS\n");
+			else fprintf(file_descriptor, "DIVS\n");
+			break;
+		}
 		case '+':{
 			if(	root->right->data->unit_type == STRING ||
 				root->left->data->unit_type == STRING  ||
@@ -337,12 +345,12 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 			break;
 		}
 		case '=':{
-			if(root->type == ASSIGNMENT && ((char*)root->data->data)[1] == '=') fprintf(file_descriptor, "EQS\n");
+			if(root->type != ASSIGNMENT && ((char*)root->data->data)[1] == '=') fprintf(file_descriptor, "EQS\n");
 			break;
 		}
 
 		case '!':{
-			if(root->type == ASSIGNMENT && ((char*)root->data->data)[1] == '=') fprintf(file_descriptor, "EQS\nNOTS\n");
+			if(root->type != ASSIGNMENT && ((char*)root->data->data)[1] == '=') fprintf(file_descriptor, "EQS\nNOTS\n");
 			break;
 		}
 	}
@@ -358,6 +366,7 @@ void for_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	//if(in_function) tmp_frame[0] = 'L';
 
 	/// Write initialization
+	root->left->right->type = ASSIGNMENT;
 	expr_unpack(root->left->right, file_descriptor, sl);
 
 	/// REWORK frames
@@ -366,13 +375,13 @@ void for_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	expr_unpack(root->left->left->right, file_descriptor, sl);
 	fprintf(file_descriptor, "POPS LF@%%cmpf%d\nJUMPIFNEQ for_%d_end LF@%%cmpf%d bool@true\n", for_count, for_count, for_count);
 
-
 	/// Push label onto stack
 	char tmp_var[20] = {0};
 	int tmp_size = sprintf(tmp_var, "for_%d_end", for_count);
 	s_push(&label_stack, tmp_var, tmp_size);
 
 	/// Also to cut corners, push the ending expression onto label stack by pointer conversion
+	root->left->left->left->right->type = ASSIGNMENT;
 	s_push(&label_stack, (char*)root->left->left->left->right, -1);
 
 	for_count++;
@@ -517,7 +526,11 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 				else{
 					if(label_stack->str != NULL){
 						stack_t* expr_or_if = s_pop(&label_stack);
-						if(expr_or_if->str_len == -1) expr_unpack((d_node*)expr_or_if->str, file_descriptor, sl);
+						//printf("-------------------|%d\n", expr_or_if->str_len);
+						if(expr_or_if->str_len == -1){
+							expr_unpack((d_node*)expr_or_if->str, file_descriptor, sl);
+							break;
+						}
 						else{
 							fprintf(file_descriptor, "LABEL %s\n", expr_or_if->str);
 							/// If label is 'else'; checking 2nd char as it is unique
@@ -526,6 +539,7 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 								break;
 							}
 						}
+						//printf("------------------Hey bitch\n");
 						element_free(expr_or_if);
 						expr_or_if = s_pop(&label_stack);
 						if(strstr(expr_or_if->str, "for") != NULL){
