@@ -368,9 +368,10 @@ void for_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	//if(in_function) tmp_frame[0] = 'L';
 
 	/// Write initialization
-	root->left->right->type = ASSIGNMENT;
-	expr_unpack(root->left->right, file_descriptor, sl);
-
+	if (root -> left ->right != NULL) {
+		root->left->right->type = ASSIGNMENT;
+		expr_unpack(root->left->right, file_descriptor, sl);
+	}
 	/// REWORK frames
 	/// Write label, condition and conditional jump
 	fprintf(file_descriptor, "DEFVAR LF@%%cmpf%d\nLABEL for_%d\n", for_count, for_count);
@@ -380,12 +381,14 @@ void for_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	/// Push label onto stack
 	char tmp_var[20] = {0};
 	int tmp_size = sprintf(tmp_var, "for_%d_end", for_count);
+
 	s_push(&label_stack, tmp_var, tmp_size);
 
 	/// Also to cut corners, push the ending expression onto label stack by pointer conversion
-	root->left->left->left->right->type = ASSIGNMENT;
-	s_push(&label_stack, (char*)root->left->left->left->right, -1);
-
+	if (root->left->left->left->right != NULL) {
+		root->left->left->left->right->type = ASSIGNMENT;
+		s_push(&label_stack, (char*)root->left->left->left->right, -1);
+	}
 	for_count++;
 }
 
