@@ -362,20 +362,20 @@ unsigned assignment_exp(d_node * node,sym_list * list_of_tables){
 		act->id->accesible=true;
 	}
 
-	 
+
 
 	for(d_node * tmp=node->left;tmp!=NULL;tmp=next_left(tmp)){ //pushing left side of tree	
 			
+			if(tmp->right==NULL)
+				return OTHER_SEMANTIC;
+
 			if(relational_op(tmp->right->data->data)) // can not be relational operator
 					return COMPATIBLE_ERR;
 
-		
 			right_sd=tree_check(tmp->right,list_of_tables); // chceck derivation tree 
 
 			err=err_sieve(right_sd); /* possible err */
 
-			//if(err==COMPATIBLE_ERR && !strcmp(node->data->data,":="))
-			//	err=NEW_VAR;
 
 			if(err!=SEM_PASSED)
 				return err;
@@ -386,6 +386,7 @@ unsigned assignment_exp(d_node * node,sym_list * list_of_tables){
 								COMPATIBLE_ERR
 								: err_sieve(id_type_search(list_of_tables,tmp->data));
 
+			printf("X\n");
 			
 	}
 
@@ -501,8 +502,6 @@ unsigned if_case(d_node * node,sym_list * list_of_tables){
 
 unsigned return_case(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_unit_t* func_name){
 
-
-
 		unsigned err; /* semantic err to be returned */
 		enum lex_units right_sd; /* data type of tree check */
 
@@ -557,11 +556,13 @@ unsigned func_no_return(d_node * node,sym_tab * main,sym_list * list_of_tables){
 		
 	Par * params = act->parameters;
 
+	
+
 	if(params == NULL && node->left != NULL){
 				return PARAM_ERR;
 	}
 
-	if(params == NULL && node->left == NULL){
+	if(params != NULL && node->left == NULL){
 				return PARAM_ERR;
 	}
 
