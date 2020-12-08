@@ -158,14 +158,14 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 
 					/// "Push" the parameter on stack
 					if(tmp_str_replaced != NULL){
-						fprintf(file_descriptor, "MOVE TF@%%%d %s@%s\n", par_index, tmp_frame, tmp_str_replaced);
+						fprintf(file_descriptor, "DEFVAR TF@%%%d\nMOVE TF@%%%d %s@%s\n", par_index, par_index, tmp_frame, tmp_str_replaced);
 						free(tmp_str_replaced);
 					}
 					else{
 						switch(tmp->data->unit_type){
-							case INTEGER:	fprintf(file_descriptor, "MOVE TF@%%%d int@%d\n", par_index, *(int*)tmp->data->data); break;
-							case DECIMAL:	fprintf(file_descriptor, "MOVE TF@%%%d float@%a\n", par_index, *(double*)tmp->data->data); break;
-							default:		fprintf(file_descriptor, "MOVE TF@%%%d %s@%s\n", par_index, tmp_frame, (char*)tmp->data->data); break;
+							case INTEGER:	fprintf(file_descriptor, "DEFVAR TF@%%%d\nMOVE TF@%%%d int@%d\n", par_index, par_index, *(int*)tmp->data->data); break;
+							case DECIMAL:	fprintf(file_descriptor, "DEFVAR TF@%%%d\nMOVE TF@%%%d float@%a\n", par_index, par_index, *(double*)tmp->data->data); break;
+							default:		fprintf(file_descriptor, "DEFVAR TF@%%%d\nMOVE TF@%%%d %s@%s\n", par_index, par_index, tmp_frame, (char*)tmp->data->data); break;
 						}
 					}
 					par_index++;
@@ -617,14 +617,14 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 
 				/// "Push" the parameter on stack
 				if(tmp_str_replaced != NULL){
-					fprintf(file_descriptor, "MOVE TF@%%%d %s@%s\n", par_index, tmp_frame, tmp_str_replaced);
+					fprintf(file_descriptor, "DEFVAR TF@%%%d\nMOVE TF@%%%d %s@%s\n", par_index, par_index, tmp_frame, tmp_str_replaced);
 					free(tmp_str_replaced);
 				}
 				else{
 					switch(tmp->data->unit_type){
-						case INTEGER:	fprintf(file_descriptor, "MOVE TF@%%%d int@%d\n", par_index, *(int*)tmp->data->data); break;
-						case DECIMAL:	fprintf(file_descriptor, "MOVE TF@%%%d float@%a\n", par_index, *(double*)tmp->data->data); break;
-						default:		fprintf(file_descriptor, "MOVE TF@%%%d %s@%s\n", par_index, tmp_frame, (char*)tmp->data->data); break;
+						case INTEGER:	fprintf(file_descriptor, "DEFVAR TF@%%%d\nMOVE TF@%%%d int@%d\n", par_index, par_index, *(int*)tmp->data->data); break;
+						case DECIMAL:	fprintf(file_descriptor, "DEFVAR TF@%%%d\nMOVE TF@%%%d float@%a\n", par_index, par_index, *(double*)tmp->data->data); break;
+						default:		fprintf(file_descriptor, "DEFVAR TF@%%%d\nMOVE TF@%%%d %s@%s\n", par_index, par_index, tmp_frame, (char*)tmp->data->data); break;
 					}
 				}
 				par_index++;
