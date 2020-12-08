@@ -15,7 +15,6 @@
 #include <string.h>
 #include <stdio.h>
 
-/// REWORK figure out concat instruction
 char in_function = 0; // Boolean substitute
 stack_t* label_stack = NULL;
 stack_t* var_stack = NULL; // For frame reference
@@ -415,8 +414,7 @@ void func_unpack(d_node* root, FILE* file_descriptor){
 	if(root == NULL || file_descriptor == NULL) return;
 
 	/// 'Set up' function label and frames
-	if(strcmp((char*)root->left->data->data, "main") == 0) fprintf(file_descriptor, "CREATEFRAME\n");
-	fprintf(file_descriptor, "LABEL %s\nPUSHFRAME\nCREATEFRAME\n", (char*)root->left->data->data);
+	fprintf(file_descriptor, "LABEL %s\n%sPUSHFRAME\nCREATEFRAME\n", (char*)root->left->data->data, (strcmp((char*)root->left->data->data, "main") == 0)?("CREATEFRAME\n"):(""));
 
 	/// 'Set up' parameters and return values
 	int p_index = 0; // Parameter index
@@ -481,8 +479,6 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 				func_unpack(root, file_descriptor);
 			}
 			else if(strcmp((char*)root->data->data, "return") == 0){
-				in_function = false;
-
 				/// "Push" retvals onto stack
 				int ret_index = 0;
 				for(d_node* tmp = root->left; tmp != NULL; tmp = tmp->left){
@@ -501,37 +497,46 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 			if(((char*)root->data->data)[0] == '}'){
 				/// Check stack for labels and finish the "structures"
 				if(root->right != NULL){
-					/// Pop out else label and end label
-					stack_t* else_label = s_pop(&label_stack);
-					stack_t* end_label = s_pop(&label_stack);
+					if(root->right->data->unit_type == KEYWORD){
+						/// Pop out else label and end label
+						stack_t* else_label = s_pop(&label_stack);
+						stack_t* end_label = s_pop(&label_stack);
 
-					/// "Jump" to the end of if statement and "set up" else label
-					fprintf(file_descriptor, "JUMP %s\nLABEL %s\n", end_label->str, else_label->str);
+						/// "Jump" to the end of if statement and "set up" else label
+						fprintf(file_descriptor, "JUMP %s\nLABEL %s\n", end_label->str, else_label->str);
 
-					/// Push back the end label
-					s_push(&label_stack, end_label->str, end_label->str_len);
-					element_free(else_label);
-					element_free(end_label);
+						/// Push back the end label
+						s_push(&label_stack, end_label->str, end_label->str_len);
+						element_free(else_label);
+						element_free(end_label);
+					}
+					else{
+						in_function = false;
+						fprintf(file_descriptor, "RETURN\n");
+						break;
+					}
 				}
 				else{
-					stack_t* expr_or_if = s_pop(&label_stack);
-					if(expr_or_if->str_len == -1) expr_unpack((d_node*)expr_or_if->str, file_descriptor, sl);
-					else{
-						fprintf(file_descriptor, "LABEL %s\n", expr_or_if->str);
-						/// If label is 'else'; checking 2nd char as it is unique
-						if(expr_or_if->str[1] != 'l'){
-							element_free(expr_or_if);
-							break;
+					if(label_stack->str != NULL){
+						stack_t* expr_or_if = s_pop(&label_stack);
+						if(expr_or_if->str_len == -1) expr_unpack((d_node*)expr_or_if->str, file_descriptor, sl);
+						else{
+							fprintf(file_descriptor, "LABEL %s\n", expr_or_if->str);
+							/// If label is 'else'; checking 2nd char as it is unique
+							if(expr_or_if->str[1] != 'l'){
+								element_free(expr_or_if);
+								break;
+							}
 						}
+						element_free(expr_or_if);
+						expr_or_if = s_pop(&label_stack);
+						if(strstr(expr_or_if->str, "for") != NULL){
+							*(strstr(expr_or_if->str, "_end")) = '\0';
+							fprintf(file_descriptor, "JUMP %s\n", expr_or_if->str);
+						}
+						fprintf(file_descriptor, "LABEL %s\n", expr_or_if->str);
+						element_free(expr_or_if);
 					}
-					element_free(expr_or_if);
-					expr_or_if = s_pop(&label_stack);
-					if(strstr(expr_or_if->str, "for") != NULL){
-						*(strstr(expr_or_if->str, "_end")) = '\0';
-						fprintf(file_descriptor, "JUMP %s\n", expr_or_if->str);
-					}
-					fprintf(file_descriptor, "LABEL %s\n", expr_or_if->str);
-					element_free(expr_or_if);
 				}
 			}
 			else expr_unpack(root, file_descriptor, sl);
