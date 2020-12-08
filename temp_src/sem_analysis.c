@@ -39,7 +39,7 @@ unsigned main_fun(sym_tab * main){
 	ht_item *act=find_item(main,&main_func);
 
 	if(act==NULL || act->func==NULL )
-		return OTHER_SEMANTIC;
+		return DEFINE_ERR;
 	else{
 		
 		if(act->func->parameters !=NULL ||
