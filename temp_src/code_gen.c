@@ -7,15 +7,15 @@
 **/
 
 
-#include <string.h>
-#include <stdio.h>
 #include "code_gen.h"
 #include "stack.h"
 #include "structs.h"
 #include "prec_table.h"
 #include "symtable.h"
+#include <string.h>
+#include <stdio.h>
 
-/// REWORK figure out CONCAT instruction
+/// REWORK figure out concat instruction
 char in_function = 0; // Boolean substitute
 stack_t* label_stack = NULL;
 stack_t* var_stack = NULL; // For frame reference
@@ -32,7 +32,7 @@ void retval_move_reverse(d_node* root, FILE* file_descriptor){
 	fprintf(file_descriptor, "MOVE %s@%s TF@%%retval%d\n", tmp_frame, (char*)root->data->data, r_index++);
 }
 
-void expr_unpack(d_node* root, FILE* file_descriptor){
+void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	/// Check function arguments
 	if(root == NULL || file_descriptor == NULL || var_stack == NULL) return;
 
@@ -40,11 +40,11 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 	char on_stack = 0;
 	if(root->right != NULL && root->left != NULL){
 		if(root->right->right != NULL && root->right->left != NULL){
-			expr_unpack(root->right, file_descriptor);
+			expr_unpack(root->right, file_descriptor, sl);
 			on_stack |= 0x0f;
 		}
 		if(root->left->right != NULL && root->left->left != NULL){
-			expr_unpack(root->left, file_descriptor);
+			expr_unpack(root->left, file_descriptor, sl);
 			on_stack |= 0xf0;
 		}
 	}
@@ -53,7 +53,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 	if(root->type == ASSIGNMENT){
 		if(((char*)root->data->data)[0] == ':'){
 			/// "Compute" the expression
-			expr_unpack(root->left->right, file_descriptor);
+			expr_unpack(root->left->right, file_descriptor, sl);
 
 			/// Set up resources
 			int tmp_var_len = 2+root->left->data->data_size;
@@ -79,7 +79,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 		else{
 			if(root->right == NULL){ /// Multiple assignments
 				for(d_node* tmp = root->left; tmp != NULL; tmp = tmp->left){
-					expr_unpack(tmp->right, file_descriptor);
+					expr_unpack(tmp->right, file_descriptor, sl);
 					char tmp_frame[3] = {0,0,0};
 					s_find(var_stack, tmp_frame, (char*)tmp->data->data);
 					fprintf(file_descriptor, "POPS %s@%s\n", tmp_frame, (char*)tmp->data->data);
@@ -320,7 +320,14 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 			break;
 		}
 		case PLUS_MINUS:{
-			if(((char*)root->data->data)[0] == '+') fprintf(file_descriptor, "ADDS\n");
+			if(((char*)root->data->data)[0] == '+'){
+				if(	root->right->data->unit_type == STRING ||
+					root->left->data->unit_type == STRING  ||
+					sl_search(sl, root->right->data)->id->type == STRING || 
+					sl_search(sl, root->right->data)->id->type == STRING)
+					 fprintf(file_descriptor, "DEFVAR TF@%%concat_tmp0\nDEFVAR TF@%%concat_tmp1\nPOPS TF@%%concat_tmp1\nPOPS TF@%%concat_tmp0\nCONCAT TF@%%concat_tmp0 TF@%%concat_tmp0 TF@%%concat_tmp1\nPUSHS TF@%%concat_tmp0\nCREATEFRAME\n");
+				else fprintf(file_descriptor, "ADDS\n");
+			}
 			else fprintf(file_descriptor, "SUBS\n");
 			break;
 		}
@@ -344,7 +351,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor){
 	}
 }
 
-void for_unpack(d_node* root, FILE* file_descriptor){
+void for_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	/// Check function arguments
 	if(root == NULL || file_descriptor == NULL || label_stack == NULL || var_stack == NULL) return;
 
@@ -354,12 +361,12 @@ void for_unpack(d_node* root, FILE* file_descriptor){
 	//if(in_function) tmp_frame[0] = 'L';
 
 	/// Write initialization
-	expr_unpack(root->left->right, file_descriptor);
+	expr_unpack(root->left->right, file_descriptor, sl);
 
 	/// REWORK frames
 	/// Write label, condition and conditional jump
 	fprintf(file_descriptor, "DEFVAR LF@%%cmpf%d\nLABEL for_%d\n", for_count, for_count);
-	expr_unpack(root->left->left->right, file_descriptor);
+	expr_unpack(root->left->left->right, file_descriptor, sl);
 	fprintf(file_descriptor, "POPS LF@%%cmpf%d\nJUMPIFNEQ for_%d_end LF@%%cmpf%d bool@true\n", for_count, for_count, for_count);
 
 
@@ -374,7 +381,7 @@ void for_unpack(d_node* root, FILE* file_descriptor){
 	for_count++;
 }
 
-void if_unpack(d_node* root, FILE* file_descriptor){
+void if_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	/// Check function arguments
 	if(root == NULL || file_descriptor == NULL || label_stack == NULL || var_stack == NULL) return;
 
@@ -388,7 +395,7 @@ void if_unpack(d_node* root, FILE* file_descriptor){
 	fprintf(file_descriptor, "DEFVAR TF@%%if_cmp%d\n", if_count);
 
 	/// "Compute" condition
-	expr_unpack(root->right, file_descriptor);
+	expr_unpack(root->right, file_descriptor, sl);
 	fprintf(file_descriptor, "POPS TF@%%if_cmp%d\n", if_count);
 
 	/// Write conditional jump
@@ -443,7 +450,7 @@ void func_unpack(d_node* root, FILE* file_descriptor){
 	}
 }
 
-void code_gen(d_node* root, FILE* file_descriptor){
+void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 	/// Check function arguments
 	if(root == NULL || file_descriptor == NULL) return;
 
@@ -464,10 +471,10 @@ void code_gen(d_node* root, FILE* file_descriptor){
 		/// if, for, func, return
 		case KEYWORD:{
 			if(strcmp((char*)root->data->data, "if") == 0){
-				if_unpack(root, file_descriptor);
+				if_unpack(root, file_descriptor, sl);
 			}
 			else if(strcmp((char*)root->data->data, "for") == 0){
-				for_unpack(root, file_descriptor);
+				for_unpack(root, file_descriptor, sl);
 			}
 			else if(strcmp((char*)root->data->data, "func") == 0){
 				in_function = true;
@@ -479,7 +486,7 @@ void code_gen(d_node* root, FILE* file_descriptor){
 				/// "Push" retvals onto stack
 				int ret_index = 0;
 				for(d_node* tmp = root->left; tmp != NULL; tmp = tmp->left){
-					expr_unpack(tmp->right, file_descriptor);
+					expr_unpack(tmp->right, file_descriptor, sl);
 					fprintf(file_descriptor, "POPS LF@%%retval%d\n", ret_index++);
 				}
 
@@ -508,7 +515,7 @@ void code_gen(d_node* root, FILE* file_descriptor){
 				}
 				else{
 					stack_t* expr_or_if = s_pop(&label_stack);
-					if(expr_or_if->str_len == -1) expr_unpack((d_node*)expr_or_if->str, file_descriptor);
+					if(expr_or_if->str_len == -1) expr_unpack((d_node*)expr_or_if->str, file_descriptor, sl);
 					else{
 						fprintf(file_descriptor, "LABEL %s\n", expr_or_if->str);
 						/// If label is 'else'; checking 2nd char as it is unique
@@ -527,7 +534,7 @@ void code_gen(d_node* root, FILE* file_descriptor){
 					element_free(expr_or_if);
 				}
 			}
-			else expr_unpack(root, file_descriptor);
+			else expr_unpack(root, file_descriptor, sl);
 			break;
 		}
 
