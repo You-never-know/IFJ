@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include "lex_list.h"
 #include "prec_parser.h"
+#include "code_gen.h"
 
 token_list * Active_token = NULL;
 sym_tab* fun_table = NULL;

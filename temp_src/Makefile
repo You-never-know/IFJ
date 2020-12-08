@@ -11,7 +11,7 @@ CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra
 COMPILATOR = gcc $(CFLAGS) -o $@
 
 
-all:  test_table prec_test translate #lex_test
+all:  translate 
 
 translate: translate.o lexical_analyzer.o structs.o symtable.o prec_parser.o d_tree.o sym_list.o lex_list.o prec_table.o create_tables.o syntactic_analyzer.o sem_analysis.o code_gen.o stack.o
 	$(COMPILATOR) $^
@@ -19,23 +19,11 @@ translate: translate.o lexical_analyzer.o structs.o symtable.o prec_parser.o d_t
 translate.o: translate.c create_tables.h prec_parser.h d_tree.h structs.h symtable.h
 	$(COMPILATOR) -c $< 
 
-lex_test: lex_test.o lexical_analyzer.o structs.o 
-	$(COMPILATOR) $^
-
-lex_test.o: lex_test.c
-	$(COMPILATOR) -c lex_test.c
-
 lexical_analyzer.o: lexical_analyzer.c lexical_analyzer.h structs.h 
-	$(COMPILATOR) -c lexical_analyzer.c
+	$(COMPILATOR) -c $< 
 
 structs.o: structs.c structs.h symtable.h
-	$(COMPILATOR) -c structs.c
-
-test_table: test_table.o symtable.o create_tables.o lexical_analyzer.o sym_list.o structs.o
-	$(COMPILATOR) $^
-
-prec_test: prec_test.o d_tree.o prec_parser.o prec_table.o lex_list.o sym_list.o symtable.o lexical_analyzer.o structs.o create_tables.o
-	$(COMPILATOR) $^ 
+	$(COMPILATOR) -c $< 
 
 symtable.o: symtable.c symtable.h structs.h
 	$(COMPILATOR) -c $< 
@@ -43,13 +31,7 @@ symtable.o: symtable.c symtable.h structs.h
 prec_parser.o: prec_parser.c prec_parser.h 
 	$(COMPILATOR) -c $< 
 
-prec_test.o: prec_test.c 
-	$(COMPILATOR) -c $<
-
 d_tree.o: d_tree.c d_tree.h
-	$(COMPILATOR) -c $<
-
-test_table.o: test_table.c symtable.h structs.h
 	$(COMPILATOR) -c $<
 
 sym_list.o: sym_list.c sym_list.h 
@@ -76,12 +58,8 @@ code_gen.o: code_gen.c code_gen.h
 stack.o: stack.c stack.h
 	$(COMPILATOR) -c $<
 
-clean_go:
-	rm -f *.go
 clean:
 	rm -f *.o
-	rm test_table
-	rm lex_test
+	rm translate
 
-run: all
-	valgrind ./lex_test
+

@@ -11,6 +11,7 @@
 #include "stack.h"
 #include "structs.h"
 #include "prec_table.h"
+#include <string.h>
 #include "symtable.h"
 #include <string.h>
 #include <stdio.h>
