@@ -1,11 +1,11 @@
 #
 # Project:
-# Implementace pøekladaèe imperativního jazyka IFJ20
+# Implementace pÃ¸ekladaÃ¨e imperativnÃ­ho jazyka IFJ20
 #
 # Author:
-# Drengubiak Vladimír	xdreng01
+# Drengubiak VladimÃ­r	xdreng01
 # Daniel Marek          xmarek72
-# Kateøina Nepra¹ová	xnepra01
+# KateÃ¸ina NepraÂ¹ovÃ¡	xnepra01
 
 CFLAGS = -g -std=c99 -O2 -pedantic -Wall -Wextra
 COMPILATOR = gcc $(CFLAGS) -o $@
@@ -13,7 +13,7 @@ COMPILATOR = gcc $(CFLAGS) -o $@
 
 all:  test_table prec_test translate #lex_test
 
-translate: translate.o lexical_analyzer.o structs.o symtable.o prec_parser.o d_tree.o sym_list.o lex_list.o prec_table.o create_tables.o syntactic_analyzer.o sem_analysis.o
+translate: translate.o lexical_analyzer.o structs.o symtable.o prec_parser.o d_tree.o sym_list.o lex_list.o prec_table.o create_tables.o syntactic_analyzer.o sem_analysis.o code_gen.o stack.o
 	$(COMPILATOR) $^
 
 translate.o: translate.c create_tables.h prec_parser.h d_tree.h structs.h symtable.h
@@ -68,6 +68,12 @@ syntactic_analyzer.o: syntactic_analyzer.c syntactic_analyzer.h
 	$(COMPILATOR) -c $<
 
 sem_analysis.o: sem_analysis.c sem_analysis.h
+	$(COMPILATOR) -c $<
+	
+code_gen.o: code_gen.c code_gen.h
+	$(COMPILATOR) -c $<
+
+stack.o: stack.c stack.h
 	$(COMPILATOR) -c $<
 
 clean_go:
