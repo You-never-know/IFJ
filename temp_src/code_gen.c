@@ -172,15 +172,14 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 				}
 
 				/// "Call" the function
-				if		(strcmp((char*)root->right->data->data, "inputs"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@retval0 string\nMOVE TF@retval1 int@1\n");
-				else if	(strcmp((char*)root->right->data->data, "inputi"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@retval0 int\nMOVE TF@retval1 int@1\n");
-				else if	(strcmp((char*)root->right->data->data, "inputf"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@retval0 float\nMOVE TF@retval1 int@1\n");
-				else if	(strcmp((char*)root->right->data->data, "int2float"))	fprintf(file_descriptor, "PUSHS TF@%%0\nINT2FLOATS\n");
-				else if	(strcmp((char*)root->right->data->data, "float2int"))	fprintf(file_descriptor, "PUSHS TF@%%0\nFLOAT2INTS\n");
-				else if	(strcmp((char*)root->right->data->data, "len"))			fprintf(file_descriptor, "DEFVAR TF@%%retval0\nSTRLEN TF@%%retval0 TF@%%0\n");
-				else if	(strcmp((char*)root->right->data->data, "substr")) {}
-				else if	(strcmp((char*)root->right->data->data, "ord"))			fprintf(file_descriptor, "PUSHS TF@%%0\nPUSHS TF@%%1\nSTR2INTS\n");
-				else if	(strcmp((char*)root->right->data->data, "chr"))			fprintf(file_descriptor, "PUSHS TF@%%0\nINT2CHARS\n");
+				if		(strcmp((char*)root->right->data->data, "inputs") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@retval0 string\nMOVE TF@retval1 int@1\n");
+				else if	(strcmp((char*)root->right->data->data, "inputi") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@retval0 int\nMOVE TF@retval1 int@1\n");
+				else if	(strcmp((char*)root->right->data->data, "inputf") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@retval0 float\nMOVE TF@retval1 int@1\n");
+				else if	(strcmp((char*)root->right->data->data, "int2float") == 0)	fprintf(file_descriptor, "PUSHS TF@%%0\nINT2FLOATS\n");
+				else if	(strcmp((char*)root->right->data->data, "float2int") == 0)	fprintf(file_descriptor, "PUSHS TF@%%0\nFLOAT2INTS\n");
+				else if	(strcmp((char*)root->right->data->data, "len") == 0)			fprintf(file_descriptor, "DEFVAR TF@%%retval0\nSTRLEN TF@%%retval0 TF@%%0\n");
+				else if	(strcmp((char*)root->right->data->data, "ord") == 0)			fprintf(file_descriptor, "PUSHS TF@%%0\nPUSHS TF@%%1\nSTR2INTS\n");
+				else if	(strcmp((char*)root->right->data->data, "chr") == 0)			fprintf(file_descriptor, "PUSHS TF@%%0\nINT2CHARS\n");
 				else fprintf(file_descriptor, "CALL %s\n", (char*)root->right->data->data);
 
 				/// "Claim" returned values from function
@@ -460,7 +459,7 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 	if(code_beginning){
 		label_stack = stack_init();
 		var_stack = stack_init();
-		fprintf(file_descriptor, ".IFJcode20\nJUMP main\nEXIT 0\n");
+		fprintf(file_descriptor, ".IFJcode20\nCALL main\nEXIT int@0\n");
 		code_beginning = 0;
 	}
 
@@ -545,7 +544,6 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 
 		/// Function call
 		case IDENTIFICATOR:{
-
 			/// "Push" all parameters on stack 
 			int par_index = 0;
 			for(d_node* tmp = root->left; tmp != NULL; tmp = tmp->left){
@@ -553,6 +551,7 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 				char* tmp_str_replaced = NULL;
 				char tmp_frame[7] = {0,0,0,0,0,0,0};
 				s_find(var_stack, tmp_frame, (char*)tmp->data->data);
+
 				if(tmp_frame[0] == '\0'){
 					/// Parameter is not a variable
 					if(tmp->data->unit_type == STRING){
@@ -637,16 +636,15 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 					fprintf(file_descriptor, "WRITE TF@%%%d\n", i);
 				}
 			}
-			else if	(strcmp((char*)root->data->data, "inputs"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nREAD TF@retval0 string\n");
-			else if	(strcmp((char*)root->data->data, "inputi"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nREAD TF@retval0 int\n");
-			else if	(strcmp((char*)root->data->data, "inputf"))		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nREAD TF@retval0 float\n");
-			else if	(strcmp((char*)root->data->data, "int2float"))	fprintf(file_descriptor, "PUSHS TF@%%0\nINT2FLOATS\nPOPS TF@%%0\n");
-			else if	(strcmp((char*)root->data->data, "float2int"))	fprintf(file_descriptor, "PUSHS TF@%%0\nFLOAT2INTS\nPOPS TF@%%0\n");
-			else if	(strcmp((char*)root->data->data, "len"))			fprintf(file_descriptor, "DEFVAR TF%%tmp0\nSTRLEN TF%%tmp0 tf%%0\n");
-			else if	(strcmp((char*)root->data->data, "substr")) {}
-			else if	(strcmp((char*)root->data->data, "ord"))			fprintf(file_descriptor, "PUSHS TF@%%0\nPUSHS TF@%%1\nSTR2INTS\nPOPS TF@%%0\n");
-			else if	(strcmp((char*)root->data->data, "chr"))			fprintf(file_descriptor, "PUSHS TF@%%0\nINT2CHARS\nPOPS TF@%%0\n");
-			else fprintf(file_descriptor, "CALL %s\n", (char*)root->right->data->data);
+			else if	(strcmp((char*)root->data->data, "inputs") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nREAD TF@retval0 string\n");
+			else if	(strcmp((char*)root->data->data, "inputi") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nREAD TF@retval0 int\n");
+			else if	(strcmp((char*)root->data->data, "inputf") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nREAD TF@retval0 float\n");
+			else if	(strcmp((char*)root->data->data, "int2float") == 0)	fprintf(file_descriptor, "PUSHS TF@%%0\nINT2FLOATS\nPOPS TF@%%0\n");
+			else if	(strcmp((char*)root->data->data, "float2int") == 0)	fprintf(file_descriptor, "PUSHS TF@%%0\nFLOAT2INTS\nPOPS TF@%%0\n");
+			else if	(strcmp((char*)root->data->data, "len") == 0)			fprintf(file_descriptor, "DEFVAR TF%%tmp0\nSTRLEN TF%%tmp0 tf%%0\n");
+			else if	(strcmp((char*)root->data->data, "ord") == 0)			fprintf(file_descriptor, "PUSHS TF@%%0\nPUSHS TF@%%1\nSTR2INTS\nPOPS TF@%%0\n");
+			else if	(strcmp((char*)root->data->data, "chr") == 0)			fprintf(file_descriptor, "PUSHS TF@%%0\nINT2CHARS\nPOPS TF@%%0\n");
+			else fprintf(file_descriptor, "CALL %s\n", (char*)root->data->data);
 
 			/// Get rid of temrporary variables
 			fprintf(file_descriptor, "CREATEFRAME\n");
