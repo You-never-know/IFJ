@@ -501,14 +501,21 @@ unsigned if_case(d_node * node,sym_list * list_of_tables){
 
 unsigned return_case(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_unit_t* func_name){
 
-		if(node->left==NULL)return SYSTEM_ERROR;
+
 
 		unsigned err; /* semantic err to be returned */
 		enum lex_units right_sd; /* data type of tree check */
 
 		Func * act_func=func_search(main,func_name);
+
+		if(act_func==NULL)
+			return DEFINE_ERR;
 		
-		if(act_func==NULL && (act_func->return_val==NULL && node->left!=NULL)) /* return required */
+
+		if(act_func->return_val==NULL && node->left!=NULL) /* return required */
+			return RETURN_ERR;
+
+		if(act_func->return_val!=NULL && node->left==NULL)
 			return RETURN_ERR;
 
 		Ret * return_types=act_func->return_val;
@@ -518,7 +525,6 @@ unsigned return_case(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_
 			right_sd=tree_check(tmp->right,list_of_tables);
 
 			err=err_sieve(right_sd); /* possible err */
-
 
 
 			if(err!=SEM_PASSED)
@@ -559,6 +565,8 @@ unsigned func_no_return(d_node * node,sym_tab * main,sym_list * list_of_tables){
 				return PARAM_ERR;
 	}
 
+	if(act->return_val!=NULL)
+		return RETURN_ERR;
 
 
 	for(d_node * tmp = node->left; tmp!=NULL && params!=NULL;tmp=next_left(tmp)){

@@ -340,9 +340,22 @@ bool body23(lex_unit_t* act) {
 	if (act == NULL)return false;
 	was_return = true;
 	d_node * return_tree = d_node_create(NULL, act, E);
-	d_node * body1 = d_node_create(NULL, NULL, DOLLAR);
-	d_node_insert_left(return_tree, body1);	
 	act = getNextToken();
+
+	if(!strcmp(act->data, "\n")){
+
+		unsigned err = Sem_analysis(return_tree, fun_table, tables, func_name);  /////////////////////////// RETURN TREE
+		if (err != 0) {
+		set_return_code(err);
+		}
+		
+		return true; 
+	}
+
+	d_node * body1 = d_node_create(NULL, NULL, DOLLAR);
+	d_node_insert_left(return_tree, body1);
+
+
 
 	//RETURN DONE IN BODY
 	//<exp_list_start>
