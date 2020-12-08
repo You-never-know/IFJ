@@ -229,7 +229,8 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 							else if(c == '(' || c == ')' ||
 									c == '{' || c == '}' || 
 									c == '[' || c == ']' || 
-									c == '.' || c == ',' ||
+									c == '*' || c == ',' ||
+									c == '-' || c == '+' ||
 									c == '~' || c == ';')	state = OPER_OUT;
 							else if(isMultiOperator(c))	state = OPER_CHECK;
 							else					state = INVALID;
@@ -368,7 +369,13 @@ lex_unit_t* Analyze(FILE* file_descriptor, lex_unit_t* unit){
 		
 		/// Handle EOF
 		if(c == EOF && lexeme->data_size == 0){
-			if(unit == NULL) LexUnitDelete(lexeme);
+			if (state == ML_COMMENT) {
+				lexeme->unit_type = ERROR;
+				return lexeme;	
+			}
+			else {
+				if(unit == NULL) LexUnitDelete(lexeme);
+			}
 			return NULL;
 		}
 
