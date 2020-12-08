@@ -289,7 +289,7 @@ bool body23(lex_unit_t* act) {
 		if (err != 0) {
 		set_return_code(err);
 		}
-		
+		code_gen(return_tree, stdout, tables); 
 		return body(getNextToken());
 	}
 
