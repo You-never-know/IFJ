@@ -40,7 +40,7 @@ bool id_choose(lex_unit_t*);
 bool id_choose29(lex_unit_t* act, d_node * assignment); 
 bool id_choose30(lex_unit_t* act, d_node * assignment);
 bool id_choose31(lex_unit_t*);
-bool else_r(lex_unit_t*);
+bool else_r(lex_unit_t* act, d_node * closing_bracket);
 bool definition(lex_unit_t* act, d_node * root);
 bool assignment_38_39(lex_unit_t* act, d_node * root);
 bool exp_fun(lex_unit_t* act, d_node * id);
