@@ -944,7 +944,7 @@ bool fun2(lex_unit_t * act){
 		function_name->left = (d_node*) function_item->func->parameters;
 		function_name->right = (d_node*) function_item->func->return_val;
 
-		//code_gen(function_tree, stdout, tables);
+		code_gen(function_tree, stdout, tables);
 	}	
 
 	free(function_tree->left);
@@ -978,8 +978,9 @@ bool fun2(lex_unit_t * act){
 	if(strcmp(act->data,"}"))return false; 
 
 	d_node * closing_bracket = d_node_create(NULL, act, R_BRACKET);
-	
-	//code_gen(closing_bracket, stdout, tables);
+	d_node_insert_right(closing_bracket, function_name);
+
+	code_gen(closing_bracket, stdout, tables);
 
 	delete_tree(closing_bracket);
 
