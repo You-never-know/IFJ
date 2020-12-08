@@ -1037,6 +1037,9 @@ int Check_syntax(token_list * t_list, sym_list * id_tables, sym_tab * function_t
 	fun_table = function_table; // set the global 
 	Active_token = t_list;
 
+	if(!main_fun(function_table))
+		return OTHER_SEMANTIC; 
+	
 	if (prog() == false) {
 		set_return_code(2); // syntactic error
 	}
