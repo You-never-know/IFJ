@@ -35,8 +35,8 @@ bool isLetter(char c){
 }
 
 bool isOperator(const char c){
-	const char operators[] = "+-*/%=&|^<>!~(){}[].,;";
-	for(unsigned char i = 0; i < 22; i++){
+	const char operators[] = "+-*/%=&|^<>!~(){}[].,;:";
+	for(unsigned char i = 0; i < 23; i++){
 		if(c == operators[i]) return true;
 	}
 	return false;
