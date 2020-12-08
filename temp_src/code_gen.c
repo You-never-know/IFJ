@@ -526,10 +526,8 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 				else{
 					if(label_stack->str != NULL){
 						stack_t* expr_or_if = s_pop(&label_stack);
-						//printf("-------------------|%d\n", expr_or_if->str_len);
 						if(expr_or_if->str_len == -1){
 							expr_unpack((d_node*)expr_or_if->str, file_descriptor, sl);
-							break;
 						}
 						else{
 							fprintf(file_descriptor, "LABEL %s\n", expr_or_if->str);
@@ -539,12 +537,13 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 								break;
 							}
 						}
-						//printf("------------------Hey bitch\n");
 						element_free(expr_or_if);
 						expr_or_if = s_pop(&label_stack);
 						if(strstr(expr_or_if->str, "for") != NULL){
-							*(strstr(expr_or_if->str, "_end")) = '\0';
+							char* tmp_pos = (strstr(expr_or_if->str, "_end"));
+							*tmp_pos = '\0';
 							fprintf(file_descriptor, "JUMP %s\n", expr_or_if->str);
+							*tmp_pos = '_';
 						}
 						fprintf(file_descriptor, "LABEL %s\n", expr_or_if->str);
 						element_free(expr_or_if);
