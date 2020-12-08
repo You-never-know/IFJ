@@ -197,25 +197,6 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	else{
 		/// "Push" children onto stack
 		if(root->right != NULL && root->left != NULL){
-			if((on_stack&0x0f) != 0x0f){
-				switch(root->right->data->unit_type){
-					case INTEGER:{
-						fprintf(file_descriptor, "PUSHS int@%d\n", *((int*)root->right->data->data));
-						break;
-					}
-					case DECIMAL:{
-						fprintf(file_descriptor, "PUSHS float@%a\n", *((double*)root->right->data->data));
-						break;
-					}
-					case IDENTIFICATOR:{
-						char r_frame[3] = "GF";
-						s_find(var_stack, r_frame, root->right->data->data);
-						fprintf(file_descriptor, "PUSHS %s@%s\n", r_frame, (char*)root->right->data->data);
-						break;
-					}
-				}
-				on_stack |= 0x0f;
-			}
 			if((on_stack&0xf0) != 0xf0){
 				switch(root->left->data->unit_type){
 					case INTEGER:{
@@ -234,6 +215,25 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 					}
 				}
 				on_stack |= 0xf0;
+			}
+			if((on_stack&0x0f) != 0x0f){
+				switch(root->right->data->unit_type){
+					case INTEGER:{
+						fprintf(file_descriptor, "PUSHS int@%d\n", *((int*)root->right->data->data));
+						break;
+					}
+					case DECIMAL:{
+						fprintf(file_descriptor, "PUSHS float@%a\n", *((double*)root->right->data->data));
+						break;
+					}
+					case IDENTIFICATOR:{
+						char r_frame[3] = "GF";
+						s_find(var_stack, r_frame, root->right->data->data);
+						fprintf(file_descriptor, "PUSHS %s@%s\n", r_frame, (char*)root->right->data->data);
+						break;
+					}
+				}
+				on_stack |= 0x0f;
 			}
 		}
 		else{
@@ -311,39 +311,38 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	}
 	
 	/// "Preform" operation on the stack
-	switch(root->type){
-		case MUL_DIV:{
-			if(((char*)root->data->data)[0] == '*') fprintf(file_descriptor, "MULS\n");
-			else fprintf(file_descriptor, "DIVS\n");
+	switch(((char*)root->data->data)[0]){
+		case '*': fprintf(file_descriptor, "MULS\n"); break;
+		case '/': fprintf(file_descriptor, "IDIVS\n"); break;
+		case '+':{
+			if(	root->right->data->unit_type == STRING ||
+				root->left->data->unit_type == STRING  ||
+				(sl_search(sl, root->right->data) != NULL && sl_search(sl, root->right->data)->id->type == STRING) || 
+				(sl_search(sl, root->left->data) != NULL && sl_search(sl, root->left->data)->id->type == STRING))
+				 fprintf(file_descriptor, "DEFVAR TF@%%concat_tmp0\nDEFVAR TF@%%concat_tmp1\nPOPS TF@%%concat_tmp1\nPOPS TF@%%concat_tmp0\nCONCAT TF@%%concat_tmp0 TF@%%concat_tmp0 TF@%%concat_tmp1\nPUSHS TF@%%concat_tmp0\nCREATEFRAME\n");
+			else fprintf(file_descriptor, "ADDS\n");
 			break;
 		}
-		case PLUS_MINUS:{
-			if(((char*)root->data->data)[0] == '+'){
-				if(	root->right->data->unit_type == STRING ||
-					root->left->data->unit_type == STRING  ||
-					sl_search(sl, root->right->data)->id->type == STRING || 
-					sl_search(sl, root->right->data)->id->type == STRING)
-					 fprintf(file_descriptor, "DEFVAR TF@%%concat_tmp0\nDEFVAR TF@%%concat_tmp1\nPOPS TF@%%concat_tmp1\nPOPS TF@%%concat_tmp0\nCONCAT TF@%%concat_tmp0 TF@%%concat_tmp0 TF@%%concat_tmp1\nPUSHS TF@%%concat_tmp0\nCREATEFRAME\n");
-				else fprintf(file_descriptor, "ADDS\n");
-			}
-			else fprintf(file_descriptor, "SUBS\n");
+		case '-': fprintf(file_descriptor, "SUBS\n"); break;
+		case '<':{
+			if(((char*)root->data->data)[1] == '=')
+				 fprintf(file_descriptor, "GTS\nNOTS\n");
+			else fprintf(file_descriptor, "LTS\n");
 			break;
 		}
-		case COMPARISON:{
-			if(((char*)root->data->data)[0] == '<'){
-				if(((char*)root->data->data)[1] == '=')
-					 fprintf(file_descriptor, "LTS\nNOTS\n");
-				else fprintf(file_descriptor, "GTS\n");
-			}
-			else if(((char*)root->data->data)[0] == '>'){
-				if(((char*)root->data->data)[1] == '=')
-					 fprintf(file_descriptor, "GTS\nNOTS\n");
-				else fprintf(file_descriptor, "LTS\n");
-			}
-			else if(strcmp((char*)root->data->data, "==") == 0)
-					 fprintf(file_descriptor, "EQS\n");
-			else if(strcmp((char*)root->data->data, "!=") == 0)
-					 fprintf(file_descriptor, "EQS\nNOTS\n");
+		case '>':{
+			if(((char*)root->data->data)[1] == '=')
+				 fprintf(file_descriptor, "LTS\nNOTS\n");
+			else fprintf(file_descriptor, "GTS\n");
+			break;
+		}
+		case '=':{
+			if(root->type == ASSIGNMENT && ((char*)root->data->data)[1] == '=') fprintf(file_descriptor, "EQS\n");
+			break;
+		}
+
+		case '!':{
+			if(root->type == ASSIGNMENT && ((char*)root->data->data)[1] == '=') fprintf(file_descriptor, "EQS\nNOTS\n");
 			break;
 		}
 	}
