@@ -198,6 +198,11 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 		/// "Push" children onto stack
 		if(root->right != NULL && root->left != NULL){
 			if((on_stack&0xf0) != 0xf0){
+				/// If right child is already on stack, "POP" now and "PUSH" later
+				if((on_stack&0x0f) == 0x0f){
+					fprintf(file_descriptor, "DEFVAR TF@%%swap\nPOPS TF@%%swap\n");
+				}
+
 				switch(root->left->data->unit_type){
 					case INTEGER:{
 						fprintf(file_descriptor, "PUSHS int@%d\n", *((int*)root->left->data->data));
@@ -208,13 +213,72 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 						break;
 					}
 					case IDENTIFICATOR:{
-						char l_frame[3] = {0,0,0};
+						char l_frame[3] = "LF";
 						s_find(var_stack, l_frame, root->left->data->data);
 						fprintf(file_descriptor, "PUSHS %s@%s\n", l_frame, (char*)root->left->data->data);
 						break;
 					}
+					case STRING:{
+						/// Allocate enough space for replacing every character (worst case scenario)
+						char* tmp_str_replaced = malloc((root->data->data_size+1)*4);
+						if(tmp_str_replaced == NULL){
+							fprintf(stderr, "Buffer allocation failed.(Code generation - replacing whitespace characters)\n");
+							return;
+						}
+						int index = 0;
+
+						/// Replace all whitespace characters with their decimal representation
+						char* tmp_lex_str = (char*)root->data->data;
+						while((tmp_str_replaced[index] = *(tmp_lex_str++)) != '\0'){
+							if(tmp_str_replaced[index] == ' '){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '3';
+								tmp_str_replaced[index]   = '2';
+							}
+							else if(tmp_str_replaced[index] == '\n'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '1';
+								tmp_str_replaced[index]   = '0';
+							}
+							else if(tmp_str_replaced[index] == '\t'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index]   = '9';
+							}
+							else if(tmp_str_replaced[index] == '\v'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '1';
+								tmp_str_replaced[index]   = '1';
+							}
+							else if(tmp_str_replaced[index] == '\f'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '1';
+								tmp_str_replaced[index]   = '2';
+							}
+							else if(tmp_str_replaced[index] == '\r'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '1';
+								tmp_str_replaced[index]   = '3';
+							}
+							index++;
+						}
+						fprintf(file_descriptor, "PUSHS string@%s\n", tmp_str_replaced);
+						free(tmp_str_replaced);
+						break;
+					}
 				}
 				on_stack |= 0xf0;
+
+				/// If right child was already on stack, "PUSH" temporary variable
+				if((on_stack&0x0f) == 0x0f){
+					fprintf(file_descriptor, "PUSHS TF@%%swap\nCREATEFRAME\n");
+				}
 			}
 			if((on_stack&0x0f) != 0x0f){
 				switch(root->right->data->unit_type){
@@ -227,9 +291,63 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 						break;
 					}
 					case IDENTIFICATOR:{
-						char r_frame[3] = "GF";
+						char r_frame[3] = "LF";
 						s_find(var_stack, r_frame, root->right->data->data);
 						fprintf(file_descriptor, "PUSHS %s@%s\n", r_frame, (char*)root->right->data->data);
+						break;
+					}
+					case STRING:{
+						/// Allocate enough space for replacing every character (worst case scenario)
+						char* tmp_str_replaced = malloc((root->data->data_size+1)*4);
+						if(tmp_str_replaced == NULL){
+							fprintf(stderr, "Buffer allocation failed.(Code generation - replacing whitespace characters)\n");
+							return;
+						}
+						int index = 0;
+
+						/// Replace all whitespace characters with their decimal representation
+						char* tmp_lex_str = (char*)root->data->data;
+						while((tmp_str_replaced[index] = *(tmp_lex_str++)) != '\0'){
+							if(tmp_str_replaced[index] == ' '){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '3';
+								tmp_str_replaced[index]   = '2';
+							}
+							else if(tmp_str_replaced[index] == '\n'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '1';
+								tmp_str_replaced[index]   = '0';
+							}
+							else if(tmp_str_replaced[index] == '\t'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index]   = '9';
+							}
+							else if(tmp_str_replaced[index] == '\v'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '1';
+								tmp_str_replaced[index]   = '1';
+							}
+							else if(tmp_str_replaced[index] == '\f'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '1';
+								tmp_str_replaced[index]   = '2';
+							}
+							else if(tmp_str_replaced[index] == '\r'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '1';
+								tmp_str_replaced[index]   = '3';
+							}
+							index++;
+						}
+						fprintf(file_descriptor, "PUSHS string@%s\n", tmp_str_replaced);
+						free(tmp_str_replaced);
 						break;
 					}
 				}
