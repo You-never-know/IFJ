@@ -633,7 +633,6 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 
 			/// "Call" the function
 			if		(strcmp((char*)root->data->data, "print") == 0){
-				printf("%d\n", par_index);
 				for(int i = 0; i < par_index; i++){
 					fprintf(file_descriptor, "WRITE TF@%%%d\n", i);
 				}
