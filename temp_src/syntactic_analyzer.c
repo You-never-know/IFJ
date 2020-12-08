@@ -29,7 +29,6 @@ bool was_return = false;
 lex_unit_t * func_name = NULL;
 d_node * assignment_start = NULL;
 
-
 void set_return_code(unsigned CODE) {
 
 	if (Err_set == 0) {
@@ -287,7 +286,8 @@ bool body23(lex_unit_t* act) {
 	if(act->unit_type != INTEGER && act->unit_type != DECIMAL && !strcmp(act->data, "\n")){	
 		unsigned err = Sem_analysis(return_tree, fun_table, tables, func_name);  /////////////////////////// RETURN TREE
 		if (err != 0) {
-		set_return_code(err);
+			set_return_code(err);
+			return false;
 		}
 		code_gen(return_tree, stdout, tables); 
 		return body(getNextToken());
@@ -307,6 +307,7 @@ bool body23(lex_unit_t* act) {
 	unsigned err = Sem_analysis(return_tree, fun_table, tables, func_name);  /////////////////////////// RETURN TREE
 	if (err != 0) {
 		set_return_code(err);
+		return false;
 	}                   
 	code_gen(return_tree, stdout, tables);         
 	delete_tree(return_tree);
@@ -337,6 +338,7 @@ bool body24(lex_unit_t* act) {
 	unsigned err = Sem_analysis(if_tree, fun_table, tables, func_name); ///////////////////////// IF TREE
 	if (err != 0) {
 		set_return_code(err);
+		return false;
 	}
 	code_gen(if_tree, stdout, tables);
 	delete_tree(if_tree);
@@ -469,6 +471,7 @@ bool body26(lex_unit_t* act) {
 	unsigned err = Sem_analysis(body2, fun_table, tables, func_name); ///////////////////////// FOR EXPRESION DECIDING
 	if (err != 0) {
 		set_return_code(err);
+		return false;
 	}
 
 	//;
@@ -601,8 +604,8 @@ bool id_choose(lex_unit_t* act) {
 			unsigned err = Sem_analysis(operator, fun_table, tables, func_name); ///////////////////////// := tree
 			if (err != SEM_PASSED) {
 				set_return_code(err);
+				return false;
 			}
-
 			code_gen(operator, stdout, tables);
 		}
 
@@ -653,6 +656,7 @@ bool id_choose30(lex_unit_t* act, d_node * assignment) {
 	unsigned err = Sem_analysis(assignment, fun_table, tables, func_name); //////////////////////////////////////// = tree
 	if (err != 0) {
 		set_return_code(err);
+		return false;
 	}
 	code_gen(assignment, stdout, tables);
 	delete_tree(assignment);
@@ -674,6 +678,7 @@ bool id_choose31(lex_unit_t* act) {
 	unsigned err = Sem_analysis(root->right, fun_table, tables, func_name); //////////////////////////////////////// Function alone 
 	if (err != 0) {
 		set_return_code(err);
+		return false;
 	}
 	code_gen(root->right, stdout, tables);
 	delete_tree(root);
@@ -768,6 +773,7 @@ bool definition(lex_unit_t* act, d_node * root) {
 	unsigned err = Sem_analysis(equal, fun_table, tables, func_name); ///////////////////////// FOR FIRST DECIDING
 	if (err != 0) {
 		set_return_code(err);
+		return false;
 	}
 
 	return true;
@@ -809,6 +815,7 @@ bool assignment_38_39(lex_unit_t* act, d_node * root) {
 	unsigned err = Sem_analysis(equal, fun_table, tables, func_name); ///////////////////////// FOR EXPRESION DECIDING
 	if (err != 0) {
 		set_return_code(err);
+		return false;
 	}
 
 	return true;
