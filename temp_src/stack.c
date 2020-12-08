@@ -9,6 +9,7 @@
 #include "stack.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 
 stack_t* stack_init(){
