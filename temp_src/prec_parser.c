@@ -369,8 +369,6 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 
 		int next_move = 42;
 		next_move = prec_event(get_the_top_operand(), type);
-		printf("GTO: %d\n",	get_the_top_operand());
-		printf("NEXT MOVE: %d\n",	next_move );
 
 		switch (next_move) {
 
@@ -429,12 +427,8 @@ bool Parse_expresion(lex_unit_t * token, d_node * root, token_list ** start, sym
 				token = (*start)->unit;
 			}	
 			reads++;
-			printf("TOKEN PRINT %s; (%d) %d\n", (char*)(token)->data,*((int*)(token)->data), (token)->unit_type);
-	
 		}
 	}
-
-	printf("\n\n\n\n\n\n");
 
 	// test if everything happend correctly
 	if (stack->length == 2 && help->length == 0) {

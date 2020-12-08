@@ -15,6 +15,7 @@ void clean_token_list(token_list * t_list) {
 	}
 
 	for (token_list * tmp = t_list; tmp != NULL;) {
+		printf("Token data %s\n", tmp->unit->data);
 		token_list * to_be_deleted = tmp;
 		tmp = tmp->next;
 		LexUnitDelete(to_be_deleted->unit);
