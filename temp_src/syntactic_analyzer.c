@@ -349,7 +349,7 @@ bool body23(lex_unit_t* act) {
 		set_return_code(err);
 		}
 		
-		return true; 
+		return body(getNextToken());
 	}
 
 	d_node * body1 = d_node_create(NULL, NULL, DOLLAR);
