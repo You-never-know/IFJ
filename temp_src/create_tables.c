@@ -421,7 +421,6 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 			}
 			for (sl_elem_ptr ptr = result -> first; ptr != NULL; ptr = ptr -> r) {
 				if ((ptr->accessible) == true) { // some table is still active
-					free(par);
 					clean_table((*function_table));
 					free_table((*function_table));
 					*function_table = NULL;
@@ -535,7 +534,6 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 							} 
 							par = malloc_param(remember);
 							if (par == NULL) {
-								free(par);
 								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
@@ -543,7 +541,6 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 							}
 
 							if (add_param_name(par, lex) == false) {
-								free(par);
 								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
@@ -582,7 +579,6 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 
 							state = PARAMETER_TYPE;
 							if (add_param_type(par, type) == false) { // add parameter type to the parameter
-								free(par);
 								clean_table((*function_table));
 								free_table((*function_table));
 								*function_table = NULL;
@@ -594,7 +590,7 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 							break;
 						}
 
-						set_error(4, ret);
+						set_error(2, ret);
 						state = PARAMETER_ID;
 						break;
 					
