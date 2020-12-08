@@ -29,66 +29,6 @@ bool was_return = false;
 lex_unit_t * func_name = NULL;
 d_node * assignment_start = NULL;
 
-
-void print_tree_in(d_node* root, char* suf, char direction)
-{
-
-	if (root != NULL)
-	{
-
-		char* suf2 = (char*)malloc(strlen(suf) + 4);
-		strcpy(suf2, suf);
-		if (direction == 'L')
-		{
-			suf2 = strcat(suf2, "  |");
-
-		}
-		else {
-			suf2 = strcat(suf2, "   ");
-		}
-		print_tree_in(root->right, suf2, 'R');
-
-		if (root->data != NULL) {
-
-			if (root->data->unit_type == 4) {
-				printf("%s  +-[%d; type %d]\n", suf, *((int*)root->data->data), root->data->unit_type);
-			}
-			else if (root->data->unit_type == 5) {
-				printf("%s  +-[%f; type %d]\n", suf, *((double*)root->data->data), root->data->unit_type);
-			}
-			else {
-				printf("%s  +-[%s ; type %d]\n", suf, (char*)root->data->data, root->data->unit_type);
-			}
-
-		}
-
-		strcpy(suf2, suf);
-
-		if (direction == 'R')
-			suf2 = strcat(suf2, "  |");
-		else
-			suf2 = strcat(suf2, "   ");
-
-		print_tree_in(root->left, suf2, 'L');
-
-		if (direction == 'R') printf("%s\n", suf2);
-		free(suf2);
-	}
-}
-
-void print_tree3(d_node* root)
-{
-	printf("PRINT TREE:\n");
-	printf("TYPES: 0 ERROR; 1 OPERATOR; 2 IDENTIFICATOR; 3 KEYWORD; 4 INTEGER; 5 DECIMAL; 6 STRING\n");
-	printf("\n");
-	if (root != NULL)
-		print_tree_in(root, "", 'X');
-	else
-		printf("EMPTY\n");
-	printf("\n");
-	printf("=================================================\n");
-}
-
 void set_return_code(unsigned CODE) {
 
 	if (Err_set == 0) {
@@ -364,7 +304,6 @@ bool body23(lex_unit_t* act) {
 		delete_tree(return_tree);
 		return false;
 	}
-	print_tree3(return_tree);
 	unsigned err = Sem_analysis(return_tree, fun_table, tables, func_name);  /////////////////////////// RETURN TREE
 	if (err != 0) {
 		set_return_code(err);
@@ -396,7 +335,6 @@ bool body24(lex_unit_t* act) {
 		delete_tree(if_tree);
 		return false;
 	}
-	print_tree3(if_tree);
 	unsigned err = Sem_analysis(if_tree, fun_table, tables, func_name); ///////////////////////// IF TREE
 	if (err != 0) {
 		set_return_code(err);
@@ -554,7 +492,6 @@ bool body26(lex_unit_t* act) {
 		delete_tree(for_tree);
 		return false;
 	}
-print_tree3(for_tree);
 	// send to generate code            /////////// /////////////////////////// FOR TREE 
 
 	//{
@@ -603,7 +540,6 @@ print_tree3(for_tree);
 	}
 
 	d_node * closing_bracket = d_node_create(NULL, act, R_BRACKET);
-	print_tree3(closing_bracket);
 	// send to generate code
 
 	delete_tree(closing_bracket);
@@ -658,7 +594,6 @@ bool id_choose(lex_unit_t* act) {
 		bool decide = id_choose29(getNextToken(), operator);
 		operator->left->right = operator->right;
 		operator->right=NULL;
-		print_tree3(operator);
 		if (decide == true) {
 			unsigned err = Sem_analysis(operator, fun_table, tables, func_name); ///////////////////////// := tree
 			if (err != SEM_PASSED) {
@@ -712,7 +647,6 @@ bool id_choose30(lex_unit_t* act, d_node * assignment) {
 	act = getNextToken();
 	if (act == NULL)return false;
 	if (!exp_fun(act, assignment))return false; 
-	print_tree3(assignment);
 	unsigned err = Sem_analysis(assignment, fun_table, tables, func_name); //////////////////////////////////////// = tree
 	if (err != 0) {
 		set_return_code(err);
@@ -734,7 +668,6 @@ bool id_choose31(lex_unit_t* act) {
 	root = d_node_create(NULL, NULL, F);
 
 	bool result = Parse_expresion(act, root, &Active_token, fun_table);
-	print_tree3(root->right);
 	unsigned err = Sem_analysis(root->right, fun_table, tables, func_name); //////////////////////////////////////// Function alone 
 	if (err != 0) {
 		set_return_code(err);
@@ -752,7 +685,6 @@ bool else_r(lex_unit_t* act, d_node * closing_bracket) {
 
 	//eps
 	if (!strcmp(act->data, "\n")) {
-		print_tree3(closing_bracket);
 		// send to generate code
 		delete_tree(closing_bracket);
 		return true;
@@ -763,7 +695,6 @@ bool else_r(lex_unit_t* act, d_node * closing_bracket) {
 
 	d_node * else_bracket = d_node_create(NULL, act, ASSIGNMENT);
 	d_node_insert_right(closing_bracket, else_bracket);  //////////////////////////////////////////////////// Else bracket
-	print_tree3(closing_bracket);
 	// send to generate code
 	delete_tree(closing_bracket);
 
@@ -792,7 +723,6 @@ bool else_r(lex_unit_t* act, d_node * closing_bracket) {
 	if (strcmp(act->data, "}"))return false;
 
 	d_node * else_closing_bracket = d_node_create(NULL, act, ASSIGNMENT);
-	print_tree3(else_closing_bracket);
 	// send to generate code
 	delete_tree(else_closing_bracket);
 
@@ -1048,7 +978,6 @@ bool fun2(lex_unit_t * act){
 	if(strcmp(act->data,"}"))return false; 
 
 	d_node * closing_bracket = d_node_create(NULL, act, R_BRACKET);
-	print_tree3(closing_bracket);
 	// send to generate code
 
 	delete_tree(closing_bracket);

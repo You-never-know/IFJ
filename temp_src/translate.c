@@ -31,16 +31,14 @@ int main() {
 	token_list * file_tokens = Loading_lex_units(f);
 	token_list * implicit_functions = NULL;
 	sym_list *file_tables = create_tables(file_tokens, &return_value, &function_table, &implicit_functions);
-	printf("Return value of the create_tables: %d\n", return_value);
 
 	if (return_value != 0) {
 		clean_token_list(file_tokens);
-		clean_token_list(implicit_functions);
+		//clean_token_list(implicit_functions);
 		return return_value;
 	}
 
 	return_value = Check_syntax(file_tokens, file_tables, function_table);
-	printf("Return value of the transator: %d\n", return_value);
 
 	// clean memory
 	if (file_tables != NULL) {
