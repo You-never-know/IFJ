@@ -289,7 +289,7 @@ bool body23(lex_unit_t* act) {
 		if (err != 0) {
 		set_return_code(err);
 		}
-		//code_gen(return_tree, stdout, tables); 
+		code_gen(return_tree, stdout, tables); 
 		return body(getNextToken());
 	}
 
@@ -308,7 +308,7 @@ bool body23(lex_unit_t* act) {
 	if (err != 0) {
 		set_return_code(err);
 	}                   
-	//code_gen(return_tree, stdout, tables);         
+	code_gen(return_tree, stdout, tables);         
 	delete_tree(return_tree);
 
 	//NEW_LINE
@@ -375,7 +375,9 @@ bool body24(lex_unit_t* act) {
 		delete_tree(closing_bracket);
 		return false;
 	}
+	
 	if (!else_r(act, closing_bracket)) return false;
+	
 	
 	//NEW_LINE
 	act = getNextToken();
@@ -394,11 +396,13 @@ bool body25(lex_unit_t* act) {
 	//<id_choose> 
 	if (!id_choose(act))return false;
 
+
 	//NEW_LINE
 	act = getActiveToken();
+	
 	if (act == NULL)return false;
 	if (strcmp(act->data, "\n"))return false;
-	
+
 	return body(getNextToken());
 }
 
@@ -491,7 +495,7 @@ bool body26(lex_unit_t* act) {
 		delete_tree(for_tree);
 		return false;
 	}
-	//code_gen(for_tree, stdout, tables);           /////////// /////////////////////////// FOR TREE 
+	code_gen(for_tree, stdout, tables);           /////////// /////////////////////////// FOR TREE 
 
 	//{
 	act = getActiveToken();
@@ -539,7 +543,7 @@ bool body26(lex_unit_t* act) {
 	}
 
 	d_node * closing_bracket = d_node_create(NULL, act, R_BRACKET);
-	//code_gen(closing_bracket, stdout, tables);
+	code_gen(closing_bracket, stdout, tables);
 
 	delete_tree(closing_bracket);
 	delete_tree(for_tree);
@@ -671,7 +675,7 @@ bool id_choose31(lex_unit_t* act) {
 	if (err != 0) {
 		set_return_code(err);
 	}
-	//code_gen(root->right, stdout, tables);
+	code_gen(root->right, stdout, tables);
 	delete_tree(root);
 
 	return result;
@@ -684,7 +688,7 @@ bool else_r(lex_unit_t* act, d_node * closing_bracket) {
 
 	//eps
 	if (!strcmp(act->data, "\n")) {
-		//code_gen(closing_bracket, stdout, tables);
+		code_gen(closing_bracket, stdout, tables);
 		delete_tree(closing_bracket);
 		return true;
 	}
@@ -720,9 +724,9 @@ bool else_r(lex_unit_t* act, d_node * closing_bracket) {
 	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
-
+	
 	d_node * else_closing_bracket = d_node_create(NULL, act, ASSIGNMENT);
-	code_gen(closing_bracket, stdout, tables);
+	code_gen(else_closing_bracket, stdout, tables);
 	delete_tree(else_closing_bracket);
 
 	tmp_ptr->accessible = false; //lock
