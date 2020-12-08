@@ -6,6 +6,7 @@
 #define SEM_PASSED 0
 #define NEW_VAR 4 
 #define OTHER_SEMANTIC 7
+#define DIV_ZERO 9
 
 
 
