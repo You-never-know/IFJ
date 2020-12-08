@@ -92,6 +92,9 @@ unsigned err_sieve(enum lex_units err){
 
 			case ERROR:
 				return COMPATIBLE_ERR;
+
+			case INT_ERR:
+				return DIV_ZERO;
 					
 			default:
 				return SEM_PASSED;
@@ -252,6 +255,10 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 			enum lex_units r_n = id_type_search(list_of_tables,rh_node->right->data);
 			enum lex_units l_n = id_type_search(list_of_tables,rh_node->left->data);
 
+			if(r_n == STRING && l_n == STRING && (strcmp(rh_node->data->data,"+") || relational_op(rh_node->data->data)))
+				return ERROR;
+
+
 			if(r_n!=l_n){
 		    	
 		    	if(!is_err(r_n) && !is_err(l_n))
@@ -278,6 +285,8 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 
 		if(data_type(rh_node->left->data->unit_type) && data_type(rh_node->right->data->unit_type)){
 
+			if(!strcmp(rh_node->data->data,"/") && *((int*)rh_node->right->data->data)==0)
+				return INT_ERR;
 
 			if(rh_node->left->data->unit_type==rh_node->right->data->unit_type )
 				return rh_node->right->data->unit_type;
@@ -308,6 +317,9 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 			
 			enum lex_units r_n = rh_node->right->data->unit_type;
 			enum lex_units l_n = id_type_search(list_of_tables,rh_node->left->data);
+
+			if(!strcmp(rh_node->data->data,"/") && *((int*)rh_node->right->data->data)==0)
+				return INT_ERR;
 
 			if(r_n!=l_n){
 		    	
@@ -502,7 +514,7 @@ unsigned if_case(d_node * node,sym_list * list_of_tables){
 
 	err=err_sieve(right_sd); /* possible err */
 
-	printf("%d\n",err);
+
 
 	if(err!=SEM_PASSED)
 		return err;
@@ -563,8 +575,15 @@ unsigned return_case(d_node * node,sym_tab * main,sym_list * list_of_tables,lex_
 
 unsigned func_no_return(d_node * node,sym_tab * main,sym_list * list_of_tables){
 
+    enum lex_units test =id_type_search(list_of_tables,node->data);
+
+    if(test!=STR_ERR){
+    	return DEFINE_ERR;
+    }
 
 	Func * act = func_search(main,node->data);
+
+	if(act==NULL)return DEFINE_ERR;
 		
 	Par * params = act->parameters;
 
