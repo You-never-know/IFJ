@@ -1054,7 +1054,7 @@ bool fun2(lex_unit_t * act){
 	delete_tree(closing_bracket);
 
 	if (!was_return) {
-		if (!return_not_found(func_name, fun_table)) set_return_code(7);
+		if (!return_not_found(func_name, fun_table)) set_return_code(6);
 	}
 	tmp_ptr->accessible = false; //lock
 
