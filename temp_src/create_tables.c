@@ -914,7 +914,7 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 							} // end of else
 						} // end of else if
 						else {
-							set_error(4, ret);
+							set_error(2, ret);
 							state = ADDED_TO_TABLE;
 							break;
 						}
