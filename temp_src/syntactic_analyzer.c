@@ -672,7 +672,7 @@ bool id_choose31(lex_unit_t* act) {
 	if (err != 0) {
 		set_return_code(err);
 	}
-	code_gen(root->right, stdout, tables);
+	//code_gen(root->right, stdout, tables);
 	delete_tree(root);
 
 	return result;
@@ -685,7 +685,7 @@ bool else_r(lex_unit_t* act, d_node * closing_bracket) {
 
 	//eps
 	if (!strcmp(act->data, "\n")) {
-		code_gen(closing_bracket, stdout, tables);
+		//code_gen(closing_bracket, stdout, tables);
 		delete_tree(closing_bracket);
 		return true;
 	}
@@ -695,7 +695,7 @@ bool else_r(lex_unit_t* act, d_node * closing_bracket) {
 
 	d_node * else_bracket = d_node_create(NULL, act, ASSIGNMENT);
 	d_node_insert_right(closing_bracket, else_bracket);  //////////////////////////////////////////////////// Else bracket
-	code_gen(closing_bracket, stdout, tables);
+	//code_gen(closing_bracket, stdout, tables);
 	delete_tree(closing_bracket);
 
 	//{
@@ -723,7 +723,7 @@ bool else_r(lex_unit_t* act, d_node * closing_bracket) {
 	if (strcmp(act->data, "}"))return false;
 
 	d_node * else_closing_bracket = d_node_create(NULL, act, ASSIGNMENT);
-	code_gen(closing_bracket, stdout, tables);
+	//code_gen(closing_bracket, stdout, tables);
 	delete_tree(else_closing_bracket);
 
 	tmp_ptr->accessible = false; //lock
@@ -944,7 +944,7 @@ bool fun2(lex_unit_t * act){
 		function_name->left = (d_node*) function_item->func->parameters;
 		function_name->right = (d_node*) function_item->func->return_val;
 
-		code_gen(function_tree, stdout, tables);
+		//code_gen(function_tree, stdout, tables);
 	}	
 
 	free(function_tree->left);
@@ -979,7 +979,7 @@ bool fun2(lex_unit_t * act){
 
 	d_node * closing_bracket = d_node_create(NULL, act, R_BRACKET);
 	
-	code_gen(closing_bracket, stdout, tables);
+	//code_gen(closing_bracket, stdout, tables);
 
 	delete_tree(closing_bracket);
 
