@@ -266,9 +266,20 @@ enum lex_units tree_check(d_node * rh_node,sym_list * list_of_tables){
 
 		}
 
+		if(rh_node->left->data->unit_type==STRING && rh_node->right->data->unit_type==STRING){
+
+			if(!strcmp(rh_node->data->data,"+") || relational_op(rh_node->data->data))
+				return STRING;
+
+			return ERROR;
+		}
+
+
+
 		if(data_type(rh_node->left->data->unit_type) && data_type(rh_node->right->data->unit_type)){
 
-			if(rh_node->left->data->unit_type==rh_node->right->data->unit_type)
+
+			if(rh_node->left->data->unit_type==rh_node->right->data->unit_type )
 				return rh_node->right->data->unit_type;
 
 			/* err data type compatibility */
@@ -386,7 +397,7 @@ unsigned assignment_exp(d_node * node,sym_list * list_of_tables){
 								COMPATIBLE_ERR
 								: err_sieve(id_type_search(list_of_tables,tmp->data));
 
-			printf("X\n");
+			
 			
 	}
 
@@ -487,13 +498,14 @@ unsigned if_case(d_node * node,sym_list * list_of_tables){
 			return COMPATIBLE_ERR;
 
 	right_sd=tree_check(node->right,list_of_tables); // chceck derivation tree 
-
+//	printf("%d\n",right_sd);
 
 	err=err_sieve(right_sd); /* possible err */
 
+	printf("%d\n",err);
+
 	if(err!=SEM_PASSED)
 		return err;
-
 
 
 	return SEM_PASSED;
@@ -610,6 +622,7 @@ unsigned Sem_analysis(d_node * node,sym_tab * main,sym_list * list_of_tables,lex
 	if(node->data==NULL)return SYSTEM_ERROR;
 
 	if(list_of_tables==NULL)return SYSTEM_ERROR; // no comment ;)
+
 
 	if((!strcmp(node->data->data,"=") || !strcmp(node->data->data,":="))&& node->right==NULL)
 		return assignment_exp(node,list_of_tables);
