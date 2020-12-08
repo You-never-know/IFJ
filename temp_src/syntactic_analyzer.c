@@ -29,6 +29,67 @@ bool was_return = false;
 lex_unit_t * func_name = NULL;
 d_node * assignment_start = NULL;
 
+void print_tree_in(d_node* root, char* suf, char direction)
+{
+
+	if (root != NULL)
+	{
+
+		char* suf2 = (char*)malloc(strlen(suf) + 4);
+		strcpy(suf2, suf);
+		if (direction == 'L')
+		{
+			suf2 = strcat(suf2, "  |");
+
+		}
+		else {
+			suf2 = strcat(suf2, "   ");
+		}
+		print_tree_in(root->right, suf2, 'R');
+
+		if (root->data != NULL) {
+
+			if (root->data->unit_type == 4) {
+				printf("%s  +-[%d; type %d]\n", suf, *((int*)root->data->data), root->data->unit_type);
+			}
+			else if (root->data->unit_type == 5) {
+				printf("%s  +-[%f; type %d]\n", suf, *((double*)root->data->data), root->data->unit_type);
+			}
+			else {
+				printf("%s  +-[%s ; type %d]\n", suf, (char*)root->data->data, root->data->unit_type);
+			}
+
+		}
+
+		strcpy(suf2, suf);
+
+		if (direction == 'R')
+			suf2 = strcat(suf2, "  |");
+		else
+			suf2 = strcat(suf2, "   ");
+
+		print_tree_in(root->left, suf2, 'L');
+
+		if (direction == 'R') printf("%s\n", suf2);
+		free(suf2);
+	}
+}
+
+void print_tree3(d_node* root)
+{
+	printf("PRINT TREE:\n");
+	printf("TYPES: 0 ERROR; 1 OPERATOR; 2 IDENTIFICATOR; 3 KEYWORD; 4 INTEGER; 5 DECIMAL; 6 STRING\n");
+	printf("\n");
+	if (root != NULL)
+		print_tree_in(root, "", 'X');
+	else
+		printf("EMPTY\n");
+	printf("\n");
+	printf("=================================================\n");
+}
+
+
+
 void set_return_code(unsigned CODE) {
 
 	if (Err_set == 0) {
@@ -283,12 +344,12 @@ bool body23(lex_unit_t* act) {
 	d_node * return_tree = d_node_create(NULL, act, E);
 	act = getNextToken();
 
-	if(!strcmp(act->data, "\n")){
-
+	if(act->unit_type != INTEGER && act->unit_type != DECIMAL && !strcmp(act->data, "\n")){	
 		unsigned err = Sem_analysis(return_tree, fun_table, tables, func_name);  /////////////////////////// RETURN TREE
 		if (err != 0) {
 		set_return_code(err);
 		}
+		print_tree3(return_tree);
 		code_gen(return_tree, stdout, tables); 
 		return body(getNextToken());
 	}
@@ -308,7 +369,7 @@ bool body23(lex_unit_t* act) {
 	if (err != 0) {
 		set_return_code(err);
 	}                   
-
+	print_tree3(return_tree);
 	code_gen(return_tree, stdout, tables);         
 	delete_tree(return_tree);
 
@@ -881,9 +942,6 @@ bool exp_list_start(lex_unit_t* act, d_node * body) {
 	//exp_list_start starts
 	if (act == NULL)return false;
 
-	//eps
-	if (!strcmp(act->data, "\n"))return true;
-
 	if (((!strcmp(act->data, "(")) || act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER || act->unit_type == STRING || act->unit_type == DECIMAL)) {
 
 		//<expression>
@@ -910,6 +968,10 @@ bool exp_list_start(lex_unit_t* act, d_node * body) {
 
 		return true;
 	}
+
+	//eps
+	else if (!strcmp(act->data, "\n"))return true;
+
 	return false;
 
 
