@@ -982,8 +982,6 @@ bool fun2(lex_unit_t * act){
 
 	code_gen(closing_bracket, stdout, tables);
 
-	delete_tree(closing_bracket);
-
 	if (!was_return) {
 		if (!return_not_found(func_name, fun_table)) set_return_code(6);
 	}
