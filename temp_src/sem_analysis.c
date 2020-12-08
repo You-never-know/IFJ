@@ -366,13 +366,13 @@ unsigned assignment_exp(d_node * node,sym_list * list_of_tables){
 
 			err=err_sieve(right_sd); /* possible err */
 
-			if(err==COMPATIBLE_ERR && !strcmp(node->data->data,":="))
-				err=NEW_VAR;
+			//if(err==COMPATIBLE_ERR && !strcmp(node->data->data,":="))
+			//	err=NEW_VAR;
 
 			if(err!=SEM_PASSED)
 				return err;
 
-
+			if(strcmp(node->left->data->data,"_"))
 			if(id_type_search(list_of_tables,tmp->data)!=right_sd) 
 					return (err_sieve(id_type_search(list_of_tables,tmp->data))==SEM_PASSED)? 
 								COMPATIBLE_ERR
