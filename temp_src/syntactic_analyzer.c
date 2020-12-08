@@ -4,7 +4,8 @@
 *
 * Authors:
 * Daniel Marek 					xmarek72
-*
+* Kateřina Neprašová			xnepra01
+* Drengubiak Vladimír	        xdreng01
 **/
 
 #include "symtable.h"
@@ -291,6 +292,9 @@ bool expression(lex_unit_t* act, d_node * root) {
 	// expression starts
 	if (act == NULL)return false;
 	if (Active_token == NULL) return false;
+
+	if (!((!strcmp(act->data, "(")) || act->unit_type == IDENTIFICATOR || act->unit_type == INTEGER || act->unit_type == STRING || act->unit_type == DECIMAL)) return false;
+
 	Active_token = Active_token->next; // get the next token
 	bool result = Parse_expresion(act, root, &Active_token, fun_table);
 	return result;
@@ -350,7 +354,9 @@ bool body23(lex_unit_t* act) {
 	unsigned err = Sem_analysis(return_tree, fun_table, tables, func_name);  /////////////////////////// RETURN TREE
 	if (err != 0) {
 		set_return_code(err);
-	}                            
+	}                   
+
+	// send to generate code         
 	delete_tree(return_tree);
 
 	//NEW_LINE
@@ -381,6 +387,7 @@ bool body24(lex_unit_t* act) {
 	if (err != 0) {
 		set_return_code(err);
 	}
+	// send to generate code
 	delete_tree(if_tree);
 
 	//{
@@ -405,14 +412,20 @@ bool body24(lex_unit_t* act) {
 	act = getActiveToken();
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
+	
+	d_node * closing_bracket = d_node_create(NULL, act, R_BRACKET);
 
+	
 	tmp_ptr->accessible = false; //lock
 
 	//<else>
 	act = getNextToken();
-	if (act == NULL)return false;
-	if (!else_r(act))return false;
-
+	if (act == NULL) {
+		delete_tree(closing_bracket);
+		return false;
+	}
+	if (!else_r(act, closing_bracket)) return false;
+	
 	//NEW_LINE
 	act = getNextToken();
 	if (act == NULL)return false;
@@ -487,6 +500,20 @@ bool body26(lex_unit_t* act) {
 	if (decide == false) {
 		delete_tree(for_tree);
 		return false;
+	}
+
+	char * str = "if";
+	lex_unit_t unit_test;
+
+	unit_test.unit_type = KEYWORD;
+	unit_test.data = str;
+	unit_test.data_size = 2;
+
+	body2->data = &unit_test;
+
+	unsigned err = Sem_analysis(body2, fun_table, tables, func_name); ///////////////////////// FOR EXPRESION DECIDING
+	if (err != 0) {
+		set_return_code(err);
 	}
 
 	//;
@@ -704,16 +731,27 @@ bool id_choose31(lex_unit_t* act) {
 	return result;
 }
 
-bool else_r(lex_unit_t* act) {
+bool else_r(lex_unit_t* act, d_node * closing_bracket) {
 
 	// id_choose31 starts
 	if (act == NULL)return false;
 
 	//eps
-	if (!strcmp(act->data, "\n"))return true;
+	if (!strcmp(act->data, "\n")) {
+		print_tree3(closing_bracket);
+		// send to generate code
+		delete_tree(closing_bracket);
+		return true;
+	}
 
 	//else
 	if (strcmp(act->data, "else"))return false;
+
+	d_node * else_bracket = d_node_create(NULL, act, ASSIGNMENT);
+	d_node_insert_right(closing_bracket, else_bracket);  //////////////////////////////////////////////////// Else bracket
+	print_tree3(closing_bracket);
+	// send to generate code
+	delete_tree(closing_bracket);
 
 	//{
 	act = getNextToken();
@@ -739,6 +777,11 @@ bool else_r(lex_unit_t* act) {
 	if (act == NULL)return false;
 	if (strcmp(act->data, "}"))return false;
 
+	d_node * else_closing_bracket = d_node_create(NULL, act, ASSIGNMENT);
+	print_tree3(else_closing_bracket);
+	// send to generate code
+	delete_tree(else_closing_bracket);
+
 	tmp_ptr->accessible = false; //lock
 
 	return true;
@@ -760,7 +803,7 @@ bool definition(lex_unit_t* act, d_node * root) {
 
 	if(act_it!=NULL && act_it->id!=NULL)
 		act_it->id->accesible=true;
-	
+
 	d_node * id = d_node_create(NULL, act, I);
 	d_node_insert_left(equal, id);
 
@@ -769,11 +812,16 @@ bool definition(lex_unit_t* act, d_node * root) {
 	if (act == NULL)return false;
 	if (strcmp(act->data, ":="))return false;
 	equal->data = act;
-
+	
 	//<expression>
 	act = getNextToken();
 	if (act == NULL)return false;
-	if (!expression(act, equal))return false; 
+	if (!expression(act, equal->left))return false; 
+
+	unsigned err = Sem_analysis(equal, fun_table, tables, func_name); ///////////////////////// FOR FIRST DECIDING
+	if (err != 0) {
+		set_return_code(err);
+	}
 
 	return true;
 }
@@ -810,6 +858,11 @@ bool assignment_38_39(lex_unit_t* act, d_node * root) {
 	act = getNextToken();
 	if (act == NULL)return false;
 	if (!exp_list_start(act, assignment_start))return false;
+
+	unsigned err = Sem_analysis(equal, fun_table, tables, func_name); ///////////////////////// FOR EXPRESION DECIDING
+	if (err != 0) {
+		set_return_code(err);
+	}
 
 	return true;
 }
@@ -923,14 +976,35 @@ bool fun2(lex_unit_t * act){
 	
 	/* func required */
 
-	if(strcmp(act->data,"func"))return false; /////////////////////////////////////////////// TO DO function tree for generate code
+	if(strcmp(act->data,"func"))return false; 
 	was_return = false;
+
+	d_node * function_tree = d_node_create(NULL, act, F);
 	/* id required */
 
 	act=getNextToken();
-	if(act==NULL)return false;
-	if(act->unit_type!=IDENTIFICATOR)return false;
+	if(act==NULL) {
+		delete_tree(function_tree);
+		return false;
+	}
+	if(act->unit_type!=IDENTIFICATOR) {
+		delete_tree(function_tree);
+		return false;
+	}
 	func_name = act;
+	d_node * function_name = d_node_create(NULL, act, I);
+	d_node_insert_left(function_tree, function_name);
+
+	ht_item * function_item = find_item(fun_table,act);
+	if (function_item != NULL && function_item -> func != NULL) {  //////////////////////////////////////////// Function head tree
+		function_name->left = (d_node*) function_item->func->parameters;
+		function_name->right = (d_node*) function_item->func->return_val;
+
+		// send to generate code
+	}	
+
+	free(function_tree->left);
+	free(function_tree);
 
 	sl_set_act_accessible(tables); //open
 	sl_elem_ptr tmp_ptr = tables->act;
@@ -958,6 +1032,12 @@ bool fun2(lex_unit_t * act){
 	act=getActiveToken();
 	if(act==NULL)return false;
 	if(strcmp(act->data,"}"))return false; 
+
+	d_node * closing_bracket = d_node_create(NULL, act, R_BRACKET);
+	print_tree3(closing_bracket);
+	// send to generate code
+
+	delete_tree(closing_bracket);
 
 	if (!was_return) {
 		if (!return_not_found(func_name, fun_table)) set_return_code(7);
