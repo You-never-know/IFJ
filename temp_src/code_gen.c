@@ -178,8 +178,8 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 				else if	(strcmp((char*)root->right->data->data, "int2float") == 0)	fprintf(file_descriptor, "DEFVAR TF@%%retval0\nPUSHS TF@%%0\nINT2FLOATS\nPOPS TF@%%retval0\n");
 				else if	(strcmp((char*)root->right->data->data, "float2int") == 0)	fprintf(file_descriptor, "DEFVAR TF@%%retval0\nPUSHS TF@%%0\nFLOAT2INTS\nPOPS TF@%%retval0\n");
 				else if	(strcmp((char*)root->right->data->data, "len") == 0)			fprintf(file_descriptor, "DEFVAR TF@%%retval0\nSTRLEN TF@%%retval0 TF@%%0\n");
-				else if	(strcmp((char*)root->right->data->data, "ord") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nPUSHS TF@%%0\nPUSHS TF@%%1\nSTR2INTS\nPOPS TF@%%retval0\nMOVE TF@%%retval1 int@0");
-				else if	(strcmp((char*)root->right->data->data, "chr") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nPUSHS TF@%%0\nINT2CHARS\nPOPS TF@%%retval0\nMOVE TF@%%retval1 int@0");
+				else if	(strcmp((char*)root->right->data->data, "ord") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nPUSHS TF@%%0\nPUSHS TF@%%1\nSTR2INTS\nPOPS TF@%%retval0\nMOVE TF@%%retval1 int@0\n");
+				else if	(strcmp((char*)root->right->data->data, "chr") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nPUSHS TF@%%0\nINT2CHARS\nPOPS TF@%%retval0\nMOVE TF@%%retval1 int@0\n");
 				else fprintf(file_descriptor, "CALL %s\n", (char*)root->right->data->data);
 
 				/// "Claim" returned values from function
