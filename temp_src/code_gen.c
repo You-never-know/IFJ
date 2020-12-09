@@ -220,7 +220,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 					}
 					case STRING:{
 						/// Allocate enough space for replacing every character (worst case scenario)
-						char* tmp_str_replaced = malloc((root->data->data_size+1)*4);
+						char* tmp_str_replaced = malloc((root->left->data->data_size+1)*4);
 						if(tmp_str_replaced == NULL){
 							fprintf(stderr, "Buffer allocation failed.(Code generation - replacing whitespace characters)\n");
 							return;
@@ -228,7 +228,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 						int index = 0;
 
 						/// Replace all whitespace characters with their decimal representation
-						char* tmp_lex_str = (char*)root->data->data;
+						char* tmp_lex_str = (char*)root->left->data->data;
 						while((tmp_str_replaced[index] = *(tmp_lex_str++)) != '\0'){
 							if(tmp_str_replaced[index] == ' '){
 								tmp_str_replaced[index++] = '\\';
@@ -298,7 +298,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 					}
 					case STRING:{
 						/// Allocate enough space for replacing every character (worst case scenario)
-						char* tmp_str_replaced = malloc((root->data->data_size+1)*4);
+						char* tmp_str_replaced = malloc((root->right->data->data_size+1)*4);
 						if(tmp_str_replaced == NULL){
 							fprintf(stderr, "Buffer allocation failed.(Code generation - replacing whitespace characters)\n");
 							return;
@@ -306,7 +306,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 						int index = 0;
 
 						/// Replace all whitespace characters with their decimal representation
-						char* tmp_lex_str = (char*)root->data->data;
+						char* tmp_lex_str = (char*)root->right->data->data;
 						while((tmp_str_replaced[index] = *(tmp_lex_str++)) != '\0'){
 							if(tmp_str_replaced[index] == ' '){
 								tmp_str_replaced[index++] = '\\';
