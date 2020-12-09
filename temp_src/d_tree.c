@@ -1,3 +1,10 @@
+/**
+* Project:
+* Implementace prekladace imperativniho jazyka IFJ20
+*
+* Author:
+* Drengubiak Vladimír	xdreng01
+**/
 #include "d_tree.h"
 
 d_node * d_tree_init(d_node * root){

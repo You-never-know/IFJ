@@ -1,9 +1,11 @@
 /**
 * Project:
-* Implementace pøekladaèe imperativního jazyka IFJ20
+* Implementace prekladace imperativniho jazyka IFJ20
 *
 * Authors:
 * Daniel Marek 					xmarek72
+* Kateřina Neprašová			xnepra01
+* Drengubiak Vladimír	        xdreng01
 **/
 
 #ifndef SYNTACTIC_ANALYZER

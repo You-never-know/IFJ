@@ -1,10 +1,10 @@
 
 /**
 * Project:
-* Implementace p?eklada? imperativn?o jazyka IFJ20
+* Implementace prekladace imperativniho jazyka IFJ20
 *
 * Author:
-* Fabo Mat??			xfabom01
+* Fabo Matus			xfabom01
 **/
 #ifndef STRUCTS_H
 #define STRUCTS_H

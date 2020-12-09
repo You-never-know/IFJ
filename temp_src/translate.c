@@ -1,3 +1,11 @@
+/**
+* Project:
+* Implementace prekladace imperativniho jazyka IFJ20
+*
+* Author:
+* Daniel Marek 					xmarek72
+**/
+
 #include "create_tables.h"
 #include "structs.h"
 #include "symtable.h"

@@ -1,3 +1,11 @@
+/**
+* Project:
+* Implementace prekladace imperativniho jazyka IFJ20
+*
+* Author:
+* Drengubiak Vladimír	xdreng01
+**/
+
 #include "sem_analysis.h"
 
 enum lex_units id_type_search(sym_list * list_of_tables,lex_unit_t * name){

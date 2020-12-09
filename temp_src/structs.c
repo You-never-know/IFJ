@@ -1,7 +1,7 @@
 
 /**
 * Project:
-* Implementace pøekladaèe imperativního jazyka IFJ20
+* Implementace prekladace imperativniho jazyka IFJ20
 *
 * Author:
 * Fabo Matúš			xfabom01

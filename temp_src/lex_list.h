@@ -1,6 +1,6 @@
 /**
 * Project:
-* Implementace pøekladaèe imperativního jazyka IFJ20
+* Implementace prekladace imperativniho jazyka IFJ20
 *
 * Author:
 * Kateøina Neprašová			xnepra01

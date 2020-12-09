@@ -1,3 +1,11 @@
+/**
+* Project:
+* Implementace prekladace imperativniho jazyka IFJ20
+*
+* Author:
+* Drengubiak Vladimír	xdreng01
+**/
+
 #define DEFINE_ERR 3
 #define COMPATIBLE_ERR 5
 #define PARAM_ERR 6
