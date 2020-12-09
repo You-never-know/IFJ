@@ -26,6 +26,10 @@ void retval_move_reverse(d_node* root, FILE* file_descriptor){
 		return;
 	}
 	if(root->left != NULL) retval_move_reverse(root->left, file_descriptor);
+	if(((char*)root->data->data)[0] == '_'){
+		r_index++;
+		return;
+	}
 	char tmp_frame[3] = "LF";
 	s_find(var_stack, tmp_frame, (char*)root->data->data);
 	fprintf(file_descriptor, "MOVE %s@%s TF@%%retval%d\n", tmp_frame, (char*)root->data->data, r_index++);
