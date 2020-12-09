@@ -175,8 +175,8 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 				if		(strcmp((char*)root->right->data->data, "inputs") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@%%retval0 string\nMOVE TF@%%retval1 int@1\n");
 				else if	(strcmp((char*)root->right->data->data, "inputi") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@%%retval0 int\nMOVE TF@%%retval1 int@1\n");
 				else if	(strcmp((char*)root->right->data->data, "inputf") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@%%retval0 float\nMOVE TF@%%retval1 int@1\n");
-				else if	(strcmp((char*)root->right->data->data, "int2float") == 0)	fprintf(file_descriptor, "PUSHS TF@%%0\nINT2FLOATS\n");
-				else if	(strcmp((char*)root->right->data->data, "float2int") == 0)	fprintf(file_descriptor, "PUSHS TF@%%0\nFLOAT2INTS\n");
+				else if	(strcmp((char*)root->right->data->data, "int2float") == 0)	fprintf(file_descriptor, "DEFVAR TF@%%retval0\nPUSHS TF@%%0\nINT2FLOATS\nPOPS TF@%%retval0\n");
+				else if	(strcmp((char*)root->right->data->data, "float2int") == 0)	fprintf(file_descriptor, "DEFVAR TF@%%retval0\nPUSHS TF@%%0\nFLOAT2INTS\nPOPS TF@%%retval0\n");
 				else if	(strcmp((char*)root->right->data->data, "len") == 0)			fprintf(file_descriptor, "DEFVAR TF@%%retval0\nSTRLEN TF@%%retval0 TF@%%0\n");
 				else if	(strcmp((char*)root->right->data->data, "ord") == 0)			fprintf(file_descriptor, "PUSHS TF@%%0\nPUSHS TF@%%1\nSTR2INTS\n");
 				else if	(strcmp((char*)root->right->data->data, "chr") == 0)			fprintf(file_descriptor, "PUSHS TF@%%0\nINT2CHARS\n");
