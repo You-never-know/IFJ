@@ -886,6 +886,9 @@ sym_list * create_tables(token_list * start, int * ret, sym_tab ** function_tabl
 							state = RETURN;
 							break;
 						}
+						else if (!strcmp(lex->data, "_")) {
+							set_error(2, ret);
+						}
 						else if (lex->unit_type == IDENTIFICATOR) {
 							ht_item * found = sl_search(result, lex);
 							if (found == NULL) { // not found
