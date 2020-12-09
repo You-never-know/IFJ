@@ -34,7 +34,6 @@ void retval_move_reverse(d_node* root, FILE* file_descriptor){
 void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 	/// Check function arguments
 	if(root == NULL || file_descriptor == NULL || var_stack == NULL) return;
-
 	/// Recursively loop through 'root' tree
 	char on_stack = 0;
 	if(root->right != NULL && root->left != NULL){
@@ -47,7 +46,6 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 			on_stack |= 0xf0;
 		}
 	}
-
 	/// Decide what to do
 	if(root->type == ASSIGNMENT){
 		if(((char*)root->data->data)[0] == ':'){
@@ -69,15 +67,15 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 
 			/// Copy variable name
 			while((tmp_var[tmp_index++] = *tmp_lex_data++) != '\0');
-
 			/// "Create" & "initialize" the variable
 			s_push(&var_stack, tmp_var, tmp_var_len);
-			fprintf(file_descriptor, "DEFVAR %c%c@%s\nPOPS %c%c@%s\n",tmp_var[0], tmp_var[1], (char*)root->left->data->data ,tmp_var[0], tmp_var[1], (char*)root->left->data->data);
+			fprintf(file_descriptor, "DEFVAR %c%c@%s\nPOPS %c%c@%s\n",tmp_var[0], tmp_var[1], (char*)root->left->data->data, tmp_var[0], tmp_var[1], (char*)root->left->data->data);
 			free(tmp_var);
 		}
 		else{
 			if(root->right == NULL){ /// Multiple assignments
 				for(d_node* tmp = root->left; tmp != NULL; tmp = tmp->left){
+					if(((char*)tmp->data->data)[0] == '_') continue;
 					expr_unpack(tmp->right, file_descriptor, sl);
 					char tmp_frame[3] = {0,0,0};
 					s_find(var_stack, tmp_frame, (char*)tmp->data->data);
@@ -151,6 +149,12 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 									tmp_str_replaced[index++] = '1';
 									tmp_str_replaced[index]   = '3';
 								}
+								else if(tmp_str_replaced[index] == '\\'){
+									tmp_str_replaced[index++] = '\\';
+									tmp_str_replaced[index++] = '0';
+									tmp_str_replaced[index++] = '9';
+									tmp_str_replaced[index]   = '2';
+								}
 								index++;
 							}
 						}
@@ -177,7 +181,7 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 				else if	(strcmp((char*)root->right->data->data, "inputf") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nREAD TF@%%retval0 float\nMOVE TF@%%retval1 int@1\n");
 				else if	(strcmp((char*)root->right->data->data, "int2float") == 0)	fprintf(file_descriptor, "DEFVAR TF@%%retval0\nPUSHS TF@%%0\nINT2FLOATS\nPOPS TF@%%retval0\n");
 				else if	(strcmp((char*)root->right->data->data, "float2int") == 0)	fprintf(file_descriptor, "DEFVAR TF@%%retval0\nPUSHS TF@%%0\nFLOAT2INTS\nPOPS TF@%%retval0\n");
-				else if	(strcmp((char*)root->right->data->data, "len") == 0)			fprintf(file_descriptor, "DEFVAR TF@%%retval0\nSTRLEN TF@%%retval0 TF@%%0\n");
+				else if	(strcmp((char*)root->right->data->data, "len") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nSTRLEN TF@%%retval0 TF@%%0\n");
 				else if	(strcmp((char*)root->right->data->data, "ord") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nPUSHS TF@%%0\nPUSHS TF@%%1\nSTRI2INTS\nPOPS TF@%%retval0\nMOVE TF@%%retval1 int@0\n");
 				else if	(strcmp((char*)root->right->data->data, "chr") == 0)		fprintf(file_descriptor, "DEFVAR TF@%%retval0\nDEFVAR TF@%%retval1\nPUSHS TF@%%0\nINT2CHARS\nPOPS TF@%%retval0\nMOVE TF@%%retval1 int@0\n");
 				else fprintf(file_descriptor, "CALL %s\n", (char*)root->right->data->data);
@@ -266,6 +270,12 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 								tmp_str_replaced[index++] = '1';
 								tmp_str_replaced[index]   = '3';
 							}
+							else if(tmp_str_replaced[index] == '\\'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '9';
+								tmp_str_replaced[index]   = '2';
+							}
 							index++;
 						}
 						fprintf(file_descriptor, "PUSHS string@%s\n", tmp_str_replaced);
@@ -344,6 +354,12 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 								tmp_str_replaced[index++] = '1';
 								tmp_str_replaced[index]   = '3';
 							}
+							else if(tmp_str_replaced[index] == '\\'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '9';
+								tmp_str_replaced[index]   = '2';
+							}
 							index++;
 						}
 						fprintf(file_descriptor, "PUSHS string@%s\n", tmp_str_replaced);
@@ -411,6 +427,12 @@ void expr_unpack(d_node* root, FILE* file_descriptor, sym_list* sl){
 							tmp_str_replaced[index++] = '0';
 							tmp_str_replaced[index++] = '1';
 							tmp_str_replaced[index]   = '3';
+						}
+						else if(tmp_str_replaced[index] == '\\'){
+							tmp_str_replaced[index++] = '\\';
+							tmp_str_replaced[index++] = '0';
+							tmp_str_replaced[index++] = '9';
+							tmp_str_replaced[index]   = '2';
 						}
 						index++;
 					}
@@ -744,6 +766,12 @@ void code_gen(d_node* root, FILE* file_descriptor, sym_list* sl){
 								tmp_str_replaced[index++] = '0';
 								tmp_str_replaced[index++] = '1';
 								tmp_str_replaced[index]   = '3';
+							}
+							else if(tmp_str_replaced[index] == '\\'){
+								tmp_str_replaced[index++] = '\\';
+								tmp_str_replaced[index++] = '0';
+								tmp_str_replaced[index++] = '9';
+								tmp_str_replaced[index]   = '2';
 							}
 							index++;
 						}
